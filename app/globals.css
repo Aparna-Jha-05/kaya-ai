@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: #050f0b;
+  color: #f1fff6;
+}
+
+body {
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thin, dark scrollbars to match the terminal aesthetic */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: #1c3a2b;
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #2a533e;
+}
+
+/* Subtle grid backdrop for the "terminal" feel */
+.terminal-grid {
+  background-image:
+    linear-gradient(rgba(93, 226, 117, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(93, 226, 117, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}

@@ -1,0 +1,37 @@
+"use client";
+import { ReactNode, useState } from "react";
+import { GLOSSARY } from "@/lib/constants";
+
+// Jargon tooltip. If `term` is in the glossary, uses that definition.
+export default function Tooltip({
+  term,
+  text,
+  children,
+}: {
+  term?: string;
+  text?: string;
+  children?: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const body = text ?? (term ? GLOSSARY[term] : "") ?? "";
+  const label = children ?? term;
+
+  return (
+    <span
+      className="relative inline-flex cursor-help items-center underline decoration-dotted decoration-text/30 underline-offset-2"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+      tabIndex={0}
+    >
+      {label}
+      {open && body && (
+        <span className="absolute bottom-full left-1/2 z-50 mb-2 w-60 -translate-x-1/2 rounded-lg border border-white/15 bg-[#0a1a13] px-3 py-2 text-left text-xs font-normal leading-relaxed text-text/80 shadow-xl">
+          {term && <span className="mb-1 block font-mono text-[10px] font-bold text-green">{term}</span>}
+          {body}
+        </span>
+      )}
+    </span>
+  );
+}
