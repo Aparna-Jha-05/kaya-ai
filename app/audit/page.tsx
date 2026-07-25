@@ -23,7 +23,7 @@ function seed() {
         evidence: r.evidence.join(" | "),
       });
     });
-    if (!bid.has_insurance_cert) {
+    if (!bid.has_safety_cert) {
       appendAudit({
         bid: bid.vendor,
         patrol: "Case Files (agent)",
@@ -63,8 +63,8 @@ export default function AuditPage() {
             <Lock className="h-5 w-5 text-green" /> Immutable Audit Log
           </h1>
           <p className="mt-1 text-sm text-text/50">
-            Append-only. Every patrol decision and agent action, timestamped. No
-            edits, no deletes. Humans decide, PO-lice provides the evidence trail.
+            Session audit trail. Every patrol decision and workflow action is timestamped for review.
+            Humans decide; PO-LICE provides the evidence trail.
           </p>
         </div>
         <button

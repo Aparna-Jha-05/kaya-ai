@@ -19,7 +19,7 @@ export default function ActiveBidsTable() {
 
   const rows = BIDS.map((b) => {
     const { building, green, vice } = runAllPatrols(b);
-    const risk = parseInt(vice.rule.split("= ").pop() || "0", 10);
+    const risk = vice.riskScore ?? 0;
     return { bid: b, building, green, risk };
   });
 
@@ -57,6 +57,15 @@ export default function ActiveBidsTable() {
                 <tr
                   key={bid.id}
                   onClick={() => router.push(`/bids/${bid.id}`)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      router.push(`/bids/${bid.id}`);
+                    }
+                  }}
+                  role="link"
+                  tabIndex={0}
+                  aria-label={`Open compliance case for ${bid.vendor}`}
                   className={`group cursor-pointer border-b border-white/5 transition-colors hover:bg-white/[0.03] ${
                     isReject ? "animate-pulseRed" : ""
                   }`}

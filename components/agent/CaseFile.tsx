@@ -41,7 +41,7 @@ export default function CaseFile({ bid }: { bid: Bid }) {
   const [handed, setHanded] = useState(false);
   const [toast, setToast] = useState(false);
 
-  if (bid.has_insurance_cert) return null;
+  if (bid.has_safety_cert) return null;
 
   const approve = () => {
     setApproved(true);
@@ -75,7 +75,7 @@ export default function CaseFile({ bid }: { bid: Bid }) {
             <Mail className="h-4 w-4 text-violet" /> Case Files · Agent Draft
           </span>
         }
-        caption="Triggered automatically because has_insurance_cert = false. The agent drafts; a human approves; Jarvis acts."
+        caption="Triggered because the submitted safety certificate is missing. The system drafts; a human approves the workflow handoff."
         right={<MockBadge label="AGENT" />}
       />
       <div className="p-4">

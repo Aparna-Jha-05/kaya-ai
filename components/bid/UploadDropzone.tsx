@@ -3,8 +3,7 @@ import { useState } from "react";
 import { UploadCloud, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 
-// Accepts any file (or a click) and kicks off the simulated pipeline.
-// We never actually parse the file.
+// Demo-only interaction: it starts the staged walkthrough and does not transmit a file.
 export default function UploadDropzone({
   vendor,
   onStart,
@@ -58,7 +57,7 @@ export default function UploadDropzone({
             Drop the {vendor} bid PDF here
           </p>
           <p className="mt-1 text-xs text-text/40">
-            or click to simulate an upload · any file works, we don&apos;t parse it
+            Demo walkthrough only — no file leaves your browser on this screen
           </p>
         </>
       )}

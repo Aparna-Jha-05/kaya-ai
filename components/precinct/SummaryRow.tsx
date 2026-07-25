@@ -11,7 +11,7 @@ function metrics() {
   for (const b of BIDS) {
     const { building } = runAllPatrols(b);
     if (building.status === "FAIL") clashes += 1;
-    if (!b.has_insurance_cert) missingDocs += 1;
+    if (!b.has_safety_cert) missingDocs += 1;
   }
   return { total: BIDS.length, clashes, missingDocs };
 }
@@ -34,7 +34,7 @@ export default function SummaryRow() {
       sub: "hard site limits breached",
     },
     {
-      label: "Missing Legal Docs",
+      label: "Missing Compliance Docs",
       value: m.missingDocs,
       color: COLORS.amber,
       Icon: FileWarning,

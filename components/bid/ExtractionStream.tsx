@@ -22,7 +22,7 @@ function fieldRows(bid: Bid) {
     { key: "floor_load_kg_m2", label: "floor_load_kg_m2", value: String(bid.floor_load_kg_m2) },
     { key: "carbon_intensity_kgco2e", label: "carbon_intensity_kgco2e", value: String(bid.carbon_intensity_kgco2e) },
     { key: "delivery_weeks", label: "delivery_weeks", value: String(bid.delivery_weeks) },
-    { key: "has_insurance_cert", label: "has_insurance_cert", value: String(bid.has_insurance_cert) },
+    { key: "has_safety_cert", label: "has_safety_cert", value: String(bid.has_safety_cert) },
     { key: "upfront_cost_cr", label: "upfront_cost_cr", value: `${bid.upfront_cost_cr}` },
   ];
 }

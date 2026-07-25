@@ -71,14 +71,14 @@ export default function PrecinctPage() {
         </div>
 
         <div className="bg-[#111827] border border-[#1e293b] p-4 rounded-xl border-l-4 border-l-[#fbbf24]">
-          <div className="text-[11px] font-mono uppercase text-[#94a3b8]">MISSING LEGAL CERTS</div>
+          <div className="text-[11px] font-mono uppercase text-[#94a3b8]">MISSING COMPLIANCE DOCS</div>
           <div className="text-2xl font-extrabold font-mono text-[#fbbf24] mt-1 drop-shadow-[0_0_10px_rgba(251,191,36,0.3)]">1 Document</div>
           <div className="text-[11px] text-[#fbbf24] mt-1">OSHA Safety Form 300</div>
         </div>
 
         <div className="bg-[#111827] border border-[#1e293b] p-4 rounded-xl border-l-4 border-l-[#38bdf8]">
           <div className="text-[11px] font-mono uppercase text-[#94a3b8]">5-YR TCO² SAVINGS</div>
-          <div className="text-2xl font-extrabold font-mono text-[#38bdf8] mt-1 drop-shadow-[0_0_10px_rgba(56,189,248,0.3)]">₹1.04 Crore</div>
+          <div className="text-2xl font-extrabold font-mono text-[#38bdf8] mt-1 drop-shadow-[0_0_10px_rgba(56,189,248,0.3)]">₹0.80 Crore</div>
           <div className="text-[11px] text-[#38bdf8] mt-1">Prevented substitution loss</div>
         </div>
       </div>
@@ -97,7 +97,7 @@ export default function PrecinctPage() {
                 <h3 className="text-base font-bold">📊 Active Vendor Bids Docket</h3>
               </div>
               <span className="text-xs bg-[#38bdf8]/15 text-[#38bdf8] border border-[#38bdf8] px-2.5 py-1 rounded font-bold uppercase tracking-wider">
-                Live Audit Stream
+                Demonstration dataset
               </span>
             </div>
 
@@ -141,7 +141,7 @@ export default function PrecinctPage() {
                     <td className="p-3"><span className="text-[10px] bg-[#f43f5e]/15 text-[#f43f5e] border border-[#f43f5e] px-2 py-0.5 rounded font-bold">FAIL</span></td>
                     <td className="p-3"><span className="text-[10px] bg-[#f43f5e]/15 text-[#f43f5e] border border-[#f43f5e] px-2 py-0.5 rounded font-bold">FAIL</span></td>
                     <td className="p-3"><span className="text-[10px] bg-[#818cf8]/15 text-[#818cf8] border border-[#818cf8] px-2 py-0.5 rounded font-bold">8/10</span></td>
-                    <td className="p-3 font-mono font-bold text-[#f43f5e]">₹7.04 Cr</td>
+                    <td className="p-3 font-mono font-bold text-[#f43f5e]">₹6.80 Cr</td>
                     <td className="p-3 font-bold text-[#f43f5e]">REJECTED</td>
                   </tr>
 
@@ -192,7 +192,7 @@ export default function PrecinctPage() {
               </div>
               <span className="text-xs bg-[#818cf8]/15 text-[#818cf8] border border-[#818cf8] px-2.5 py-1 rounded font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#818cf8] animate-ping" />
-                Live SSE Stream
+                Workflow preview
               </span>
             </div>
 
@@ -217,7 +217,7 @@ export default function PrecinctPage() {
               onClick={() => setIsRfiOpen(true)}
               className="w-full bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-[#090d16] font-bold text-xs py-2.5 rounded-lg shadow-lg hover:shadow-[#38bdf8]/30 transition-all flex items-center justify-center gap-2 glow-cyan"
             >
-              ✉️ Open Counter-Spec RFI Email Drafter (Feature C)
+              ✉️ Review counter-spec RFI draft
             </button>
           </div>
         </div>

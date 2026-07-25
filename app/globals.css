@@ -12,6 +12,11 @@ body {
   color: #f8fafc;
 }
 
+:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 3px;
+}
+
 body {
   font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;

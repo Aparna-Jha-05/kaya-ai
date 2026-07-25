@@ -13,6 +13,7 @@ export interface PatrolResult {
   detail: string;
   rule: string;
   evidence: string[];
+  riskScore?: number;
 }
 
 // --- Patrol 1: Building Patrol -----------------------------------------------
@@ -79,7 +80,7 @@ export function greenPatrol(bid: Bid): PatrolResult {
 // --- Patrol 3: Vice Squad ----------------------------------------------------
 export function viceSquad(bid: Bid): PatrolResult {
   const docs = VENDOR_DOCS[bid.id] ?? [];
-  const missing_cert = bid.has_insurance_cert ? 0 : 1;
+  const missing_cert = bid.has_safety_cert ? 0 : 1;
   const { late_deliveries, disputes } = bid.vendor_history;
 
   // Deterministic score. Vendor B: 3*2 + 1*3 + 1*4 = 13 -> capped 10.
@@ -90,6 +91,7 @@ export function viceSquad(bid: Bid): PatrolResult {
   return {
     key: "vice",
     status,
+    riskScore: risk,
     detail: `Reliability risk ${risk}/10 — ${late_deliveries} late of ${bid.vendor_history.total_deliveries} deliveries, ${disputes} dispute${disputes === 1 ? "" : "s"}${missing_cert ? ", missing safety cert" : ""}.`,
     rule: `risk = min(10, late(${late_deliveries})*2 + disputes(${disputes})*3 + missing_cert(${missing_cert})*4) = ${risk}`,
     evidence: docs,
@@ -170,7 +172,7 @@ export function runAllPatrols(bid: Bid) {
   const building = buildingPatrol(bid);
   const green = greenPatrol(bid);
   const vice = viceSquad(bid);
-  const viceRisk = parseInt(vice.rule.split("= ").pop() || "0", 10);
+  const viceRisk = vice.riskScore ?? 0;
   const traffic = trafficControl(bid, viceRisk);
   return { building, green, vice, traffic };
 }

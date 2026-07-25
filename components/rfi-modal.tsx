@@ -41,9 +41,7 @@ Procurement Enforcement Team (PO-lice)`
   const handleHandoff = () => {
     setIsSent(true);
     if (onHandoffSuccess) {
-      onHandoffSuccess(
-        `[Jarvis Assistant] Auto-generated counter-spec RFI email dispatched to sales@cooltech.com. SMS ping sent to vendor contact.`
-      );
+      onHandoffSuccess("[Jarvis handoff] Draft approved and queued for the configured workflow. No email or SMS is sent by this demo.");
     }
     setTimeout(() => {
       setIsSent(false);
@@ -52,19 +50,20 @@ Procurement Enforcement Team (PO-lice)`
   };
 
   return (
-    <div className="fixed inset-0 bg-[#090d16]/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-[#111827] border border-[#1e293b] rounded-xl w-full max-w-2xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 bg-[#090d16]/80 backdrop-blur-md z-50 flex items-center justify-center p-4" role="presentation" onMouseDown={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="rfi-title" className="bg-[#111827] border border-[#1e293b] rounded-xl w-full max-w-2xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200" onMouseDown={(event) => event.stopPropagation()}>
         <div className="flex justify-between items-center pb-4 border-b border-[#1e293b] mb-4">
           <div>
             <div className="font-mono text-[11px] uppercase tracking-widest text-[#38bdf8] mb-0.5">
               FEATURE_C // AUTOMATED_COUNTER_SPEC_RFI
             </div>
-            <h3 className="text-lg font-bold flex items-center gap-2">
+            <h3 id="rfi-title" className="text-lg font-bold flex items-center gap-2">
               ✉️ Counter-Spec RFI Email Drafter
             </h3>
           </div>
           <button
             onClick={onClose}
+            aria-label="Close RFI draft"
             className="text-[#94a3b8] hover:text-white text-sm px-2 py-1 rounded border border-[#1e293b] hover:bg-[#1f2937]"
           >
             ✕ Close
@@ -76,6 +75,7 @@ Procurement Enforcement Team (PO-lice)`
         </p>
 
         <textarea
+          aria-label="Editable RFI email draft"
           value={emailBody}
           onChange={(e) => setEmailBody(e.target.value)}
           className="w-full h-56 bg-[#040711] border border-[#1e293b] rounded-lg p-3 text-xs font-mono text-[#e2e8f0] focus:border-[#38bdf8] outline-none resize-none leading-relaxed"
@@ -91,7 +91,7 @@ Procurement Enforcement Team (PO-lice)`
             disabled={isSent}
             className="bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-[#090d16] font-bold text-xs px-5 py-2.5 rounded-lg shadow-lg hover:shadow-[#38bdf8]/20 transition-all flex items-center gap-2"
           >
-            {isSent ? "✓ Handed off to Jarvis!" : "⚡ Approve & Hand Off to Jarvis"}
+            {isSent ? "✓ Queued for workflow" : "Approve & queue for workflow"}
           </button>
         </div>
       </div>
