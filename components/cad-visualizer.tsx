@@ -17,7 +17,7 @@ export default function CADVisualizer({
   const bboxWidthPx = Math.round(widthM * 100);
 
   return (
-    <div className="bg-[#111827] border border-[#1e293b] rounded-xl p-5 hover:border-[#38bdf8]/40 transition-colors">
+    <div className="bg-card border border-line rounded-xl p-5 hover:border-cyan/40 transition-colors">
       <div className="flex justify-between items-center mb-3">
         <div>
           <div className="font-mono text-[11px] uppercase tracking-widest text-[#f43f5e] mb-0.5">
@@ -43,7 +43,7 @@ export default function CADVisualizer({
       </p>
 
       {/* Slider Control */}
-      <div className="mb-4 bg-[#060a12] p-3 rounded-lg border border-[#1e293b]">
+      <div className="mb-4 bg-surface p-3 rounded-lg border border-line">
         <div className="flex justify-between text-xs font-medium mb-1.5">
           <span>Equipment width: <strong className={isBreached ? "text-[#f43f5e]" : "text-[#38bdf8]"}>{widthM.toFixed(2)}m</strong></span>
           <span className="text-[#94a3b8]">Door limit: {doorLimitM.toFixed(2)}m</span>
@@ -60,7 +60,7 @@ export default function CADVisualizer({
       </div>
 
       {/* Blueprint Canvas Box */}
-      <div className="relative bg-[#02050b] border border-dashed border-[#1e293b] rounded-lg h-56 flex items-center justify-center overflow-hidden">
+      <div className="relative bg-inset border border-dashed border-line rounded-lg h-56 flex items-center justify-center overflow-hidden">
         {/* Grid lines */}
         <div
           className="absolute inset-0 opacity-20 pointer-events-none"
@@ -73,7 +73,7 @@ export default function CADVisualizer({
 
         {/* Door frame indicator */}
         <div className="absolute left-1/2 -translate-x-1/2 top-4 bottom-4 w-[190px] border-x-2 border-dashed border-[#94a3b8]/40 flex items-start justify-center">
-          <span className="text-[10px] font-mono text-[#94a3b8] bg-[#02050b] px-1.5 py-0.5 rounded -mt-2">
+          <span className="text-[10px] font-mono text-muted bg-inset px-1.5 py-0.5 rounded -mt-2">
             Door clearance (1.90m)
           </span>
         </div>

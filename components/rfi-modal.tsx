@@ -51,8 +51,8 @@ Procurement Review Team (PO-LICE)`
 
   return (
     <div className="fixed inset-0 bg-[#090d16]/80 backdrop-blur-md z-50 flex items-center justify-center p-4" role="presentation" onMouseDown={onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="rfi-title" className="bg-[#111827] border border-[#1e293b] rounded-xl w-full max-w-2xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200" onMouseDown={(event) => event.stopPropagation()}>
-        <div className="flex justify-between items-center pb-4 border-b border-[#1e293b] mb-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="rfi-title" className="bg-card border border-line rounded-xl w-full max-w-2xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200" onMouseDown={(event) => event.stopPropagation()}>
+        <div className="flex justify-between items-center pb-4 border-b border-line mb-4">
           <div>
             <div className="font-mono text-[11px] uppercase tracking-widest text-[#38bdf8] mb-0.5">
               REQUEST FOR INFORMATION
@@ -64,7 +64,7 @@ Procurement Review Team (PO-LICE)`
           <button
             onClick={onClose}
             aria-label="Close RFI draft"
-            className="text-[#94a3b8] hover:text-white text-sm px-2 py-1 rounded border border-[#1e293b] hover:bg-[#1f2937]"
+            className="text-muted hover:text-white text-sm px-2 py-1 rounded border border-line hover:bg-surface"
           >
             ✕ Close
           </button>
@@ -78,10 +78,10 @@ Procurement Review Team (PO-LICE)`
           aria-label="Editable RFI email draft"
           value={emailBody}
           onChange={(e) => setEmailBody(e.target.value)}
-          className="w-full h-56 bg-[#040711] border border-[#1e293b] rounded-lg p-3 text-xs font-mono text-[#e2e8f0] focus:border-[#38bdf8] outline-none resize-none leading-relaxed"
+          className="w-full h-56 bg-inset border border-line rounded-lg p-3 text-xs font-mono text-[#e2e8f0] focus:border-cyan outline-none resize-none leading-relaxed"
         />
 
-        <div className="flex justify-between items-center mt-5 pt-3 border-t border-[#1e293b]">
+        <div className="flex justify-between items-center mt-5 pt-3 border-t border-line">
           <span className="text-xs text-[#94a3b8]">
             Status: <strong className="text-[#818cf8]">Awaiting approval</strong>
           </span>

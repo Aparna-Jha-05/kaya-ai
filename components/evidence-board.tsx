@@ -109,7 +109,7 @@ export default function EvidenceBoard({
   const selectedNodeObj = nodes.find((n) => n.id === activeNode) || nodes[0];
 
   return (
-    <div className="bg-[#111827] border border-[#1e293b] rounded-xl p-5 hover:border-[#38bdf8]/40 transition-colors">
+    <div className="bg-card border border-line rounded-xl p-5 hover:border-cyan/40 transition-colors">
       <div className="flex justify-between items-center mb-3">
         <div>
           <div className="font-mono text-[11px] uppercase tracking-widest text-[#38bdf8] mb-0.5">
@@ -135,7 +135,7 @@ export default function EvidenceBoard({
       </p>
 
       {/* SVG Canvas */}
-      <div className="relative bg-[#02050b] border border-[#1e293b] rounded-lg h-80 overflow-hidden">
+      <div className="relative bg-inset border border-line rounded-lg h-80 overflow-hidden">
         <svg className="w-full h-full">
           {/* Connection Lines */}
           {links.map((link, idx) => {
@@ -207,7 +207,7 @@ export default function EvidenceBoard({
 
       {/* Selected Node Details */}
       {selectedNodeObj && (
-        <div className="mt-3 bg-[#040711] p-3 rounded-lg border border-[#1e293b] flex items-center justify-between text-xs">
+        <div className="mt-3 bg-inset p-3 rounded-lg border border-line flex items-center justify-between text-xs">
           <div>
             <span className="font-mono text-[#94a3b8] uppercase text-[10px] block mb-0.5">
               Selected finding

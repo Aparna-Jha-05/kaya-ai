@@ -37,14 +37,14 @@ export default function UploadDropzone({
       onClick={() => trigger(`${vendor}-bid.pdf`)}
       className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
         over
-          ? "border-green bg-green/5"
+          ? "border-cyan bg-cyan/5"
           : dropped
-          ? "border-green/60 bg-green/5"
+          ? "border-cyan/60 bg-cyan/5"
           : "border-white/15 bg-card/50 hover:border-white/30"
       }`}
     >
       {dropped ? (
-        <div className="flex items-center gap-3 text-green">
+        <div className="flex items-center gap-3 text-cyan">
           <FileText className="h-6 w-6" />
           <span className="font-mono text-sm">
             {vendor}-bid.pdf received · extracting bid data…
@@ -52,7 +52,7 @@ export default function UploadDropzone({
         </div>
       ) : (
         <>
-          <UploadCloud className={`h-8 w-8 ${over ? "text-green" : "text-text/40"}`} />
+          <UploadCloud className={`h-8 w-8 ${over ? "text-cyan" : "text-text/40"}`} />
           <p className="mt-3 text-sm font-medium text-text/80">
             Drop the {vendor} bid PDF here
           </p>

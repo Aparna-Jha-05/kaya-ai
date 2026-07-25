@@ -29,7 +29,7 @@ export default function SummaryRow() {
     {
       label: "Engineering failures",
       value: m.clashes,
-      color: COLORS.red,
+      color: COLORS.rose,
       Icon: AlertOctagon,
       sub: "hard limits exceeded",
     },

@@ -9,9 +9,9 @@ import { COLORS } from "@/lib/constants";
 import { ChevronRight } from "lucide-react";
 
 function riskColor(risk: number) {
-  if (risk > 6) return COLORS.red;
+  if (risk > 6) return COLORS.rose;
   if (risk >= 4) return COLORS.amber;
-  return COLORS.green;
+  return COLORS.cyan;
 }
 
 export default function ActiveBidsTable() {
@@ -75,13 +75,13 @@ export default function ActiveBidsTable() {
                       <span
                         className="h-2 w-2 rounded-full"
                         style={{
-                          backgroundColor: isReject ? COLORS.red : COLORS.green,
-                          boxShadow: `0 0 8px ${isReject ? COLORS.red : COLORS.green}`,
+                          backgroundColor: isReject ? COLORS.rose : COLORS.cyan,
+                          boxShadow: `0 0 8px ${isReject ? COLORS.rose : COLORS.cyan}`,
                         }}
                       />
                       <span className="font-sans font-medium text-text">{bid.vendor}</span>
                       {isReject && (
-                        <span className="rounded bg-red/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-red">
+                        <span className="rounded bg-rose/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-rose">
                           review
                         </span>
                       )}

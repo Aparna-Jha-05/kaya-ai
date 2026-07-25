@@ -57,7 +57,7 @@ export default function TCOSlider({
   const isReject = result.recommendation === "REJECT" || result.recommendation === "REJECTED";
 
   return (
-    <div className="bg-[#111827] border border-[#1e293b] rounded-xl p-5 hover:border-[#38bdf8]/40 transition-colors">
+    <div className="bg-card border border-line rounded-xl p-5 hover:border-cyan/40 transition-colors">
       <div className="flex justify-between items-center mb-3">
         <div>
           <div className="font-mono text-[11px] uppercase tracking-widest text-[#38bdf8] mb-0.5">
@@ -82,7 +82,7 @@ export default function TCOSlider({
         Test commercial assumptions. This result informs review; it does not approve a purchase order. <span className={connection === "live" ? "text-[#38bdf8]" : "text-[#94a3b8]"}>[{connection === "live" ? "live calculation" : "demo calculation"}]</span>
       </p>
 
-      <div className="space-y-4 bg-[#060a12] p-4 rounded-lg border border-[#1e293b] mb-4">
+      <div className="space-y-4 bg-surface p-4 rounded-lg border border-line mb-4">
         {/* Discount Slider */}
         <div>
           <div className="flex justify-between text-xs font-medium mb-1">
@@ -119,7 +119,7 @@ export default function TCOSlider({
       </div>
 
       {/* Recalculation Results */}
-      <div aria-live="polite" aria-atomic="true" className="grid grid-cols-4 gap-2 bg-[#040711] p-3.5 rounded-lg border border-[#1e293b] text-center">
+      <div aria-live="polite" aria-atomic="true" className="grid grid-cols-4 gap-2 bg-inset p-3.5 rounded-lg border border-line text-center">
         <div>
           <div className="text-[10px] text-[#94a3b8] font-mono uppercase">Upfront cost</div>
           <div className="text-sm font-bold font-mono mt-0.5">₹{finalCapexCr.toFixed(2)}Cr</div>

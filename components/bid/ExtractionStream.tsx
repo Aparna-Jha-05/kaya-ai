@@ -70,7 +70,7 @@ export default function ExtractionStream({
         caption="AI extracts the vendor PDF into validated fields. Fields below the confidence threshold require review before they are used as evidence."
         right={
           done ? (
-            <span className="font-mono text-[11px] text-green">✓ 10/10 fields</span>
+            <span className="font-mono text-[11px] text-cyan">✓ 10/10 fields</span>
           ) : (
             <span className="flex items-center gap-1.5 font-mono text-[11px] text-text/50">
               <Loader2 className="h-3 w-3 animate-spin" /> extracting…
@@ -79,7 +79,7 @@ export default function ExtractionStream({
         }
       />
       <div className="p-4">
-        <div className="rounded-lg border border-white/10 bg-[#071510] p-4 font-mono text-[13px] leading-relaxed">
+        <div className="rounded-lg border border-white/10 bg-surface p-4 font-mono text-[13px] leading-relaxed">
           <span className="text-text/40">{"{"}</span>
           <div className="pl-4">
             {rows.slice(0, revealed).map((r) => {
@@ -94,7 +94,7 @@ export default function ExtractionStream({
                 >
                   <span className="text-blue">&quot;{r.label}&quot;</span>
                   <span className="text-text/40">:</span>
-                  <span className={r.value.startsWith('"') ? "text-amber" : "text-green"}>
+                  <span className={r.value.startsWith('"') ? "text-amber" : "text-cyan"}>
                     {r.value}
                   </span>
                   <span className="text-text/30">,</span>

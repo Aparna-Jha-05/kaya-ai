@@ -68,7 +68,7 @@ export default function ConfidenceHeatmap({
   const unverifiedCount = fields.filter((f) => !f.isVerified).length;
 
   return (
-    <div className="bg-[#111827] border border-[#1e293b] rounded-xl p-5 hover:border-[#38bdf8]/40 transition-colors">
+    <div className="bg-card border border-line rounded-xl p-5 hover:border-cyan/40 transition-colors">
       <div className="flex justify-between items-center mb-3">
         <div>
           <div className="font-mono text-[11px] uppercase tracking-widest text-[#38bdf8] mb-0.5">
@@ -104,7 +104,7 @@ export default function ConfidenceHeatmap({
               className={`p-3 rounded-lg border flex items-center justify-between text-xs transition-all ${
                 !field.isVerified
                   ? "bg-[#fbbf24]/10 border-[#fbbf24] shadow-[0_0_12px_rgba(251,191,36,0.15)]"
-                  : "bg-[#040711] border-[#1e293b]"
+                  : "bg-inset border-line"
               }`}
             >
               <div className="space-y-0.5">
