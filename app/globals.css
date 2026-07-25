@@ -8,8 +8,8 @@
 
 html,
 body {
-  background-color: #050f0b;
-  color: #f1fff6;
+  background-color: #090d16;
+  color: #f8fafc;
 }
 
 body {
@@ -17,26 +17,43 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Thin, dark scrollbars to match the terminal aesthetic */
+/* Thin dark slate scrollbars */
 *::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background: #1c3a2b;
-  border-radius: 4px;
+  background: #1e293b;
+  border-radius: 3px;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #2a533e;
+  background: #38bdf8;
 }
 
-/* Subtle grid backdrop for the "terminal" feel */
+/* Custom Glow Effects for Motion & Visual Polish */
+.glow-cyan {
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.25);
+}
+
+.glow-red {
+  box-shadow: 0 0 18px rgba(244, 63, 94, 0.3);
+}
+
+.glow-amber {
+  box-shadow: 0 0 18px rgba(251, 191, 36, 0.25);
+}
+
+.glow-indigo {
+  box-shadow: 0 0 18px rgba(129, 140, 248, 0.25);
+}
+
+/* Subtle grid backdrop */
 .terminal-grid {
   background-image:
-    linear-gradient(rgba(93, 226, 117, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(93, 226, 117, 0.04) 1px, transparent 1px);
-  background-size: 32px 32px;
+    linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
