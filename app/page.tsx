@@ -5,6 +5,7 @@ import EvidenceBoard from "@/components/evidence-board";
 import CADVisualizer from "@/components/cad-visualizer";
 import TCOSlider from "@/components/tco-slider";
 import RFIModal from "@/components/rfi-modal";
+import ConfidenceHeatmap from "@/components/confidence-heatmap";
 
 export default function PrecinctPage() {
   const [selectedVendor, setSelectedVendor] = useState<string>("Vendor B (CoolTech)");
@@ -80,7 +81,7 @@ export default function PrecinctPage() {
 
       {/* Main Split-Screen Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column (7 cols): Active Bids Table + CAD + What-If Slider */}
+        {/* Left Column (7 cols): Active Bids Table + Confidence Heatmap + CAD + What-If Slider */}
         <div className="lg:col-span-7 space-y-6">
           {/* Active Vendor Bids Docket Table */}
           <div className="bg-[#111827] border border-[#1e293b] rounded-xl p-5 hover:border-[#38bdf8]/40 transition-colors">
@@ -158,6 +159,9 @@ export default function PrecinctPage() {
               </table>
             </div>
           </div>
+
+          {/* Refinement 1: Human-in-the-Loop Extraction Field Confidence Heatmap */}
+          <ConfidenceHeatmap vendorName={selectedVendor} />
 
           {/* Feature B: CAD Bounding Box Component */}
           <CADVisualizer initialWidthM={2.1} doorLimitM={1.9} />
