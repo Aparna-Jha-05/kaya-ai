@@ -16,7 +16,7 @@ export default function BidDetailPage({ params }: { params: { id: string } }) {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link href="/bids" className="inline-flex items-center gap-1.5 text-xs text-text/50 hover:text-text">
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to bids
+          <ArrowLeft className="h-3.5 w-3.5" /> Back to compare bids
         </Link>
         <div className="flex gap-2">
           {BIDS.map((b) => (

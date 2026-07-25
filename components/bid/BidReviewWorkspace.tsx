@@ -1,26 +1,24 @@
 "use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
-import { CheckCircle2, FileSearch, GitCompareArrows, Network, ShieldCheck, ScrollText } from "lucide-react";
+import { CheckCircle2, FileSearch, Network, ShieldCheck, ScrollText } from "lucide-react";
 import { Bid, FIELD_CONFIDENCE } from "@/lib/mockData";
 import { runAllPatrols } from "@/lib/patrols";
 import { COLORS, PATROL_META } from "@/lib/constants";
 import { getAudit, subscribeAudit } from "@/lib/audit";
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
-import Docket from "@/components/bid/Docket";
 import EvidenceBoard from "@/components/bid/EvidenceBoard";
 import CADVisualizer from "@/components/cad-visualizer";
 import CaseFile from "@/components/agent/CaseFile";
 
-type Tab = "decision" | "evidence" | "checks" | "alternatives" | "impact" | "activity";
+type Tab = "decision" | "evidence" | "checks" | "consequences" | "activity";
 
 const TABS: { id: Tab; label: string; Icon: typeof ShieldCheck }[] = [
   { id: "decision", label: "Decision", Icon: ShieldCheck },
   { id: "evidence", label: "Evidence", Icon: FileSearch },
   { id: "checks", label: "Checks", Icon: CheckCircle2 },
-  { id: "alternatives", label: "Alternatives", Icon: GitCompareArrows },
-  { id: "impact", label: "Impact", Icon: Network },
+  { id: "consequences", label: "Consequences", Icon: Network },
   { id: "activity", label: "Activity", Icon: ScrollText },
 ];
 
@@ -73,8 +71,7 @@ export default function BidReviewWorkspace({ bid }: { bid: Bid }) {
       {tab === "decision" && <DecisionTab bid={bid} results={results} />}
       {tab === "evidence" && <EvidenceTab bid={bid} />}
       {tab === "checks" && <ChecksTab results={results} onInspect={setInspected} />}
-      {tab === "alternatives" && <Docket highlightId={bid.id} />}
-      {tab === "impact" && <EvidenceBoard bid={bid} />}
+      {tab === "consequences" && <EvidenceBoard bid={bid} />}
       {tab === "activity" && <ActivityTab bid={bid} />}
       {inspected && <EvidenceDrawer evidence={inspected} onClose={() => setInspected(null)} />}
     </div>

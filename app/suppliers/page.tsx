@@ -38,7 +38,7 @@ export default function SuppliersPage() {
       <SupplierLocationMap />
 
       <DataRequirement title="Supplier relationship graph" description="Map shared submission IPs, bank accounts, document fingerprints, and verified corporate entities before using integrity signals in a supplier decision." requirements={["Persistent supplier and bid records", "Verified corporate identifiers", "Source provenance for every relationship", "Reviewer disposition for each signal"]} />
-      <DataRequirement title="Registered-location map" description="A map is useful only for verified supplier addresses or registered locations. Until then, a relationship graph is more accurate and less misleading." requirements={["Verified address or coordinates", "Geocoding provenance", "Entity-to-location confidence", "Cluster review workflow"]} />
+      <DataRequirement title="Verified location activation" description="The map now supports interactive road routes using demo coordinates. Replace them with verified supplier locations, geocoding provenance, and a review workflow before a location can influence an operational decision." requirements={["Verified address or coordinates", "Geocoding provenance", "Entity-to-location confidence", "Cluster review workflow"]} />
     </div>
   );
 }
