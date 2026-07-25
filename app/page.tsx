@@ -6,6 +6,7 @@ import CADVisualizer from "@/components/cad-visualizer";
 import TCOSlider from "@/components/tco-slider";
 import RFIModal from "@/components/rfi-modal";
 import ConfidenceHeatmap from "@/components/confidence-heatmap";
+import CommandBar from "@/components/command-bar";
 
 export default function PrecinctPage() {
   const [selectedVendor, setSelectedVendor] = useState<string>("Vendor B (CoolTech)");
@@ -23,7 +24,7 @@ export default function PrecinctPage() {
   };
 
   return (
-    <div className="space-y-6 text-[#f8fafc]">
+    <div className="space-y-6 text-[#f8fafc] pb-16">
       {/* Top Header Row */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between pb-4 border-b border-[#1e293b]">
         <div>
@@ -172,7 +173,7 @@ export default function PrecinctPage() {
 
         {/* Right Column (5 cols): Evidence Board + Case Files Activity Log + Jarvis Trigger */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Level 1 Differentiator: Evidence Board */}
+          {/* Refinement 2: Dynamic Path-Highlighting Evidence Board */}
           <EvidenceBoard selectedVendor={selectedVendor} />
 
           {/* The Case Files & Jarvis Log Drawer */}
@@ -217,6 +218,14 @@ export default function PrecinctPage() {
           </div>
         </div>
       </div>
+
+      {/* Refinement 3: Raycast-Style Command Bar (⌘K Keyboard Shortcuts) */}
+      <CommandBar
+        onSelectVendorA={() => setSelectedVendor("Vendor A (Trane)")}
+        onSelectVendorB={() => setSelectedVendor("Vendor B (CoolTech)")}
+        onSelectVendorC={() => setSelectedVendor("Vendor C (Carrier)")}
+        onOpenRFI={() => setIsRfiOpen(true)}
+      />
 
       {/* Counter-Spec RFI Email Modal (Feature C) */}
       <RFIModal
