@@ -22,16 +22,16 @@ export default function RFIModal({
 
 Dear ${vendorName},
 
-Your submitted commercial & technical bid for Chiller Model CTX-1400 failed PO-lice hard-gate validation:
+Your submitted commercial and technical bid for Chiller Model CTX-1400 does not meet the following project requirements:
 - Substation Power Draw: 1,400 kW exceeds site limit of 1,200 kW by 200 kW.
 - Embodied Carbon: 540 kgCO2e exceeds project carbon cap of 450 kgCO2e.
 - Equipment Width: 2.10m exceeds site door clearance of 1.90m.
 - Safety Certificate: OSHA Form 300 is currently missing.
 
-ACTION REQUIRED: Please submit a counter-proposal for Chiller Model CTX-1100 (Power Draw <= 1,150 kW, Width <= 1.85m) along with OSHA Form 300 by July 28, 2026.
+ACTION REQUIRED: Please submit a compliant alternative for Chiller Model CTX-1100 (Power Draw <= 1,150 kW, Width <= 1.85m) along with OSHA Form 300 by July 28, 2026.
 
 Regards,
-Procurement Enforcement Team (PO-lice)`
+Procurement Review Team (PO-LICE)`
   );
 
   const [isSent, setIsSent] = useState<boolean>(false);
@@ -41,7 +41,7 @@ Procurement Enforcement Team (PO-lice)`
   const handleHandoff = () => {
     setIsSent(true);
     if (onHandoffSuccess) {
-      onHandoffSuccess("[Jarvis handoff] Draft approved and queued for the configured workflow. No email or SMS is sent by this demo.");
+      onHandoffSuccess("Draft approved and queued for the configured workflow. No email or SMS is sent by this demo.");
     }
     setTimeout(() => {
       setIsSent(false);
@@ -55,10 +55,10 @@ Procurement Enforcement Team (PO-lice)`
         <div className="flex justify-between items-center pb-4 border-b border-[#1e293b] mb-4">
           <div>
             <div className="font-mono text-[11px] uppercase tracking-widest text-[#38bdf8] mb-0.5">
-              FEATURE_C // AUTOMATED_COUNTER_SPEC_RFI
+              REQUEST FOR INFORMATION
             </div>
             <h3 id="rfi-title" className="text-lg font-bold flex items-center gap-2">
-              ✉️ Counter-Spec RFI Email Drafter
+              ✉️ Request a compliant specification
             </h3>
           </div>
           <button
@@ -71,7 +71,7 @@ Procurement Enforcement Team (PO-lice)`
         </div>
 
         <p className="text-xs text-[#94a3b8] mb-3">
-          Generated automatically from Building & Green Patrol failure logs. Review or edit text before Jarvis handoff:
+          This draft cites engineering and carbon failures. Review or edit it before it enters the workflow.
         </p>
 
         <textarea
@@ -83,7 +83,7 @@ Procurement Enforcement Team (PO-lice)`
 
         <div className="flex justify-between items-center mt-5 pt-3 border-t border-[#1e293b]">
           <span className="text-xs text-[#94a3b8]">
-            Status: <strong className="text-[#818cf8]">Awaiting Human Approval</strong>
+            Status: <strong className="text-[#818cf8]">Awaiting approval</strong>
           </span>
 
           <button
@@ -91,7 +91,7 @@ Procurement Enforcement Team (PO-lice)`
             disabled={isSent}
             className="bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-[#090d16] font-bold text-xs px-5 py-2.5 rounded-lg shadow-lg hover:shadow-[#38bdf8]/20 transition-all flex items-center gap-2"
           >
-            {isSent ? "✓ Queued for workflow" : "Approve & queue for workflow"}
+            {isSent ? "✓ Queued" : "Approve and queue"}
           </button>
         </div>
       </div>

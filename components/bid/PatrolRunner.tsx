@@ -67,8 +67,8 @@ export default function PatrolRunner({
   return (
     <Card>
       <CardHeader
-        title="The Squad · Four Patrols"
-        caption="Every decision below is a real deterministic check. The LLM only supplied the numbers; the math draws the line."
+        title="Compliance checks"
+        caption="Each result is calculated from extracted bid data and fixed rules. AI does not decide pass or fail."
         right={
           revealed < ORDER.length ? (
             <span className="flex items-center gap-1.5 font-mono text-[11px] text-text/50">
@@ -176,7 +176,7 @@ export default function PatrolRunner({
                           {isTraffic && (
                             <li className="flex items-center gap-1.5 pt-1 text-[11px] text-text/55">
                               <span style={{ color: COLORS.blue }}>›</span>
-                              <span>sent to MCP Planner</span>
+                              <span>planning handoff pending</span>
                               <MockBadge />
                             </li>
                           )}

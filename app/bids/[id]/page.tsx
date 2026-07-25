@@ -29,7 +29,7 @@ export default function BidDetailPage({ params }: { params: { id: string } }) {
             href="/"
             className="mb-2 inline-flex items-center gap-1.5 text-xs text-text/50 hover:text-text"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Back to The Precinct
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to bids
           </Link>
           <h1 className="flex items-center gap-3 text-2xl font-bold tracking-tight text-text">
             {bid.vendor}
@@ -63,8 +63,7 @@ export default function BidDetailPage({ params }: { params: { id: string } }) {
 
       {isReject && (
         <div className="rounded-lg border border-red/25 bg-red/5 px-4 py-2.5 text-sm text-red/90 animate-pulseRed">
-          This bid contains hidden substitutions. Run the pipeline to see how one
-          swapped chiller cascades across five consequences.
+          This bid includes a substituted chiller. Review the extraction and checks to see the resulting engineering, carbon, and schedule exposure.
         </div>
       )}
 

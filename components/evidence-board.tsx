@@ -113,10 +113,10 @@ export default function EvidenceBoard({
       <div className="flex justify-between items-center mb-3">
         <div>
           <div className="font-mono text-[11px] uppercase tracking-widest text-[#38bdf8] mb-0.5">
-            EVIDENCE BOARD // TRACEABLE CONSEQUENCE MAP
+            IMPACT MAP
           </div>
           <h3 className="text-base font-bold flex items-center gap-2">
-            🌐 The Evidence Board ({selectedVendor})
+            🌐 Bid impact map
           </h3>
         </div>
         <span
@@ -126,12 +126,12 @@ export default function EvidenceBoard({
               : "bg-[#38bdf8]/15 text-[#38bdf8] border border-[#38bdf8]"
           }`}
         >
-          {isVendorB ? "Failure Cascade Path" : "Compliant Path"}
+          {isVendorB ? "Failures found" : "Checks passed"}
         </span>
       </div>
 
       <p className="text-xs text-[#94a3b8] mb-3">
-        Select a node to inspect the evidence path. This map supports human review; it does not make an award decision.
+        Select a finding to see its evidence and impact. This map supports review; it does not make an award decision.
       </p>
 
       {/* SVG Canvas */}
@@ -210,7 +210,7 @@ export default function EvidenceBoard({
         <div className="mt-3 bg-[#040711] p-3 rounded-lg border border-[#1e293b] flex items-center justify-between text-xs">
           <div>
             <span className="font-mono text-[#94a3b8] uppercase text-[10px] block mb-0.5">
-              EVIDENCE DETAIL // {selectedNodeObj.id}
+              Selected finding
             </span>
             <strong style={{ color: getNodeColor(selectedNodeObj.type) }}>
               {selectedNodeObj.label}

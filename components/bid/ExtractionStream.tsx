@@ -63,12 +63,11 @@ export default function ExtractionStream({
       <CardHeader
         title={
           <span className="flex items-center gap-2">
-            Document Intelligence →{" "}
-            <Tooltip term="Pydantic JSON">Pydantic JSON</Tooltip>
+            Extracted bid data
             <MockBadge label="LLM MOCKED" />
           </span>
         }
-        caption="The LLM reads the vendor PDF and emits a schema-validated object. Low-confidence fields are surfaced for a human — the math never trusts them blindly."
+        caption="AI extracts the vendor PDF into validated fields. Fields below the confidence threshold require review before they are used as evidence."
         right={
           done ? (
             <span className="font-mono text-[11px] text-green">✓ 10/10 fields</span>
@@ -111,9 +110,9 @@ export default function ExtractionStream({
                     </span>
                   )}
                   {low && (
-                    <Tooltip text="low confidence, surfaced for manual confirmation">
+                    <Tooltip text="low confidence; confirm before use">
                       <span className="ml-1 inline-flex items-center gap-1 rounded bg-amber/15 px-1.5 py-0.5 text-[10px] font-bold text-amber">
-                        <AlertTriangle className="h-2.5 w-2.5" /> human review
+                        <AlertTriangle className="h-2.5 w-2.5" /> review needed
                       </span>
                     </Tooltip>
                   )}
@@ -132,15 +131,15 @@ export default function ExtractionStream({
           >
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span>
-              <b>Human-in-the-loop:</b>{" "}
+              <b>Review required:</b>{" "}
               {bid.id === "B" ? (
                 <>
                   <code className="font-mono">power_draw_kw</code> was a handwritten
                   annotation on the spec sheet (confidence 0.72). It has been flagged
-                  for manual confirmation before the patrols treat it as ground truth.
+                  for confirmation before it is used as evidence.
                 </>
               ) : (
-                <>All fields cleared the 0.85 confidence threshold. No manual review required.</>
+                <>All fields cleared the 0.85 confidence threshold. No review is required.</>
               )}
             </span>
           </motion.div>

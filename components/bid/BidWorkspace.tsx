@@ -16,10 +16,10 @@ type Stage = "upload" | "extract" | "vlm" | "patrols" | "results";
 
 const PIPELINE = [
   { key: "upload", label: "Vendor PDF", Icon: FileText },
-  { key: "extract", label: "Doc Intelligence", Icon: ScanText },
-  { key: "json", label: "Pydantic JSON", Icon: Braces },
-  { key: "patrols", label: "The Squad", Icon: Users },
-  { key: "results", label: "The Docket", Icon: ClipboardList },
+  { key: "extract", label: "Extract data", Icon: ScanText },
+  { key: "json", label: "Validate data", Icon: Braces },
+  { key: "patrols", label: "Run checks", Icon: Users },
+  { key: "results", label: "Review results", Icon: ClipboardList },
 ] as const;
 
 // Map a stage to how far the pipeline strip has lit up.

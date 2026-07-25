@@ -47,7 +47,7 @@ export default function UploadDropzone({
         <div className="flex items-center gap-3 text-green">
           <FileText className="h-6 w-6" />
           <span className="font-mono text-sm">
-            {vendor}-bid.pdf received · starting document intelligence…
+            {vendor}-bid.pdf received · extracting bid data…
           </span>
         </div>
       ) : (

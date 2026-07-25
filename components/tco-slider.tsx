@@ -61,10 +61,10 @@ export default function TCOSlider({
       <div className="flex justify-between items-center mb-3">
         <div>
           <div className="font-mono text-[11px] uppercase tracking-widest text-[#38bdf8] mb-0.5">
-            SCENARIO_MODELING // DETERMINISTIC_RECALCULATION
+            COST SCENARIO
           </div>
           <h3 className="text-base font-bold flex items-center gap-2">
-            🎛️ Scenario Modeling — $TCO^2$
+            🎛️ 5-year total cost
           </h3>
         </div>
         <span
@@ -74,20 +74,20 @@ export default function TCOSlider({
               : "bg-[#38bdf8]/15 text-[#38bdf8] border border-[#38bdf8]"
           }`}
         >
-          {isReject ? "REJECTED BY TCO²" : "RECOMMENDED"}
+          {isReject ? "Not recommended" : "Recommended"}
         </span>
       </div>
 
       <p className="text-xs text-[#94a3b8] mb-4">
-        Test bounded commercial assumptions. The recommendation is evidence, not an approval decision. <span className={connection === "live" ? "text-[#38bdf8]" : "text-[#94a3b8]"}>[{connection === "live" ? "CONNECTED TO API" : "OFFLINE PREVIEW"}]</span>
+        Test commercial assumptions. This result informs review; it does not approve a purchase order. <span className={connection === "live" ? "text-[#38bdf8]" : "text-[#94a3b8]"}>[{connection === "live" ? "live calculation" : "demo calculation"}]</span>
       </p>
 
       <div className="space-y-4 bg-[#060a12] p-4 rounded-lg border border-[#1e293b] mb-4">
         {/* Discount Slider */}
         <div>
           <div className="flex justify-between text-xs font-medium mb-1">
-            <span>Vendor B Capex Discount: <strong className="text-[#38bdf8]">{discountPercent}%</strong></span>
-            <span className="text-[#94a3b8]">Base: ₹{baseCapexCr.toFixed(2)} Cr</span>
+            <span>Upfront discount: <strong className="text-[#38bdf8]">{discountPercent}%</strong></span>
+            <span className="text-[#94a3b8]">Base cost: ₹{baseCapexCr.toFixed(2)} Cr</span>
           </div>
           <input
             aria-label="Capex discount percentage"
@@ -103,7 +103,7 @@ export default function TCOSlider({
         {/* Delay Slider */}
         <div>
           <div className="flex justify-between text-xs font-medium mb-1">
-            <span>Promised Delivery Delay: <strong className="text-[#fbbf24]">{delayDays} Days</strong></span>
+            <span>Delivery delay: <strong className="text-[#fbbf24]">{delayDays} days</strong></span>
             <span className="text-[#94a3b8]">Penalty: ₹2.0L / Day</span>
           </div>
           <input
@@ -121,23 +121,23 @@ export default function TCOSlider({
       {/* Recalculation Results */}
       <div aria-live="polite" aria-atomic="true" className="grid grid-cols-4 gap-2 bg-[#040711] p-3.5 rounded-lg border border-[#1e293b] text-center">
         <div>
-          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">CAPEX</div>
+          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">Upfront cost</div>
           <div className="text-sm font-bold font-mono mt-0.5">₹{finalCapexCr.toFixed(2)}Cr</div>
         </div>
         <div>
-          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">RISK COST</div>
+          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">Delay cost</div>
           <div className="text-sm font-bold font-mono text-[#fbbf24] mt-0.5">₹{riskPenaltyCr.toFixed(2)}Cr</div>
         </div>
         <div>
-          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">5-YR TCO²</div>
+          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">5-year total</div>
           <div className={`text-sm font-bold font-mono mt-0.5 ${isReject ? "text-[#f43f5e]" : "text-[#38bdf8]"}`}>
             ₹{recalculatedTCO2.toFixed(2)}Cr
           </div>
         </div>
         <div>
-          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">DECISION</div>
+          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">Review result</div>
           <div className={`text-xs font-extrabold uppercase mt-1 ${isReject ? "text-[#f43f5e]" : "text-[#38bdf8]"}`}>
-            {isReject ? "REJECT" : "RECOMMEND"}
+            {isReject ? "Do not recommend" : "Recommend"}
           </div>
         </div>
       </div>

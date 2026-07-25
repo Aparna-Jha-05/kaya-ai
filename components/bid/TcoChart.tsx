@@ -22,7 +22,7 @@ export default function TcoChart({ data }: { data: Row[] }) {
   return (
     <div className="rounded-lg border border-white/10 bg-[#071510] p-4">
       <div className="mb-3 text-xs font-medium text-text/60">
-        Upfront cost vs 5-Year TCO² (₹ Cr) — lower is better
+        Upfront cost vs 5-year TCO² (₹ Cr) — lower is better
       </div>
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={data} barGap={6} barCategoryGap="28%">

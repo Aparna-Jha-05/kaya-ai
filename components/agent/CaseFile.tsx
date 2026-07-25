@@ -47,21 +47,21 @@ export default function CaseFile({ bid }: { bid: Bid }) {
     setApproved(true);
     appendAudit({
       bid: bid.vendor,
-      patrol: "Case Files (agent)",
+      patrol: "RFI draft",
       action: "EMAIL DRAFTED & APPROVED",
       rule: `missing_doc = "${MISSING_DOC}"`,
       evidence: `PO ${bid.po_number} · deadline ${deadlineStr()}`,
     });
   };
 
-  const handToJarvis = () => {
+  const queueWorkflow = () => {
     setHanded(true);
     setToast(true);
     appendAudit({
       bid: bid.vendor,
-      patrol: "Jarvis handoff",
-      action: "HANDED TO JARVIS (mock)",
-      rule: "PO-lice detects, Jarvis acts",
+      patrol: "Workflow handoff",
+      action: "QUEUED FOR WORKFLOW (demo)",
+      rule: "Reviewer-approved RFI",
       evidence: `dispatch email re: ${MISSING_DOC}`,
     });
     setTimeout(() => setToast(false), 4000);
@@ -72,10 +72,10 @@ export default function CaseFile({ bid }: { bid: Bid }) {
       <CardHeader
         title={
           <span className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-violet" /> Case Files · Agent Draft
+            <Mail className="h-4 w-4 text-violet" /> RFI draft
           </span>
         }
-        caption="Triggered because the submitted safety certificate is missing. The system drafts; a human approves the workflow handoff."
+        caption="The submitted safety certificate is missing. Review and approve the draft before it enters the workflow."
         right={<MockBadge label="AGENT" />}
       />
       <div className="p-4">
@@ -98,7 +98,7 @@ export default function CaseFile({ bid }: { bid: Bid }) {
           </button>
 
           <button
-            onClick={handToJarvis}
+            onClick={queueWorkflow}
             disabled={!approved || handed}
             className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               !approved
@@ -109,12 +109,10 @@ export default function CaseFile({ bid }: { bid: Bid }) {
             }`}
           >
             <Bot className="h-4 w-4" />
-            {handed ? "Handed to Jarvis" : "Hand to Jarvis"}
+            {handed ? "Queued for workflow" : "Queue for workflow"}
           </button>
 
-          <span className="text-xs text-text/40">
-            PO-lice detects, Jarvis acts.
-          </span>
+          <span className="text-xs text-text/40">No message is sent in this demo.</span>
         </div>
       </div>
 
@@ -130,7 +128,7 @@ export default function CaseFile({ bid }: { bid: Bid }) {
             <CheckCircle2 className="h-5 w-5 text-green" />
             <div>
               <div className="flex items-center gap-2 text-sm font-medium text-text">
-                Jarvis accepted the handoff <MockBadge />
+                Workflow item queued <MockBadge />
               </div>
               <div className="text-xs text-text/50">
                 Email queued for dispatch to {bid.vendor}. Human sign-off logged.

@@ -38,7 +38,7 @@ function buildGraph(bid: Bid): { nodes: GNode[]; edges: GEdge[] } {
     return {
       nodes: [
         n("root", 20, 40, "Bid PDF matches the site spec", COLORS.green, "SOURCE"),
-        n("ok", 340, 40, "All four patrols cleared — no downstream consequences", COLORS.green, "RESULT"),
+        n("ok", 340, 40, "All checks passed — no downstream impact", COLORS.green, "RESULT"),
       ],
       edges: [e("root", "ok", COLORS.green)],
     };
@@ -111,8 +111,8 @@ export default function EvidenceBoard({ bid }: { bid: Bid }) {
   return (
     <Card>
       <CardHeader
-        title="The Evidence Board"
-        caption="How one substituted chiller cascades into engineering, carbon, vendor and schedule consequences. Read each path left to right: cause → effect → action."
+        title="Impact path"
+        caption="How the submitted equipment affects engineering, carbon, vendor, and schedule outcomes. Read left to right: finding, impact, action."
       />
       <div className="terminal-grid overflow-x-auto rounded-b-xl p-4">
         <div className="relative mx-auto" style={{ width, height, minWidth: width }}>

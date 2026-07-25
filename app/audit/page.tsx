@@ -26,7 +26,7 @@ function seed() {
     if (!bid.has_safety_cert) {
       appendAudit({
         bid: bid.vendor,
-        patrol: "Case Files (agent)",
+        patrol: "RFI draft",
         action: "EMAIL DRAFTED",
         rule: 'missing_doc = "OSHA-style Safety Certificate"',
         evidence: `PO ${bid.po_number}`,
@@ -60,11 +60,10 @@ export default function AuditPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-text">
-            <Lock className="h-5 w-5 text-green" /> Immutable Audit Log
+            <Lock className="h-5 w-5 text-green" /> Audit trail
           </h1>
           <p className="mt-1 text-sm text-text/50">
-            Session audit trail. Every patrol decision and workflow action is timestamped for review.
-            Humans decide; PO-LICE provides the evidence trail.
+            Every check and workflow action is timestamped for review.
           </p>
         </div>
         <button
@@ -78,10 +77,10 @@ export default function AuditPage() {
       <Card>
         <CardHeader
           title={`${rows.length} logged events`}
-          caption="This store lives in memory and resets on refresh — a real deployment would write to an append-only ledger."
+          caption="Demo data is stored in memory and resets on refresh."
           right={
             <Link href="/bids/B" className="text-xs text-blue hover:underline">
-              walk Vendor B →
+              review Vendor B →
             </Link>
           }
         />
