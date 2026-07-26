@@ -27,16 +27,16 @@ function exportCsv(rows: ActivityEvent[]) {
   URL.revokeObjectURL(url);
 }
 
-function passFailCell(value: "PASS" | "FAIL") {
+function passFailCell(value: "PASS" | "FAIL" | "FLAG") {
   return (
-    <span className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${value === "FAIL" ? "bg-rose/15 text-rose" : "bg-cyan/10 text-cyan"}`}>
+    <span className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${value === "FAIL" ? "bg-rose/15 text-rose" : value === "FLAG" ? "bg-amber/15 text-amber" : "bg-cyan/10 text-cyan"}`}>
       {value}
     </span>
   );
 }
 
-function riskCell(value: "Low" | "Med" | "High") {
-  const color = value === "High" ? "text-rose" : value === "Med" ? "text-amber" : "text-cyan";
+function riskCell(value: "Low" | "Med" | "High" | "Unknown") {
+  const color = value === "High" ? "text-rose" : value === "Low" ? "text-cyan" : "text-amber";
   return <span className={`font-mono text-xs font-semibold ${color}`}>{value}</span>;
 }
 
@@ -101,12 +101,12 @@ export default function AuditPage() {
                 scorecards.map((row) => (
                   <tr key={row.id} className="border-b border-white/5 align-middle hover:bg-white/[0.02]">
                     <td className="px-4 py-3 font-medium text-text">{row.vendor}</td>
-                    <td className="px-4 py-3 font-mono text-text/80">₹{row.upfront_cost_cr.toFixed(2)} Cr</td>
+                    <td className="px-4 py-3 font-mono text-text/80">{row.upfront_cost_cr == null ? "—" : `₹${row.upfront_cost_cr.toFixed(2)} Cr`}</td>
                     <td className="px-4 py-3">{passFailCell(row.engineering)}</td>
                     <td className="px-4 py-3">{passFailCell(row.carbon)}</td>
                     <td className="px-4 py-3">{riskCell(row.vendorRisk)}</td>
                     <td className="px-4 py-3">{riskCell(row.scheduleRisk)}</td>
-                    <td className="px-4 py-3 font-mono text-text/80">₹{row.tco2_cr.toFixed(2)} Cr</td>
+                    <td className="px-4 py-3 font-mono text-text/80">{row.tco2_cr == null ? "—" : `₹${row.tco2_cr.toFixed(2)} Cr`}</td>
                     <td className="px-4 py-3">{decisionCell(row.decision)}</td>
                   </tr>
                 ))
