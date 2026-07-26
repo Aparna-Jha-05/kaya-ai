@@ -14,7 +14,7 @@ export default function ReviewQueuePage() {
           <p className="page-eyebrow">Review queue</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-text">Bid review queue</h1>
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-text/50">
-            IIT Smart Campus Phase 1 · chilled-water plant. Open a bid for evidence, or compare bids side by side.
+            Automated pre-approval compliance evaluation across building constraints, carbon budgets, vendor reliability, and schedule impact.
           </p>
         </div>
         <Link href="/bids/new" className="inline-flex items-center justify-center gap-2 rounded-lg bg-cyan/15 px-4 py-2 text-sm font-semibold text-cyan transition-colors hover:bg-cyan/25">
