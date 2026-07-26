@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ClipboardCheck, FileText, Search, ShieldAlert, X } from "lucide-react";
+import { ClipboardCheck, FilePlus2, FileText, Search, ScrollText, X } from "lucide-react";
 
 type Command = {
   label: string;
@@ -14,10 +14,8 @@ type Command = {
 const COMMANDS: Command[] = [
   { label: "Open work queue", href: "/", Icon: ClipboardCheck },
   { label: "Compare bids", href: "/bids", Icon: FileText },
-  { label: "Review Vendor A", hint: "⌘1", href: "/bids/A", Icon: FileText },
-  { label: "Review Vendor B", hint: "⌘2", href: "/bids/B", Icon: ShieldAlert },
-  { label: "Review Vendor C", hint: "⌘3", href: "/bids/C", Icon: FileText },
-  { label: "Open Vendor B action", hint: "⌘R", href: "/bids/B", Icon: ShieldAlert },
+  { label: "Upload a bid", hint: "⌘U", href: "/bids/new", Icon: FilePlus2 },
+  { label: "Open activity log", href: "/audit", Icon: ScrollText },
 ] as const;
 
 export default function CommandPalette() {
@@ -38,7 +36,7 @@ export default function CommandPalette() {
       if (modifier && event.key.toLowerCase() === "k") { event.preventDefault(); setOpen((current) => !current); return; }
       if (!modifier) { if (event.key === "Escape") setOpen(false); return; }
       const shortcut = event.key.toLowerCase();
-      const command = shortcut === "1" ? COMMANDS[2] : shortcut === "2" ? COMMANDS[3] : shortcut === "3" ? COMMANDS[4] : shortcut === "r" ? COMMANDS[5] : undefined;
+      const command = shortcut === "u" ? COMMANDS[2] : undefined;
       if (command) { event.preventDefault(); run(command.href); }
     }
     window.addEventListener("keydown", handleKeyDown);

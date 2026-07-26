@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { procurementApi } from "@/lib/api";
 
 interface RFIModalProps {
   isOpen: boolean;
   onClose: () => void;
   vendorName?: string;
+  bidId?: string;
+  findings?: string[];
   onHandoffSuccess?: (logMsg: string) => void;
 }
 
@@ -13,39 +16,52 @@ export default function RFIModal({
   isOpen,
   onClose,
   vendorName = "CoolTech Global Solutions",
+  bidId,
+  findings = [],
   onHandoffSuccess,
 }: RFIModalProps) {
-  const [emailBody, setEmailBody] = useState<string>(
-    `Subject: Request for information — revised specification and safety certificate
+  const draft = `Subject: Request for information — bid clarification
 
 Dear ${vendorName},
 
-Your submitted commercial and technical bid requires clarification on the following project requirements:
-- Substation Power Draw: 1,400 kW exceeds site limit of 1,200 kW by 200 kW.
-- Embodied Carbon: 540 kgCO2e exceeds project carbon cap of 450 kgCO2e.
-- Equipment Width: 2.10m exceeds site door clearance of 1.90m.
-- Safety Certificate: OSHA Form 300 is currently missing.
+Please address the following recorded review findings:
+${findings.length ? findings.map((finding) => `- ${finding}`).join("\n") : "- Please provide the information needed to complete the bid review."}
 
-ACTION REQUIRED: Please submit a compliant alternative and the required safety certificate by July 28, 2026.
+Please submit the supporting information and, where applicable, a compliant revised specification.
 
 Regards,
-Procurement Review Team (PO-LICE)`
-  );
+Procurement Review Team`;
+  const [emailBody, setEmailBody] = useState<string>(draft);
 
   const [isSent, setIsSent] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    closeRef.current?.focus();
+    setEmailBody(draft);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !isSent) onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [draft, isOpen, isSent, onClose]);
+
+  const handleHandoff = async () => {
+    setError("");
+    setIsSent(true);
+    try {
+      if (bidId) await procurementApi.action(bidId, "RFI_DRAFT_APPROVED", emailBody);
+      if (onHandoffSuccess) onHandoffSuccess("Draft approval recorded.");
+      onClose();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not record the RFI draft approval.");
+      setIsSent(false);
+    }
+  };
 
   if (!isOpen) return null;
-
-  const handleHandoff = () => {
-    setIsSent(true);
-    if (onHandoffSuccess) {
-      onHandoffSuccess("RFI draft reviewed and recorded in the activity log.");
-    }
-    setTimeout(() => {
-      setIsSent(false);
-      onClose();
-    }, 1500);
-  };
 
   return (
     <div className="fixed inset-0 bg-[#090d16]/80 backdrop-blur-md z-50 flex items-center justify-center p-4" role="presentation" onMouseDown={onClose}>
@@ -56,10 +72,11 @@ Procurement Review Team (PO-LICE)`
               REQUEST FOR INFORMATION
             </div>
             <h3 id="rfi-title" className="text-lg font-bold flex items-center gap-2">
-              Request a revised specification
+              Request information
             </h3>
           </div>
           <button
+            ref={closeRef}
             onClick={onClose}
             aria-label="Close RFI draft"
             className="text-[#94a3b8] hover:text-white text-sm px-2 py-1 rounded border border-[#1e293b] hover:bg-[#1f2937]"
@@ -69,7 +86,7 @@ Procurement Review Team (PO-LICE)`
         </div>
 
         <p className="text-xs text-[#94a3b8] mb-3">
-          This editable draft cites the recorded findings. Review it before recording the reviewer action.
+          This editable draft is built from recorded findings. Review and edit it before recording approval.
         </p>
 
         <textarea
@@ -81,17 +98,18 @@ Procurement Review Team (PO-LICE)`
 
         <div className="flex justify-between items-center mt-5 pt-3 border-t border-[#1e293b]">
           <span className="text-xs text-[#94a3b8]">
-            Status: <strong className="text-[#818cf8]">Awaiting reviewer approval</strong>
+            Status: <strong className="text-[#818cf8]">Draft ready for review</strong>
           </span>
 
           <button
-            onClick={handleHandoff}
+            onClick={() => void handleHandoff()}
             disabled={isSent}
             className="bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-[#090d16] font-bold text-xs px-5 py-2.5 rounded-lg shadow-lg hover:shadow-[#38bdf8]/20 transition-all flex items-center gap-2"
           >
-            {isSent ? "✓ Recorded" : "Record reviewed draft"}
+            {isSent ? "Recording…" : "Record RFI approval"}
           </button>
         </div>
+        {error && <p role="alert" className="mt-3 text-xs text-[#f43f5e]">{error}</p>}
       </div>
     </div>
   );

@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, FileSearch, Network, ShieldCheck, ScrollText } from "lucide-react";
 import { Bid, FIELD_CONFIDENCE } from "@/lib/mockData";
 import { runAllPatrols } from "@/lib/patrols";
 import { COLORS, PATROL_META, REVIEW_STATE } from "@/lib/constants";
-import { getAudit, subscribeAudit } from "@/lib/audit";
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import EvidenceBoard from "@/components/bid/EvidenceBoard";
 import CADVisualizer from "@/components/cad-visualizer";
-import CaseFile from "@/components/agent/CaseFile";
-import BidFlowState from "@/components/bid/BidFlowState";
 import { integritySignal, marketSignal } from "@/lib/integrity";
 
 type Tab = "decision" | "evidence" | "checks" | "consequences" | "activity";
@@ -39,7 +36,6 @@ export default function BidReviewWorkspace({ bid }: { bid: Bid }) {
   const [inspected, setInspected] = useState<{ title: string; detail: string; rule: string } | null>(null);
   const results = useMemo(() => runAllPatrols(bid), [bid]);
   const reviewState = REVIEW_STATE[bid.recommendation];
-  const flowStep: Record<Tab, number> = { evidence: 1, checks: 2, consequences: 2, decision: 3, activity: 3 };
 
   return (
     <div className="space-y-5">
@@ -60,8 +56,6 @@ export default function BidReviewWorkspace({ bid }: { bid: Bid }) {
           </div>
         </div>
       </section>
-
-      <BidFlowState activeStep={flowStep[tab]} />
 
       <div className="overflow-x-auto border-b border-white/10">
         <div role="tablist" aria-label="Bid review sections" className="flex min-w-max gap-1">
@@ -103,7 +97,7 @@ function DecisionTab({ bid, results }: { bid: Bid; results: ReturnType<typeof ru
           {Object.values(results).map((result) => <PatrolBadge key={result.key} status={result.status} />)}
         </div>
       </Card>
-      {bid.id === "B" ? <CaseFile bid={bid} /> : <Card><CardHeader title="Reviewer action" caption="No action has been recorded for this demonstration bid." /><div className="p-4 text-sm text-text/60">Record an approval, rejection, or escalation only after confirming the cited evidence and applicable procurement policy.</div></Card>}
+      <Card><CardHeader title="Reviewer action" caption="Sample fallback cannot record a reviewer action." /><div className="p-4 text-sm text-text/60">Reconnect the bid service and open a persisted bid to review an RFI draft or record a human decision.</div></Card>
     </div>
   );
 }
@@ -157,9 +151,7 @@ function PatrolEnhancements({ bid, patrol }: { bid: Bid; patrol: "building" | "g
 }
 
 function ActivityTab({ bid }: { bid: Bid }) {
-  const rows = useSyncExternalStore(subscribeAudit, getAudit, () => []);
-  const matched = rows.filter((row) => row.bid === bid.vendor);
-  return <Card><CardHeader title="Bid activity" caption="Check and reviewer events for this bid. The complete record is in the activity log." />{matched.length ? <ul className="divide-y divide-white/5">{matched.map((row, index) => <li key={`${row.timestamp}-${index}`} className="px-4 py-3"><p className="text-sm text-text/80">{row.action} <span className="text-text/40">· {row.patrol}</span></p><p className="mt-1 text-xs text-text/50">{row.evidence}</p></li>)}</ul> : <p className="p-5 text-sm text-text/55">No bid-specific events have been recorded in this browser session.</p>}</Card>;
+  return <Card><CardHeader title="Bid activity" caption="Sample fallback does not retain activity." /><p className="p-5 text-sm text-text/55">Reconnect the activity service and open a persisted bid to view server-recorded events.</p></Card>;
 }
 
 function EvidenceDrawer({ evidence, onClose }: { evidence: { title: string; detail: string; rule: string }; onClose: () => void }) {

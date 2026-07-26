@@ -48,31 +48,31 @@ function buildGraph(bid: Bid): { nodes: GNode[]; edges: GEdge[] } {
   }
 
   const nodes: GNode[] = [
-    n("root", 20, 210, "Chiller model substituted — looks equivalent in the bid PDF", COLORS.rose, "ROOT CAUSE"),
+    n("root", 20, 210, "Chiller model substituted in the bid PDF", COLORS.rose, "CAUSE"),
 
-    n("p1", 320, 20, "Power draw +10% (1400 kW)", COLORS.rose, "SIGNAL", [{ label: "Site constraint source", value: "Retained project snapshot" }, { label: "Constraint", value: "1,400 kW > 1,200 kW substation limit" }]),
+    n("p1", 320, 20, "Power draw +10% (1,400 kW)", COLORS.rose, "EVIDENCE", [{ label: "Site constraint source", value: "Retained project snapshot" }, { label: "Constraint", value: "1,400 kW > 1,200 kW substation limit" }]),
     n("p2", 620, 20, "Electrical panel redesign", COLORS.rose, "ENGINEERING"),
-    n("p3", 920, 20, "Do not select; request revision", COLORS.rose, "ACTION"),
+    n("p3", 920, 20, "Do not select; request revision", COLORS.rose, "CONSEQUENCE"),
 
-    n("w1", 320, 118, "Water usage +15% (460 gpm)", COLORS.amber, "SIGNAL", [{ label: "Carbon evidence", value: "920,000 kgCO₂e exceeds the project budget" }]),
+    n("w1", 320, 118, "Water usage +15% (460 gpm)", COLORS.amber, "EVIDENCE", [{ label: "Carbon evidence", value: "920,000 kgCO₂e exceeds the project budget" }]),
     n("w2", 620, 118, "Sustainability + cooling risk", COLORS.amber, "CARBON"),
-    n("w3", 920, 118, "Carbon / OPEX penalty", COLORS.amber, "ACTION"),
+    n("w3", 920, 118, "Carbon and operating-cost penalty", COLORS.amber, "CONSEQUENCE"),
 
-    n("f1", 320, 216, "Floor load +8% (1620 kg/m²)", COLORS.rose, "SIGNAL"),
+    n("f1", 320, 216, "Floor load +8% (1,620 kg/m²)", COLORS.rose, "EVIDENCE"),
     n("f2", 620, 216, "Structural tolerance breach", COLORS.rose, "STRUCTURAL"),
-    n("f3", 920, 216, "Hard fail", COLORS.rose, "ACTION"),
+    n("f3", 920, 216, "Hard failure", COLORS.rose, "CONSEQUENCE"),
 
-    n("s1", 320, 314, "Vendor late 3 of 5 deliveries", COLORS.violet, "SIGNAL"),
-    n("s2", 620, 314, "ROJ window risk", COLORS.blue, "SCHEDULE"),
-    n("s3", 920, 314, "Schedule contingency", COLORS.blue, "ACTION"),
+    n("s1", 320, 314, "Vendor late on 3 of 5 deliveries", COLORS.violet, "EVIDENCE"),
+    n("s2", 620, 314, "Required-on-job date risk", COLORS.blue, "SCHEDULE"),
+    n("s3", 920, 314, "Schedule contingency", COLORS.blue, "CONSEQUENCE"),
 
-    n("c1", 320, 412, "Missing safety certificate", COLORS.rose, "SIGNAL"),
-    n("c2", 620, 412, "Compliance hold", COLORS.rose, "LEGAL"),
-    n("c3", 920, 412, "Legal / procurement flag", COLORS.rose, "ACTION"),
+    n("c1", 320, 412, "Missing safety certificate", COLORS.rose, "EVIDENCE"),
+    n("c2", 620, 412, "Compliance hold", COLORS.rose, "DOCUMENT"),
+    n("c3", 920, 412, "Procurement review required", COLORS.rose, "CONSEQUENCE"),
 
-    n("i1", 320, 510, `Vendor record score ${integrity.aci}/100`, COLORS.violet, "VENDOR RECORD", integrity.metadata),
+    n("i1", 320, 510, `Vendor record score ${integrity.aci}/100`, COLORS.violet, "VENDOR HISTORY", integrity.metadata),
     n("i2", 620, 510, "Reviewer checks supporting records", COLORS.violet, "REVIEW"),
-    n("i3", 920, 510, "Use as context, not proof", COLORS.amber, "GUARDRAIL"),
+    n("i3", 920, 510, "Context only; not compliance proof", COLORS.amber, "INTERPRETATION"),
   ];
 
   const edges: GEdge[] = [
@@ -125,7 +125,6 @@ export default function EvidenceBoard({ bid }: { bid: Bid }) {
       <CardHeader
         title="Downstream impact"
         caption="See how the proposed substitute affects engineering, carbon, vendor reliability, documents, and schedule. Select a node for evidence."
-        right={bid.id === "B" ? <span className="rounded border border-blue/30 bg-blue/10 px-2 py-1 text-[10px] font-mono text-blue">Post-award changes require re-validation</span> : undefined}
       />
       <div className="terminal-grid overflow-x-auto rounded-b-xl p-4">
         <div className="relative mx-auto" style={{ width, height, minWidth: width }}>
@@ -188,12 +187,12 @@ export default function EvidenceBoard({ bid }: { bid: Bid }) {
               }}
             >
               <div
-                className="mb-0.5 font-mono text-[9px] font-bold uppercase tracking-wider"
+                className="mb-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.06em]"
                 style={{ color: nd.color }}
               >
                 {nd.kind}
               </div>
-              <div className="text-[11.5px] leading-snug text-text/85">{nd.label}</div>
+              <div className="text-xs leading-snug text-text/85">{nd.label}</div>
             </button>
           ))}
         </div>

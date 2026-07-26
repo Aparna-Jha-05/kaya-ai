@@ -22,14 +22,47 @@ body {
   color: var(--text);
 }
 
+html {
+  /* Preserve readable proportions when users increase their browser type size. */
+  font-size: 100%;
+}
+
 :focus-visible {
   outline: 2px solid var(--cyan);
   outline-offset: 3px;
 }
 
 body {
+  font-size: 0.9375rem;
+  line-height: 1.5;
   font-feature-settings: "cv11", "ss01";
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* Dense uppercase utility text remains legible on standard laptop displays. */
+.ui-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+}
+
+/* Code and machine values need a little more leading than prose at small sizes. */
+code,
+kbd,
+.font-mono {
+  font-variant-numeric: tabular-nums slashed-zero;
 }
 
 /* Thin slate scrollbars keep dense review tables visually quiet. */
