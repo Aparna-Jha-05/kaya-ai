@@ -1,95 +1,99 @@
-# AGENTS.md — PO-lice Developer & AI Agent Guidelines
+# AGENTS.md — PO-lice Developer and Agent Guide
 
-> **Project Name**: PO-lice (Purchase Order Liability, Intelligence & Compliance Engine)  
+> **Project**: PO-lice (Purchase Order Liability, Intelligence & Compliance Engine)
 > **Hackathon**: Kaya AI IIT India Hackathon 2026 — Track 3: Procurement  
-> **Team**: TensorTruss (IIT Madras) — Jb Anmol, Pratham Amritkar, Aparna Jha  
 > **Repository**: `git@github.com:Aparna-Jha-05/kaya-ai.git`
 
----
+## Non-negotiable architecture rule
 
-## 🎯 Core Golden Rule & Philosophy
+> **LLM / VLM extracts and explains; deterministic SQL and math validate.**
 
-> **"LLM / VLM extracts and explains; deterministic SQL and math validate."**
+- Generative models may extract candidate facts or improve wording. They must never set engineering limits, calculate compliance outcomes, or change `PASS` / `FAIL` / `FLAG`.
+- Missing or uncertain evidence is `FLAG`, never an inferred value or silent `PASS`.
+- Every decision must be reproducible from stored evidence, units, rule inputs, constraint version, and engine version.
+- Human approval, rejection, correction, and dispatch are separate, audited actions.
 
-1. **Zero Hallucination Engineering Compliance**: Never allow an LLM or generative model to vote or guess on engineering limits, substation power caps, or carbon allocations.
-2. **Boundary Architecture**:
-   - **Cognitive Extraction Layer**: Open-source LLMs (Mistral / LLaVA) & PyMuPDF extract unstructured PDF text, tables, and 2D CAD blueprint coordinates $\rightarrow$ validated Pydantic JSON.
-   - **Deterministic Judgment Layer**: PostgreSQL SQL queries & Python math run strict inequalities against Amber's Project Graph $\rightarrow$ PASS / FAIL / FLAG decision with exact evidence proof.
-   - **Human Action Layer**: Procurement officers approve, reject, or request counter-spec RFIs with full evidence trails.
+## Source-of-truth order
 
----
+Use this order when documents disagree:
 
-## 📂 Repository Directory Map
+1. Executed code and assertion-based tests describe current behavior.
+2. Accepted OpenSpec artifacts describe intended behavior.
+3. `README.md` describes the demo and setup.
+4. `docs/PO-LICE.pdf` is the original concept document. It contains aspirational architecture and must not be used as proof that a feature is wired.
 
-```
-po-lice/
-├── AGENTS.md                  # This file - instructions for AI agents & contributors
-├── README.md                  # Master documentation & demo walkthrough
-├── docs/                      # Official project documentation
-│   └── PO-LICE.pdf            # Master 20-page Hackathon proposal document
-├── backend/                   # FastAPI Python 3.11+ Server
-│   ├── main.py                # REST API entrypoint (/api/v1/bids/upload, /api/v1/agent/rfi-draft)
-│   └── app/
-│       ├── models/
-│       │   └── schemas.py     # Pydantic JSON schemas (VendorBidExtract, PatrolResult, DocketScorecard)
-│       └── services/
-│           ├── extractor.py   # PyMuPDF text & regex spec parser
-│           └── patrols.py     # Deterministic 4 Patrols engine (Building, Green, Vice, Traffic)
-├── app/                       # Next.js 14 App Router UI (The Precinct Dashboard)
-├── components/                # React components (Docket table, Evidence Board SVG, Case Files)
-├── lib/                       # Next.js utilities (patrols.ts, tco.ts, mockData.ts)
-└── scripts/                   # Fixture seeders & testing harnesses
-    ├── seed_demo_data.py      # Generates synthetic vendor bid PDFs in scripts/fixtures/
-    └── test_pipeline.py       # End-to-end compliance engine test script
+The active backend proposals are:
+
+- `openspec/changes/robust-supabase-backend/`
+- `openspec/changes/multi-provider-pdf-extraction/`
+
+Validate it with:
+
+```bash
+openspec list --json
+openspec validate robust-supabase-backend --strict
+openspec validate multi-provider-pdf-extraction --strict
 ```
 
----
+Do not mark an OpenSpec task complete from static inspection alone.
 
-## 🛡️ The Four Patrols Specification
+## Current backend reality
 
-| Patrol | Check Type | Logic / Method | Output |
-| :--- | :--- | :--- | :--- |
-| **Patrol 1: Building Patrol** | Engineering SQL | Substation power limit ($\le 1200\text{ kW}$) & Door width clearance ($\le 1.9\text{ m}$) | PASS / FAIL |
-| **Patrol 2: Green Patrol** | Carbon Budget SQL | Embodied carbon EPD factor lookup ($\le 450\text{ kgCO2e}$) | PASS / FAIL |
-| **Patrol 3: Vice Squad** | Vendor RAG Memory | `pgvector` hybrid search over historical contracts & dispute counts | Risk Score (1–10) / FLAG |
-| **Patrol 4: Traffic Control** | Schedule Ripple | NetworkX DAG + Bayesian Monte Carlo delay slip ($\text{₹}2.0\text{L/day}$ penalty) | 5-Yr $TCO^2$ / FLAG |
+As of the current checkout:
 
----
+- FastAPI exposes `POST /api/v1/bids/upload` and `POST /api/v1/bids/simulate`.
+- PDF extraction is PyMuPDF plus conservative regex parsing.
+- Patrol decisions use in-process Python rules and hard-coded `ConstraintGraph` values.
+- duplicate/integrity correlation is process-local memory and resets on restart.
+- the dashboard still uses `lib/mockData.ts` for most screens and actions.
+- Supabase persistence, authentication, RLS, RFI persistence/approval, list/detail APIs, site-constraint updates, and durable audit logs are planned, not implemented.
 
-## 🎨 Visual Design Language Tokens (Cohere & Supabase Theme)
+Never describe the current prototype as having MinIO storage, live RAG, database-backed patrols, immutable audit storage, VLM CAD extraction, Jarvis dispatch, or Kaya/Amber integration unless runtime evidence is added.
 
-| Token | Hex Code | Usage |
-| :--- | :--- | :--- |
-| **Deep Canvas** | `#090D16` | Main obsidian dark slate canvas |
-| **Cards & Panels** | `#111827` | Elevated dark chrome surfaces with `#1E293B` micro-borders |
-| **Primary Accent (PASS)** | `#38BDF8` | **Electric Cyan** for PASS badges & primary actions *(Zero green)* |
-| **Vice / RAG Accent** | `#818CF8` | **Indigo Violet** for Vice Squad RAG memory & Jarvis agent logs |
-| **Green Patrol Accent** | `#FBBF24` | **Amber Gold** for Green Patrol warnings & $TCO^2$ highlights |
-| **Alert / Breach Accent** | `#F43F5E` | **Rose Red** for FAIL badges, hard rejects, and door limit breaches |
+## Repository routing
 
----
+```text
+backend/                       FastAPI boundary and deterministic engine
+backend/AGENTS.md              Backend-specific contracts and guardrails
+app/, components/, lib/        Next.js dashboard and current mock client state
+openspec/changes/              Proposed behavior and implementation tasks
+.github/workflows/ci.yml       Required cross-stack pull-request checks
+render.yaml                    Backend staging deployment after CI checks pass
+scripts/test_pipeline.py       Smoke/demo runner; currently prints rather than asserts
+docs/PO-LICE.pdf               Concept document, not implementation evidence
+```
 
-## 🧪 Verification & Development Workflow
+Read the nearest `AGENTS.md` before changing files in a subdirectory.
 
-### 1. Test Backend Pipeline
+## Working rules
+
+- Inspect callers and frontend consumers before changing a schema or endpoint.
+- Prefer one canonical model per API concept; do not maintain independent Python and TypeScript decision logic after API wiring.
+- Keep database access behind a small repository/service boundary. Patrol math should remain testable without HTTP.
+- Reuse the existing Pydantic models and services before adding abstractions or dependencies.
+- Preserve user changes in this dirty worktree. Do not commit ignored `docs/`, local agent configuration, caches, `.env` files, generated PDFs, or fixture output unless explicitly requested.
+- Never put credentials, vendor documents, bid contents, personal data, or secrets in logs, fixtures, audit evidence, prompts, or commits.
+
+## Verification
+
+Baseline commands:
+
 ```bash
 python3 scripts/seed_demo_data.py
-PYTHONPATH=backend python3 scripts/test_pipeline.py
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=backend python3 scripts/test_pipeline.py
+npm run build
 ```
 
-### 2. Run Backend Server
-```bash
-uvicorn backend.main:app --reload --port 8000
-```
+The pipeline script is only a smoke check until it contains assertions. For backend changes, add the smallest runnable assertion-based test covering the changed rule or contract. Report separately:
 
-### 3. Run Frontend Server
-```bash
-npm run dev
-```
+- static validation,
+- smoke execution,
+- assertion-based tests,
+- database/integration evidence,
+- frontend end-to-end evidence.
 
----
+## Team ownership
 
-## 👥 Team Roles & Responsibilities
-- **Jb Anmol**: Full-Stack & Extraction Lead (FastAPI, PyMuPDF, Next.js dashboard, monorepo orchestration).
-- **Pratham Amritkar**: Core Technical Lead — RAG & AI Systems (`pgvector`, `nomic-embed-text`, LlamaIndex, similarity search).
-- **Aparna Jha**: Research, Domain Specs & QA Lead (BIM site limits, EPD carbon benchmarks, patrol accuracy validation).
+- **Jb Anmol**: full-stack, extraction, and monorepo orchestration.
+- **Pratham Amritkar**: RAG and AI systems.
+- **Aparna Jha**: domain specifications and QA.
