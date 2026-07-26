@@ -64,11 +64,11 @@ Procurement Review Team`;
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#090d16]/80 backdrop-blur-md z-50 flex items-center justify-center p-4" role="presentation" onMouseDown={onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="rfi-title" className="bg-[#111827] border border-[#1e293b] rounded-xl w-full max-w-2xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200" onMouseDown={(event) => event.stopPropagation()}>
-        <div className="flex justify-between items-center pb-4 border-b border-[#1e293b] mb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80 p-4 backdrop-blur-md" role="presentation" onMouseDown={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="rfi-title" className="w-full max-w-2xl rounded-xl border border-line bg-card p-6 shadow-2xl animate-in fade-in zoom-in duration-200" onMouseDown={(event) => event.stopPropagation()}>
+        <div className="mb-4 flex items-center justify-between border-b border-line pb-4">
           <div>
-            <div className="font-mono text-[11px] uppercase tracking-widest text-[#38bdf8] mb-0.5">
+            <div className="mb-0.5 font-mono text-[11px] uppercase tracking-widest text-cyan">
               REQUEST FOR INFORMATION
             </div>
             <h3 id="rfi-title" className="text-lg font-bold flex items-center gap-2">
@@ -79,13 +79,13 @@ Procurement Review Team`;
             ref={closeRef}
             onClick={onClose}
             aria-label="Close RFI draft"
-            className="text-[#94a3b8] hover:text-white text-sm px-2 py-1 rounded border border-[#1e293b] hover:bg-[#1f2937]"
+            className="rounded border border-line px-2 py-1 text-sm text-text/60 hover:bg-surface hover:text-text"
           >
             ✕ Close
           </button>
         </div>
 
-        <p className="text-xs text-[#94a3b8] mb-3">
+        <p className="mb-3 text-xs text-text/60">
           This editable draft is built from recorded findings. Review and edit it before recording approval.
         </p>
 
@@ -93,23 +93,23 @@ Procurement Review Team`;
           aria-label="Editable RFI email draft"
           value={emailBody}
           onChange={(e) => setEmailBody(e.target.value)}
-          className="w-full h-56 bg-[#040711] border border-[#1e293b] rounded-lg p-3 text-xs font-mono text-[#e2e8f0] focus:border-[#38bdf8] outline-none resize-none leading-relaxed"
+          className="h-56 w-full resize-none rounded-lg border border-line bg-inset p-3 font-mono text-xs leading-relaxed text-text outline-none focus:border-cyan"
         />
 
-        <div className="flex justify-between items-center mt-5 pt-3 border-t border-[#1e293b]">
-          <span className="text-xs text-[#94a3b8]">
-            Status: <strong className="text-[#818cf8]">Draft ready for review</strong>
+        <div className="mt-5 flex items-center justify-between border-t border-line pt-3">
+          <span className="text-xs text-text/60">
+            Status: <strong className="text-violet">Draft ready for review</strong>
           </span>
 
           <button
             onClick={() => void handleHandoff()}
             disabled={isSent}
-            className="bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-[#090d16] font-bold text-xs px-5 py-2.5 rounded-lg shadow-lg hover:shadow-[#38bdf8]/20 transition-all flex items-center gap-2"
+            className="flex items-center gap-2 rounded-lg bg-cyan px-5 py-2.5 text-xs font-bold text-on-accent shadow-lg transition-all hover:bg-cyan/90 hover:shadow-[0_8px_24px_rgb(var(--color-cyan)_/_0.2)]"
           >
             {isSent ? "Recording…" : "Record RFI approval"}
           </button>
         </div>
-        {error && <p role="alert" className="mt-3 text-xs text-[#f43f5e]">{error}</p>}
+        {error && <p role="alert" className="mt-3 text-xs text-rose">{error}</p>}
       </div>
     </div>
   );

@@ -9,18 +9,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: "#090D16",
-        card: "#111827",
-        surface: "#0F172A",
-        inset: "#0B1220",
-        line: "#1E293B",
-        text: "#F8FAFC",
-        muted: "#94A3B8",
-        cyan: "#38BDF8",
-        violet: "#818CF8",
-        amber: "#FBBF24",
-        blue: "#60A5FA",
-        rose: "#F43F5E",
+        // Theme tokens deliberately use RGB channels so Tailwind opacity
+        // modifiers (for example bg-cyan/15) work in both color schemes.
+        bg: "rgb(var(--color-bg) / <alpha-value>)",
+        card: "rgb(var(--color-card) / <alpha-value>)",
+        surface: "rgb(var(--color-surface) / <alpha-value>)",
+        inset: "rgb(var(--color-inset) / <alpha-value>)",
+        line: "rgb(var(--color-line) / <alpha-value>)",
+        text: "rgb(var(--color-text) / <alpha-value>)",
+        muted: "rgb(var(--color-muted) / <alpha-value>)",
+        cyan: "rgb(var(--color-cyan) / <alpha-value>)",
+        violet: "rgb(var(--color-violet) / <alpha-value>)",
+        amber: "rgb(var(--color-amber) / <alpha-value>)",
+        blue: "rgb(var(--color-blue) / <alpha-value>)",
+        rose: "rgb(var(--color-rose) / <alpha-value>)",
+        "on-accent": "rgb(var(--color-on-accent) / <alpha-value>)",
+        // Existing translucent white utilities are semantic neutral overlays,
+        // not literal white, so they remain useful against light surfaces.
+        white: "rgb(var(--color-overlay) / <alpha-value>)",
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutList, Scale, ShieldCheck, ScrollText } from "lucide-react";
+import { FilePlus2, LayoutList, Scale, ShieldCheck, ScrollText } from "lucide-react";
+import ThemeToggle from "./ThemeToggle";
 
 const NAV = [
   { href: "/", label: "Review queue", Icon: LayoutList },
@@ -43,9 +44,17 @@ export default function AppSidebar() {
         })}
       </nav>
 
-      <div className="mt-auto rounded-lg border border-white/10 bg-surface/60 p-3">
+      <Link href="/bids/new" className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-cyan/15 px-3 py-2.5 text-sm font-semibold text-cyan transition-colors hover:bg-cyan/25">
+        <FilePlus2 className="h-4 w-4" />
+        Upload bid
+      </Link>
+
+      <div className="mt-auto space-y-3">
+        <ThemeToggle />
+        <div className="rounded-lg border border-white/10 bg-surface/60 p-3">
         <p className="ui-label font-mono uppercase text-text/50">Decision rule</p>
         <p className="mt-1 text-[13px] leading-relaxed text-text/65">Extracted data is cited. Deterministic rules assess compliance. Reviewers authorize actions.</p>
+        </div>
       </div>
     </aside>
   );

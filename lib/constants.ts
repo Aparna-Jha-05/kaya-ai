@@ -1,20 +1,19 @@
 // Design tokens + thresholds + labels, kept in one place so a judge can audit them.
 
 export const COLORS = {
-  // A restrained navy system keeps long compliance reviews calm and legible.
-  // Meaning is carried by status accents, never by the entire canvas.
-  bg: "#090D16",
-  card: "#111827",
-  surface: "#0F172A",
-  inset: "#0B1220",
-  line: "#1E293B",
-  text: "#F8FAFC",
-  muted: "#94A3B8",
-  cyan: "#38BDF8",
-  violet: "#818CF8",
-  amber: "#FBBF24",
-  blue: "#60A5FA",
-  rose: "#F43F5E",
+  // CSS variables keep SVG, charts, and inline styles in sync with the UI theme.
+  bg: "rgb(var(--color-bg))",
+  card: "rgb(var(--color-card))",
+  surface: "rgb(var(--color-surface))",
+  inset: "rgb(var(--color-inset))",
+  line: "rgb(var(--color-line))",
+  text: "rgb(var(--color-text))",
+  muted: "rgb(var(--color-muted))",
+  cyan: "rgb(var(--color-cyan))",
+  violet: "rgb(var(--color-violet))",
+  amber: "rgb(var(--color-amber))",
+  blue: "rgb(var(--color-blue))",
+  rose: "rgb(var(--color-rose))",
 } as const;
 
 export const PATROL_META = {

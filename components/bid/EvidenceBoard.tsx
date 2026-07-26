@@ -139,7 +139,7 @@ export default function EvidenceBoard({ bid }: { bid: Bid }) {
               {colors.map((c) => (
                 <marker
                   key={c}
-                  id={`arrow-${c.replace("#", "")}`}
+                  id={`arrow-${colors.indexOf(c)}`}
                   markerWidth="8"
                   markerHeight="8"
                   refX="6"
@@ -163,7 +163,7 @@ export default function EvidenceBoard({ bid }: { bid: Bid }) {
                   stroke={ed.color}
                   strokeWidth={2}
                   strokeDasharray="6 6"
-                  markerEnd={`url(#arrow-${ed.color.replace("#", "")})`}
+                  markerEnd={`url(#arrow-${colors.indexOf(ed.color)})`}
                   className="animate-flowDash"
                   style={{ filter: `drop-shadow(0 0 3px ${ed.color}66)` }}
                 />

@@ -30,7 +30,7 @@ export default function CADVisualizer({
           <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-inset px-1.5 py-0.5 font-mono text-[10px] text-text/55">Door clearance: {doorLimitM.toFixed(2)} m</span>
         </div>
         <div className="relative flex h-[130px] flex-col justify-between rounded border-2 border-rose bg-rose/10 p-2 shadow-[0_0_20px_rgba(244,63,94,0.2)]" style={{ width: `${widthPx}px` }}>
-          <span className="w-fit rounded bg-rose px-1.5 py-0.5 text-[10px] font-bold text-white">Measured width: {initialWidthM.toFixed(2)} m</span>
+          <span className="w-fit rounded bg-rose px-1.5 py-0.5 text-[10px] font-bold text-on-accent">Measured width: {initialWidthM.toFixed(2)} m</span>
           <span className="font-mono text-[10px] font-bold text-rose">Exceeds limit by {(initialWidthM - doorLimitM).toFixed(2)} m</span>
         </div>
       </div>
