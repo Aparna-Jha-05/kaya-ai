@@ -39,7 +39,7 @@ Procurement Review Team (PO-LICE)`
   const handleHandoff = () => {
     setIsSent(true);
     if (onHandoffSuccess) {
-      onHandoffSuccess("Draft approved and queued for the configured workflow.");
+      onHandoffSuccess("RFI draft reviewed and recorded in the activity log.");
     }
     setTimeout(() => {
       setIsSent(false);
@@ -69,7 +69,7 @@ Procurement Review Team (PO-LICE)`
         </div>
 
         <p className="text-xs text-[#94a3b8] mb-3">
-          This editable draft cites the recorded findings. Review it before it enters the procurement workflow.
+          This editable draft cites the recorded findings. Review it before recording the reviewer action.
         </p>
 
         <textarea
@@ -89,7 +89,7 @@ Procurement Review Team (PO-LICE)`
             disabled={isSent}
             className="bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-[#090d16] font-bold text-xs px-5 py-2.5 rounded-lg shadow-lg hover:shadow-[#38bdf8]/20 transition-all flex items-center gap-2"
           >
-            {isSent ? "✓ Queued" : "Approve and queue draft"}
+            {isSent ? "✓ Recorded" : "Record reviewed draft"}
           </button>
         </div>
       </div>

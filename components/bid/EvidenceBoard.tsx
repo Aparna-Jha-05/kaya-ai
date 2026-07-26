@@ -35,7 +35,7 @@ function e(source: string, target: string, color: string): GEdge {
   return { source, target, color };
 }
 
-function buildGraph(bid: Bid, postAward: boolean): { nodes: GNode[]; edges: GEdge[] } {
+function buildGraph(bid: Bid): { nodes: GNode[]; edges: GEdge[] } {
   const integrity = integritySignal(bid);
   if (bid.id !== "B") {
     return {
@@ -63,8 +63,8 @@ function buildGraph(bid: Bid, postAward: boolean): { nodes: GNode[]; edges: GEdg
     n("f3", 920, 216, "Hard fail", COLORS.rose, "ACTION"),
 
     n("s1", 320, 314, "Vendor late 3 of 5 deliveries", COLORS.violet, "SIGNAL"),
-    n("s2", 620, 314, postAward ? "Specification change requires re-validation" : "ROJ window risk", COLORS.blue, "SCHEDULE"),
-    n("s3", 920, 314, postAward ? "Re-run all compliance checks" : "Schedule contingency", COLORS.blue, "ACTION"),
+    n("s2", 620, 314, "ROJ window risk", COLORS.blue, "SCHEDULE"),
+    n("s3", 920, 314, "Schedule contingency", COLORS.blue, "ACTION"),
 
     n("c1", 320, 412, "Missing safety certificate", COLORS.rose, "SIGNAL"),
     n("c2", 620, 412, "Compliance hold", COLORS.rose, "LEGAL"),
@@ -109,8 +109,7 @@ function edgePath(s: GNode, t: GNode) {
 }
 
 export default function EvidenceBoard({ bid }: { bid: Bid }) {
-  const [postAward, setPostAward] = useState(false);
-  const { nodes, edges } = useMemo(() => buildGraph(bid, postAward), [bid, postAward]);
+  const { nodes, edges } = useMemo(() => buildGraph(bid), [bid]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const byId = useMemo(() => Object.fromEntries(nodes.map((nd) => [nd.id, nd])), [nodes]);
   const selected = nodes.find((node) => node.id === selectedId);
@@ -126,7 +125,7 @@ export default function EvidenceBoard({ bid }: { bid: Bid }) {
       <CardHeader
         title="Downstream impact"
         caption="See how the proposed substitute affects engineering, carbon, vendor reliability, documents, and schedule. Select a node for evidence."
-        right={bid.id === "B" ? <button type="button" aria-pressed={postAward} onClick={() => setPostAward((value) => !value)} className={`rounded border px-2 py-1 text-[10px] font-mono ${postAward ? "border-blue/50 bg-blue/10 text-blue" : "border-white/10 text-text/50 hover:text-text"}`}>Post-award re-validation: {postAward ? "on" : "off"}</button> : undefined}
+        right={bid.id === "B" ? <span className="rounded border border-blue/30 bg-blue/10 px-2 py-1 text-[10px] font-mono text-blue">Post-award changes require re-validation</span> : undefined}
       />
       <div className="terminal-grid overflow-x-auto rounded-b-xl p-4">
         <div className="relative mx-auto" style={{ width, height, minWidth: width }}>

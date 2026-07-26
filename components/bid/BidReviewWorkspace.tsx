@@ -11,6 +11,7 @@ import PatrolBadge from "@/components/bid/PatrolBadge";
 import EvidenceBoard from "@/components/bid/EvidenceBoard";
 import CADVisualizer from "@/components/cad-visualizer";
 import CaseFile from "@/components/agent/CaseFile";
+import BidFlowState from "@/components/bid/BidFlowState";
 import { integritySignal, marketSignal } from "@/lib/integrity";
 
 type Tab = "decision" | "evidence" | "checks" | "consequences" | "activity";
@@ -38,6 +39,7 @@ export default function BidReviewWorkspace({ bid }: { bid: Bid }) {
   const [inspected, setInspected] = useState<{ title: string; detail: string; rule: string } | null>(null);
   const results = useMemo(() => runAllPatrols(bid), [bid]);
   const reviewState = REVIEW_STATE[bid.recommendation];
+  const flowStep: Record<Tab, number> = { evidence: 1, checks: 2, consequences: 2, decision: 3, activity: 3 };
 
   return (
     <div className="space-y-5">
@@ -58,6 +60,8 @@ export default function BidReviewWorkspace({ bid }: { bid: Bid }) {
           </div>
         </div>
       </section>
+
+      <BidFlowState activeStep={flowStep[tab]} />
 
       <div className="overflow-x-auto border-b border-white/10">
         <div role="tablist" aria-label="Bid review sections" className="flex min-w-max gap-1">

@@ -45,7 +45,14 @@ export default function TCOSlider({
         setConnection("live");
         onTCOChange?.(next.calculated_tco2_inr / 10_000_000);
       } catch (error) {
-        if ((error as Error).name !== "AbortError") setConnection("offline");
+        if ((error as Error).name !== "AbortError") {
+          const adjusted_capex_inr = baseCapexCr * 10_000_000 * (1 - discountPercent / 100);
+          const delay_penalty_inr = delayDays * 200_000;
+          const calculated_tco2_inr = adjusted_capex_inr + delay_penalty_inr + 27_600_000;
+          setResult({ adjusted_capex_inr, delay_penalty_inr, calculated_tco2_inr, recommendation: delayDays > 5 || calculated_tco2_inr > 61_000_000 ? "REJECT" : "RECOMMENDED" });
+          setConnection("offline");
+          onTCOChange?.(calculated_tco2_inr / 10_000_000);
+        }
       }
     }, 120);
     return () => { controller.abort(); window.clearTimeout(timer); };
@@ -79,7 +86,7 @@ export default function TCOSlider({
       </div>
 
       <p className="text-xs text-[#94a3b8] mb-4">
-        Test commercial assumptions. This result informs review; it does not approve a purchase order. <span className={connection === "live" ? "text-[#38bdf8]" : "text-[#94a3b8]"}>[{connection === "live" ? "calculation service connected" : "simulated calculation"}]</span>
+        Test bounded commercial assumptions. This result informs review; it does not approve a purchase order. <span className={connection === "live" ? "text-[#38bdf8]" : "text-[#94a3b8]"}>[{connection === "live" ? "calculation service connected" : "browser fallback calculation"}]</span>
       </p>
 
       <div className="space-y-4 bg-[#0b1220] p-4 rounded-lg border border-[#1e293b] mb-4">
