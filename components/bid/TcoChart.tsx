@@ -51,7 +51,10 @@ export default function TcoChart({ data }: { data: Row[] }) {
               fontFamily: "monospace",
             }}
             labelStyle={{ color: COLORS.text }}
-            formatter={(v: number) => [`₹${v.toFixed(1)} Cr`, ""]}
+            formatter={(value) => {
+              const amount = typeof value === "number" ? value : Number(value ?? 0);
+              return [`₹${amount.toFixed(1)} Cr`, ""];
+            }}
           />
           <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
           <Bar dataKey="Upfront" fill={COLORS.blue} radius={[3, 3, 0, 0]} />
