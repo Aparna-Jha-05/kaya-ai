@@ -11,9 +11,9 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: "PO-LICE · Procurement Review",
+  title: "PO-LICE · Purchase Order Liability, Intelligence & Compliance Engine",
   description:
-    "Procurement enforcement layer for Amber. LLM extracts and explains, deterministic math validates.",
+    "Catching bid bandits before budget breaks. LLM extracts and explains, deterministic SQL and math validate procurement compliance.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="min-h-screen bg-bg text-text font-sans antialiased">
+      <body className="min-h-screen overflow-x-hidden bg-bg text-text font-sans antialiased">
         <header className="sticky top-0 z-40 border-b border-white/10 bg-bg/90 backdrop-blur lg:hidden">
           <div className="mx-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-2 px-5 py-3">
             <Link href="/" className="flex items-center gap-2.5 group">
@@ -37,8 +37,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div className="font-mono text-sm font-bold tracking-tight text-text group-hover:text-cyan transition-colors">
                   PO-LICE
                 </div>
-                <div className="text-[10px] uppercase tracking-[0.2em] text-text/40">
-                  Procurement review
+                <div className="text-[10px] text-text/40" style={{ letterSpacing: "0.05em" }}>
+                  Catching bid bandits before budget breaks.
                 </div>
               </div>
             </Link>

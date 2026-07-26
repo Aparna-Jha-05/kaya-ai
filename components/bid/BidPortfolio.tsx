@@ -35,13 +35,13 @@ export default function BidPortfolio() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeId, setActiveId] = useState("");
   const [scenario, setScenario] = useState<{ id: string; cost: number } | null>(null);
-  useEffect(() => { let active = true; procurementApi.list().then((items) => { if (!active) return; setRecords(items); setSource("live"); setSelectedIds(items.slice(0, 3).map((item) => item.id)); setActiveId(items[0]?.id ?? ""); }).catch(() => { if (!active) return; const fallback = fallbackBids(); setRecords(null); setSource("fallback"); setSelectedIds(fallback.map((bid) => bid.id)); setActiveId(fallback[1]?.id ?? fallback[0]?.id ?? ""); }); return () => { active = false; }; }, []);
+  useEffect(() => { let active = true; procurementApi.list().then((items) => { if (!active) return; setRecords(items); setSource("live"); setSelectedIds(items.slice(0, 3).map((item) => item.id)); setActiveId(items[0]?.id ?? ""); }).catch(() => { if (!active) return; const fallback = fallbackBids(); setRecords(null); setSource("fallback"); setSelectedIds(fallback.slice(0, 3).map((bid) => bid.id)); setActiveId(fallback[1]?.id ?? fallback[0]?.id ?? ""); }); return () => { active = false; }; }, []);
   const bids = useMemo(() => records ? records.map(fromRecord) : fallbackBids(), [records]);
   const filtered = useMemo(() => { const normalized = query.trim().toLowerCase(); return bids.filter((bid) => (!normalized || `${bid.vendor} ${bid.model} ${bid.equipment}`.toLowerCase().includes(normalized)) && (stateFilter === "all" || bid.recommendation === stateFilter) && (compliance === "all" || (compliance === "eligible" ? !hasFailure(bid) : hasFailure(bid)))); }, [bids, compliance, query, stateFilter]);
   const selected = filtered.filter((bid) => selectedIds.includes(bid.id));
   const active = selected.find((bid) => bid.id === activeId) ?? selected[0];
   const shownCost = (bid: Comparable) => scenario?.id === bid.id ? scenario.cost : bid.cost;
-  const toggle = (id: string) => setSelectedIds((current) => current.includes(id) ? current.filter((value) => value !== id) : current.length < 3 ? [...current, id] : current);
+  const toggle = (id: string) => setSelectedIds((current) => { if (current.includes(id)) return current.filter((value) => value !== id); if (current.length >= 3) return current; return [...current, id]; });
   const updateScenario = useCallback((costCr: number) => { if (active) setScenario({ id: active.id, cost: costCr * 10_000_000 }); }, [active]);
   const reset = () => { setQuery(""); setStateFilter("all"); setCompliance("all"); };
   const resetNeeded = query || stateFilter !== "all" || compliance !== "all";

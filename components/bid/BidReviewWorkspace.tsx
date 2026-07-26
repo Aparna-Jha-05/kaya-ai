@@ -57,7 +57,7 @@ export default function BidReviewWorkspace({ bid }: { bid: Bid }) {
         </div>
       </section>
 
-      <div className="overflow-x-auto border-b border-white/10">
+      <div className="tab-strip overflow-x-auto border-b border-white/10">
         <div role="tablist" aria-label="Bid review sections" className="flex min-w-max gap-1">
           {TABS.map(({ id, label, Icon }) => (
             <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={`flex items-center gap-2 border-b-2 px-3 py-2.5 text-xs font-medium transition-colors ${tab === id ? "border-cyan text-cyan" : "border-transparent text-text/55 hover:text-text"}`}>
@@ -158,9 +158,13 @@ function EvidenceDrawer({ evidence, onClose }: { evidence: { title: string; deta
   const closeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     closeRef.current?.focus();
+    document.body.classList.add("scroll-locked");
     const handleKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.classList.remove("scroll-locked");
+    };
   }, [onClose]);
   return <div className="fixed inset-0 z-50 bg-bg/60" role="presentation" onMouseDown={onClose}><aside role="dialog" aria-modal="true" aria-label="Evidence detail" onMouseDown={(event) => event.stopPropagation()} className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-line bg-card shadow-2xl"><div className="flex items-start justify-between border-b border-white/10 px-5 py-4"><div><p className="font-mono text-[10px] uppercase tracking-wider text-cyan">Evidence detail</p><h3 className="mt-1 text-base font-semibold text-text">{evidence.title}</h3></div><button ref={closeRef} type="button" onClick={onClose} className="rounded border border-white/10 px-2 py-1 text-xs text-text/60 hover:text-text">Close</button></div><div className="space-y-5 overflow-y-auto p-5"><section><p className="text-[10px] uppercase tracking-wide text-text/40">Evidence</p><p className="mt-2 text-sm leading-relaxed text-text/75">{evidence.detail}</p></section><section><p className="text-[10px] uppercase tracking-wide text-text/40">Deterministic rule</p><code className="mt-2 block break-words rounded bg-inset p-3 text-xs text-text/65">{evidence.rule}</code></section><p className="rounded border border-amber/25 bg-amber/5 p-3 text-xs leading-relaxed text-amber/90">Review source evidence before authorising an action. This panel does not change the result.</p></div></aside></div>;
 }

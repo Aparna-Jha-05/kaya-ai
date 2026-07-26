@@ -41,11 +41,15 @@ Procurement Review Team`;
     if (!isOpen) return;
     closeRef.current?.focus();
     setEmailBody(draft);
+    document.body.classList.add("scroll-locked");
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !isSent) onClose();
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.classList.remove("scroll-locked");
+    };
   }, [draft, isOpen, isSent, onClose]);
 
   const handleHandoff = async () => {

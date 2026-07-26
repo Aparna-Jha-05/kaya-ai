@@ -67,11 +67,20 @@ html,
 body {
   background-color: rgb(var(--color-bg));
   color: rgb(var(--color-text));
+  height: 100%;
 }
 
 html {
-  /* Preserve readable proportions when users increase their browser type size. */
+  overflow-y: scroll;
+}
+
+html {
   font-size: 100%;
+}
+
+/* Lock body scroll when a drawer or modal overlay is mounted. */
+body.scroll-locked {
+  overflow: hidden;
 }
 
 :focus-visible {
@@ -126,6 +135,15 @@ kbd,
 }
 *::-webkit-scrollbar-thumb:hover {
   background: rgb(var(--color-cyan));
+}
+
+/* Hide scrollbar on tab strip overflow containers. */
+.tab-strip::-webkit-scrollbar {
+  display: none;
+}
+.tab-strip {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 /* Status glows are reserved for compact attention signals. */
