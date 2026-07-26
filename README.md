@@ -1,220 +1,409 @@
-# 🚨 PO-lice — Purchase Order Liability, Intelligence & Compliance Engine
-> **Amber's Procurement Enforcement Layer** | *Kaya AI IIT India Hackathon 2026 — Track 3: Procurement*
+# PO-LICE
 
-[![Hackathon](https://img.shields.io/badge/Hackathon-Kaya_AI_IIT_India_2026-sky.svg)](https://kaya-ai-iit-hackathon-2026.devpost.com/)
-[![Track](https://img.shields.io/badge/Track-3:_Procurement-blue.svg)](https://kaya-ai-iit-hackathon-2026.devpost.com/)
-[![Stage](https://img.shields.io/badge/Stage-2_Prototype_Building-orange.svg)]()
-[![Team](https://img.shields.io/badge/Team-TensorTruss_(IIT_Madras)-purple.svg)]()
-[![Repo](https://img.shields.io/badge/GitHub-Aparna--Jha--05%2Fkaya--ai-cyan.svg)](https://github.com/Aparna-Jha-05/kaya-ai)
+> Purchase Order Liability, Intelligence & Compliance Engine
+>
+> Team TensorTruss · Kaya AI IIT India Hackathon 2026 · Track 3: Procurement
 
----
+[![CI](https://github.com/Aparna-Jha-05/kaya-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Aparna-Jha-05/kaya-ai/actions/workflows/ci.yml)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Python_3.11-009688)](https://fastapi.tiangolo.com/)
+[![OpenSpec](https://img.shields.io/badge/specs-OpenSpec-blue)](openspec/changes)
 
-## 💡 Core Golden Rule & Architecture Philosophy
+PO-LICE is an evidence-first procurement review prototype. It accepts vendor
+bid PDFs, extracts traceable facts, evaluates them with deterministic rules,
+and presents the result as a reviewable procurement docket.
 
-> **"LLM / VLM extracts and explains; deterministic SQL and math validate."**
+The core rule is non-negotiable:
 
-PO-lice enforces a **zero-hallucination hard firewall** between cognitive extraction and compliance judgment:
+> **LLMs extract and explain. Deterministic code and stored rules decide.**
 
-1. **Cognitive Extraction Layer**: PyMuPDF & LLaVA VLM parse unstructured vendor PDFs, tables, and 2D CAD blueprint coordinates into strict **Pydantic JSON**.
-2. **Deterministic Judgment Layer**: PostgreSQL queries & Python math evaluate strict constraints against Amber's Project Graph. If a vendor equipment load exceeds limits, the system triggers a hard mechanical reject—no LLM opinion involved.
-3. **Human Action Layer**: Procurement officers review evidence-backed verdicts with complete audit trails, approving purchase orders or dispatching automated counter-spec RFIs.
+An AI model may propose a fact only when it can cite supporting document text.
+It cannot set engineering limits, calculate compliance outcomes, or change a
+`PASS`, `FAIL`, or `FLAG`. Missing or incompatible evidence becomes `FLAG`.
 
----
+## Current project status
 
-## 🛡️ The Four Patrols Specification
+The frontend and the local backend prototype are integrated and covered by CI.
+The PostgreSQL/Supabase schema foundation is tested, but the HTTP API still
+uses SQLite and local file storage in explicit demo mode.
 
-Every patrol runs deterministically. Generative AI models never vote on engineering compliance.
+| Area | Current state |
+| --- | --- |
+| Next.js dashboard | Implemented and connected to `lib/api.ts` |
+| FastAPI bid workflow | Upload, list, detail, source, delete, review, simulation, RFI, constraints, suppliers, activity, and audit routes |
+| PDF extraction | PyMuPDF text extraction, conservative parsing, normalized units, excerpts, page geometry, and evidence rectangles |
+| Optional AI extraction | Ollama local adapter and Gemini remote adapter; disabled by default |
+| Compliance decisions | Four deterministic Python patrols |
+| Local persistence | SQLite plus local source-PDF storage |
+| Provenance and retries | SHA-256 provenance and project-scoped upload idempotency |
+| Human decisions | Optimistic concurrency, audited state changes, and separate RFI approval |
+| Reassessment | Constraint changes create new assessment versions without overwriting officer decisions |
+| PostgreSQL foundation | Ordered migrations, checksum tracking, pgvector schema, synthetic seeding, and integration tests |
+| Production Supabase runtime | Not connected to HTTP CRUD yet |
+| Authentication and RLS | Planned, not implemented |
+| OpenAI and Anthropic extraction | Specified, not implemented |
+| Live vendor RAG and verified supplier geography | Planned, not implemented |
 
-| Patrol | Scope | Logic / Method | Verdict Output |
-| :--- | :--- | :--- | :--- |
-| **Patrol 1: Building Patrol** | Engineering Physics | Substation power limit ($\le 1200\text{ kW}$) & Door width clearance ($\le 1.9\text{ m}$) | **PASS / FAIL** |
-| **Patrol 2: Green Patrol** | Carbon Budget | Embodied carbon EPD factor lookup ($\le 450\text{ kgCO2e}$) | **PASS / FAIL** |
-| **Patrol 3: Vice Squad** | Vendor Reliability | `pgvector` hybrid search over historical contracts & dispute counts | **Risk Score (1–10) / FLAG** |
-| **Patrol 4: Traffic Control** | Schedule Ripple | NetworkX DAG + Bayesian Monte Carlo delay slip ($\text{₹}2.0\text{L/day}$ penalty) | **5-Yr $TCO^2$ / FLAG** |
+Do not present planned functionality as deployed functionality. In particular,
+the current prototype does not have production Supabase CRUD, Supabase Auth,
+live pgvector retrieval, full CAD/BIM interpretation, immutable production
+audit storage, or automatic email dispatch.
 
-### Mechanical Energy Balance Inequality (Patrol 1 Example):
-$$\dot{Q}_{load} = \sum_{i=1}^{n} \dot{m}_i c_{p,i}(T_{out,i} - T_{in,i}) + \dot{Q}_{parasitic} \le \dot{Q}_{plant,max}$$
+## Architecture
 
----
+```mermaid
+flowchart LR
+    U["Procurement officer"] --> F["Next.js 14 dashboard"]
+    F --> C["Typed client: lib/api.ts"]
+    C --> A["FastAPI /api/v1"]
 
-## ⚡ Key Dashboard Features & Differentiators
+    A --> V["Upload validation<br/>PDF type, size, idempotency"]
+    V --> X["PyMuPDF + deterministic parser"]
+    X --> O{"Required facts missing?"}
+    O -->|Optional local| L["Ollama model"]
+    O -->|Optional authorized remote| G["Gemini API"]
+    O -->|No| S["Strict Pydantic facts"]
+    L --> S
+    G --> S
 
-- 🌐 **The Evidence Board (Level-1 Differentiator)**: Interactive SVG directed graph mapping how one line-item substitution cascades into electrical panel redesign, carbon cap breach, door width clearance breach, vendor risk, and 5-Year $TCO^2$ financial loss.
-- 🎛️ **What-If $TCO^2$ Simulator**: Dynamic slider recalculating upfront Capex discounts, delivery delay penalties ($\text{₹}2.0\text{L/day}$), and total operating cost in real-time.
-- 📐 **VLM CAD Spatial Bounding Box**: Vision AI extracts equipment dimensions and renders a glowing SVG bounding box over 2D CAD blueprints to detect physical door clearance breaches ($\text{2.10m} > \text{1.90m}$).
-- ✉️ **Jarvis Agent Handoff & RFI Drafter**: Converts patrol breaches into automated counter-spec RFI email drafts with an animated dispatch log stream.
-- 🔍 **Human-in-the-Loop Confidence Heatmap**: Highlights field extraction confidence scores ($99\%$ vs $82\%$) and surfaces low-confidence OCR notes for instant verification.
+    S --> E["Evidence validation<br/>excerpt, unit, page, rectangle"]
+    E --> P["Deterministic patrol engine"]
+    P --> D["Versioned procurement docket"]
+    D --> Q["SQLite + local PDFs<br/>current demo runtime"]
+    D --> F
 
----
-
-## 📊 The Aha Moment: 5-Year $TCO^2$ Comparison
-
-**Total Cost of Ownership Squared ($TCO^2$):** Upfront Capex + 5-Year OPEX + Carbon Liability + Schedule Delay Risk.
-
-| Vendor | Upfront Cost | Engineering | Vendor Risk | Carbon | Schedule Risk | 5-Year $TCO^2$ | Decision |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Vendor A** | ₹4.2Cr | PASS | Low | PASS | Low | **₹6.0Cr** | 🟢 **Recommended** |
-| **Vendor B** | ₹3.8Cr | **FAIL** | High | **FAIL** | Medium | **₹6.8Cr** | 🔴 **Hard Reject** |
-| **Vendor C** | ₹4.5Cr | PASS | Medium | PASS | Low | **₹6.0Cr** | 🟡 **Acceptable** |
-
-*The cheapest upfront bid (Vendor B) is the most expensive and riskiest once lifecycle operating cost, carbon penalties, and delay risks are factored in.*
-
----
-
-## 🥊 Competitive Matrix
-
-| Capability | ACC / BuildingConnected | Procore | EC3 Carbon | SAP Ariba | **PO-lice** |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| Bid RFP & Document Parsing | Partial | Partial | ❌ | Partial | 🟢 **Full PDF Extract** |
-| Engineering/BIM Compliance Hard Gate | ❌ | ❌ | ❌ | ❌ | 🟢 **SQL / Physics Gate** |
-| Vendor Track Record RAG Memory | Partial | ❌ | ❌ | ❌ | 🟢 **pgvector Search** |
-| Equipment-Level Embodied Carbon Gate | ❌ | ❌ | Partial | ❌ | 🟢 **EPD SQL Gate** |
-| Schedule Ripple & Downstream Impact | ❌ | ❌ | ❌ | ❌ | 🟢 **NetworkX DAG** |
-| **Unified 5-Yr $TCO^2$ Decision Engine** | ❌ | ❌ | ❌ | ❌ | 🟢 **Deterministic Gate** |
-
----
-
-## 🏗️ System Architecture & Data Pipeline
-
-```
-Vendor PDF → Document Intelligence → Pydantic JSON → The 4 Patrols → Unified Docket
-                                                            │
-    ┌───────────────────────┬───────────────────────────────┼──────────────────────────────┐
-    ▼                       ▼                               ▼                              ▼
-Patrol 1: Building      Patrol 2: Green                 Patrol 3: Vice                 Patrol 4: Traffic
-(PostgreSQL BIM SQL)    (EPD Carbon Factor SQL)         (pgvector Vendor RAG)          (Monte Carlo & MCP™)
+    A -. "readiness only today" .-> PG["Supabase PostgreSQL pool"]
+    M["Versioned SQL migrations<br/>and synthetic seeder"] --> PG
 ```
 
----
+### Request flow
 
-## 🎨 Design Tokens (Cohere & Supabase Theme)
+1. The frontend sends a PDF and an `Idempotency-Key` to FastAPI.
+2. FastAPI validates the filename, declared media type, PDF magic bytes, and
+   15 MB size limit.
+3. The backend computes SHA-256 provenance and extracts document text.
+4. Deterministic parsing runs first. Optional Ollama and Gemini extraction can
+   fill only unresolved fields.
+5. Every accepted candidate must retain its source excerpt and canonical unit.
+   Located evidence also stores page dimensions, rotation, coordinate system,
+   and `[x0, y0, x1, y1]`.
+6. The deterministic patrol engine evaluates the accepted facts against the
+   current versioned site constraints.
+7. SQLite stores the source reference, extraction report, scorecard, assessment
+   history, officer decision, RFI state, and activity events.
+8. The frontend renders the work queue, evidence, patrol results, TCO scenario,
+   review actions, and audit activity.
 
-| Token | Hex Code | Usage |
-| :--- | :--- | :--- |
-| **Deep Canvas** | `#090D16` | Main obsidian dark slate canvas |
-| **Cards & Panels** | `#111827` | Elevated dark chrome surfaces with `#1E293B` borders |
-| **Primary Accent (PASS)** | `#38BDF8` | **Electric Cyan** for PASS badges & primary actions *(Zero green)* |
-| **Vice / RAG Accent** | `#818CF8` | **Indigo Violet** for Vice Squad RAG memory & agent logs |
-| **Green Patrol Accent** | `#FBBF24` | **Amber Gold** for Green Patrol warnings & $TCO^2$ highlights |
-| **Alert / Breach Accent** | `#F43F5E` | **Rose Red** for FAIL badges and door clearance breaches |
+## The four patrols
 
----
+| Patrol | Implemented behavior | Production work still required |
+| --- | --- | --- |
+| Building Patrol | Compares power, equipment width, and warranty evidence with the referenced constraint version | Domain confirmation of door-clearance semantics |
+| Green Patrol | Checks extracted carbon evidence against the configured cap and flags missing data | Approved carbon functional unit and dimensionally safe comparison |
+| Vice Squad | Uses deterministic certificate, clause, and integrity signals | Project-scoped pgvector retrieval and an approved bounded risk formula |
+| Traffic Control | Calculates deterministic lead-time exposure and bounded scenario values | Approved currency, horizon, penalty, and carbon-tax units |
 
-## 🧪 Quickstart & Verification Workflow
+The patrol engine returns:
 
-### 1. Backend Verification & Test Engine
+- `PASS` when required evidence is present and within the configured rule.
+- `FAIL` when supported evidence deterministically breaches a rule.
+- `FLAG` when evidence is missing, unsupported, incompatible, disputed, or
+  requires a human decision.
+
+## Technology map
+
+| Technology | Purpose |
+| --- | --- |
+| Next.js 14, React 18, TypeScript | Dashboard, bid work queue, review workspace, audit view |
+| Tailwind CSS, Framer Motion, Recharts | Styling, interaction, and charts |
+| FastAPI, Pydantic v2 | HTTP API and strict request/response contracts |
+| PyMuPDF | PDF text, metadata, page geometry, and evidence rectangles |
+| Python deterministic rules | Compliance patrols and scenario calculations |
+| SQLite | Current local/demo bid, assessment, RFI, and activity persistence |
+| Local filesystem | Current source-PDF storage |
+| Ollama | Optional local structured extraction |
+| Gemini API | Optional authorized remote structured extraction |
+| asyncpg, PostgreSQL, pgvector | Tested database foundation for the next persistence and RAG phase |
+| OpenSpec | Intended behavior, architecture decisions, and implementation tasks |
+| GitHub Actions | Frontend, backend, database, OpenAPI, extraction, and OpenSpec checks |
+| Vercel | Frontend hosting |
+| Render | Backend staging definition in `render.yaml` |
+| Supabase | Planned PostgreSQL/Auth/RLS platform; runtime CRUD is not wired yet |
+
+## Repository layout
+
+```text
+app/                         Next.js routes: dashboard, bids, bid detail, audit
+components/                  Dashboard, evidence, review, RFI, and UI components
+lib/api.ts                   Canonical frontend-to-backend client
+lib/mockData.ts              Remaining prototype fixtures; not backend truth
+lib/patrols.ts               Legacy/demo client rules; backend Python is authoritative
+
+backend/main.py              FastAPI boundary and /api/v1 routes
+backend/app/models/          Strict Pydantic API and evidence models
+backend/app/services/        Extraction, model cascade, patrols, RFI, persistence
+backend/app/db/supabase.py   Bounded asyncpg pool and readiness helpers
+backend/tests/               Assertion-based backend and API contract tests
+backend/openapi.json         Committed frontend compatibility baseline
+
+scripts/migrations/          Ordered PostgreSQL/pgvector migrations
+scripts/migrate_postgres.py  Checksum-verified migration runner
+scripts/seed_supabase.py     Idempotent synthetic PostgreSQL seeder
+scripts/seed_demo_data.py    Synthetic local PDF generator
+scripts/evaluate_extraction.py
+                             Labeled extraction evaluation
+scripts/test_pipeline.py     Assertion-based demo pipeline smoke check
+
+openspec/changes/            Active backend and AI-provider specifications
+.github/workflows/ci.yml     Cross-stack pull-request and main-branch CI
+render.yaml                  Backend staging service definition
+AGENTS.md                    Repository-wide engineering guardrails
+backend/AGENTS.md            Backend-specific contracts and safety rules
+```
+
+## Local development
+
+### Prerequisites
+
+- Node.js 20
+- Python 3.11
+- npm
+- Optional: Ollama for local model extraction
+- Optional: a PostgreSQL database with pgvector for migration testing
+
+### 1. Install dependencies
+
 ```bash
-# Install Python dependencies
-python3 -m pip install -r backend/requirements-test.txt
+npm ci
 
-# Seed synthetic vendor bids & run compliance engine test harness
-python3 scripts/seed_demo_data.py
-PYTHONPATH=backend python3 scripts/test_pipeline.py
-
-# Run FastAPI backend server (Port 8000)
-uvicorn backend.main:app --reload --port 8000
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r backend/requirements-test.txt
 ```
 
-To validate the PostgreSQL/Supabase schema foundation, apply migrations before
-inserting the clearly labelled synthetic demo records:
+### 2. Configure local environment
+
+```bash
+cp .env.example .env.local
+```
+
+Next.js loads `.env.local` automatically. The Python backend does not load it
+automatically, so export it into the shell before starting FastAPI:
+
+```bash
+set -a
+source .env.local
+set +a
+```
+
+For the frontend, add:
+
+```dotenv
+NEXT_PUBLIC_PO_LICE_API_URL=http://localhost:8000
+```
+
+Never prefix a backend secret with `NEXT_PUBLIC_`. Do not commit `.env.local`.
+
+### 3. Start the backend
+
+```bash
+PYTHONPATH=backend uvicorn main:app --reload --port 8000
+```
+
+Useful URLs:
+
+- API root: <http://localhost:8000/>
+- Readiness: <http://localhost:8000/api/v1/readiness>
+- OpenAPI UI: <http://localhost:8000/docs>
+- OpenAPI JSON: <http://localhost:8000/openapi.json>
+
+### 4. Start the frontend
+
+In another terminal:
+
+```bash
+npm run dev
+```
+
+Open <http://localhost:3000>.
+
+### 5. Create synthetic demo PDFs
+
+```bash
+python scripts/seed_demo_data.py
+```
+
+The generated fixtures are synthetic and safe for local testing. Never add
+real vendor documents, credentials, bid contents, or personal data to Git.
+
+## Optional AI extraction
+
+Deterministic extraction always runs first. Models receive only unresolved
+fields and cannot return compliance verdicts.
+
+### Ollama: local and free
+
+Ollama downloads the selected model onto the machine running the backend. The
+repository does not bundle model weights.
+
+```dotenv
+OLLAMA_ENABLED=true
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=<evaluated-model-tag>
+```
+
+Install and pull the exact model separately with Ollama. Mistral 7B Instruct
+is currently a benchmark candidate, not a validated winner. Keep
+`OLLAMA_ENABLED=false` when the runtime cannot host a local model.
+
+### Gemini: optional remote fallback
+
+```dotenv
+REMOTE_EXTRACTION_ENABLED=true
+REMOTE_EXTRACTION_PROJECTS=PRJ-AMBER-01
+GEMINI_MODEL=<evaluated-model-name>
+GEMINI_API_KEY=<server-side-key>
+```
+
+Remote extraction is allowed only when the feature is enabled, the project is
+allow-listed, and both model and key are configured. The backend sends reduced
+evidence context and records the disclosure metadata. OpenAI and Anthropic are
+not implemented yet; their active OpenSpec requires adapter tests and measured
+evaluation before either enters automatic routing.
+
+## Verification
+
+Run the same core checks used by CI:
+
+```bash
+python scripts/seed_demo_data.py
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=backend \
+  python -m unittest discover -s backend/tests -v
+PYTHONPATH=backend python scripts/evaluate_extraction.py --assert-baseline
+PYTHONPATH=backend python scripts/test_pipeline.py
+python scripts/export_openapi.py --check
+npm run build
+
+openspec validate robust-supabase-backend --strict
+openspec validate multi-provider-pdf-extraction --strict
+openspec validate configurable-ai-provider-routing --strict
+```
+
+CI additionally starts PostgreSQL 16 with pgvector and runs:
+
+```bash
+TEST_DATABASE_URL=postgresql://... python scripts/test_postgres_foundation.py
+```
+
+Static validation, unit tests, database integration, frontend build, and live
+staging verification are separate kinds of evidence. A passing local build
+does not prove that a remote provider or production deployment works.
+
+## PostgreSQL and Supabase foundation
+
+The repository includes ordered migrations and a synthetic seeder:
 
 ```bash
 export SUPABASE_DATABASE_URL='postgresql://...'
-python3 scripts/migrate_postgres.py
-python3 scripts/seed_supabase.py
+python scripts/migrate_postgres.py
+python scripts/seed_supabase.py
 ```
 
-These commands prepare the database only. The HTTP API still uses the explicit
-SQLite demo path until the PostgreSQL repository and authentication work lands.
+This creates and verifies the PostgreSQL schema only. Until the PostgreSQL
+repository, authentication, and RLS work is completed, FastAPI CRUD remains on
+SQLite with `DEMO_MODE=true`.
 
-`backend/openapi.json` is the committed frontend compatibility baseline.
-Regenerate it with `python3 scripts/export_openapi.py`; CI rejects stale output.
+## Deployment shape
 
-### 2. Frontend Precinct Dashboard
+```text
+Browser
+  └── Vercel: Next.js frontend
+        └── NEXT_PUBLIC_PO_LICE_API_URL
+              └── Render: FastAPI backend staging
+                    ├── current demo: SQLite + local files
+                    └── target: Supabase PostgreSQL/Auth/RLS/Object Storage
+```
+
+`render.yaml` deploys the backend from `main` after checks pass. Before any
+public deployment, configure allowed origins and backend secrets in the
+hosting dashboard. Never place provider keys or database credentials in
+frontend variables or committed files.
+
+## API surface
+
+The current `/api/v1` API includes:
+
+- Bid upload, list, detail, source download, and delete
+- Reviewer activity and officer decision updates
+- Deterministic TCO scenario simulation
+- RFI draft creation, listing, and separate human approval
+- Current site constraints and versioned constraint updates
+- Supplier prototype data
+- Activity and audit views
+- Readiness reporting
+
+The committed contract is `backend/openapi.json`. Regenerate it after API model
+or route changes:
+
 ```bash
-# Run Next.js App Router UI (Port 3000)
-npm run dev
-
-# Verify clean production build
-npm run build
+python scripts/export_openapi.py
 ```
 
----
+CI fails when the snapshot is stale.
 
-## 📂 Repository Layout
+## Team and ownership
 
-```
-po-lice/
-├── AGENTS.md                  # Developer & AI Agent guidelines
-├── README.md                  # Master documentation & setup guide
-├── next.config.mjs            # Next.js configuration
-├── package.json               # Frontend dependencies & scripts
-├── tailwind.config.ts         # Tailwind CSS styling configuration
-├── app/                       # Next.js 14 App Router UI (The Precinct Dashboard)
-│   ├── layout.tsx             # Root layout with sidebar navigation
-│   ├── page.tsx               # Primary dashboard overview & metrics
-│   ├── globals.css            # Global CSS design tokens
-│   ├── audit/                 # Audit trail view
-│   │   └── page.tsx           # Audit log page component
-│   └── bids/                  # Bids management & detailed workspace views
-│       ├── page.tsx           # Bids portfolio overview
-│       └── [id]/              # Dynamic bid detail route
-│           └── page.tsx       # Individual bid workspace page
-├── backend/                   # FastAPI Python 3.11+ Server
-│   ├── main.py                # REST API endpoints & server entrypoint
-│   ├── requirements.txt       # Python backend dependencies
-│   ├── app/
-│   │   ├── models/
-│   │   │   └── schemas.py     # Pydantic schemas (VendorBidExtract, PatrolResult, DocketScorecard)
-│   │   └── services/
-│   │       ├── extractor.py   # PyMuPDF text & spec parser
-│   │       ├── integrity.py   # Bid integrity matrix & correlation analyzer
-│   │       ├── patrols.py     # Deterministic 4 Patrols compliance engine
-│   │       └── repository.py  # Local SQLite / file-backed bid store
-│   └── data/                  # SQLite DB & PDF upload storage
-│       └── po_lice.sqlite3    # Local evidence database
-├── components/                # React UI components
-│   ├── cad-visualizer.tsx     # CAD spatial overlay visualizer
-│   ├── rfi-modal.tsx          # Counter-spec RFI email drafter modal
-│   ├── tco-slider.tsx         # What-If TCO² dynamic simulator
-│   ├── bid/                   # Bid review & evidence board components
-│   │   ├── ActiveBidsTable.tsx
-│   │   ├── BidDetailClient.tsx
-│   │   ├── BidPortfolio.tsx
-│   │   ├── BidReviewWorkspace.tsx
-│   │   ├── EvidenceBoard.tsx  # Level-1 Differentiator SVG directed graph
-│   │   └── RecordBidReview.tsx
-│   ├── navigation/            # App sidebar, Command Palette & theme controls
-│   │   ├── AppSidebar.tsx
-│   │   ├── CommandPalette.tsx
-│   │   └── ThemeToggle.tsx
-│   ├── precinct/              # Precinct dashboard widgets & panels
-│   │   ├── ActiveBidsTable.tsx
-│   │   ├── CaseFilesPanel.tsx
-│   │   └── SummaryRow.tsx
-│   └── ui/                    # Base UI components (Card, StatusDot, Tooltip)
-├── lib/                       # Next.js client utilities & deterministic patrol engines
-│   ├── api.ts                 # Backend API client bridge
-│   ├── constants.ts           # Status tokens & UI constants
-│   ├── integrity.ts           # Client-side integrity helpers
-│   ├── mockData.ts            # Site constraints & mock bid fixtures
-│   ├── patrols.ts             # Deterministic 4 Patrols TypeScript engine
-│   └── tco.ts                 # TCO² calculation formulas
-└── scripts/                   # Data seeders & test harnesses
-    ├── migrations/            # Ordered PostgreSQL/pgvector migrations
-    ├── migrate_postgres.py    # Checksum-verified migration runner
-    ├── seed_demo_data.py      # Synthetic bid PDF seeder (creates PDFs in scripts/fixtures/)
-    ├── seed_supabase.py       # Idempotent, synthetic-labelled PostgreSQL seeder
-    ├── test_pipeline.py       # End-to-end Python compliance engine test script
-    └── fixtures/              # Synthetic vendor bid PDF files
-        ├── VendorA_Trane_Chiller_Bid.pdf
-        ├── VendorB_CoolTech_Chiller_Bid.pdf
-        └── VendorC_Carrier_Chiller_Bid.pdf
-```
+| Team member | Role | Current ownership and contribution |
+| --- | --- | --- |
+| **Aparna Jha** | Team lead, domain specification, QA | Procurement requirements, domain scenarios, acceptance review, and validation of engineering/carbon/risk/TCO semantics |
+| **Jb Anmol** | Full-stack and repository orchestration | Frontend/backend integration, extraction contracts, API hardening, CI, PostgreSQL foundation, upload provenance, evidence regions, and reassessment history |
+| **Pratham Amritkar** | RAG and AI systems | Local/remote model evaluation, embedding and retrieval design, and future vendor-history RAG integration |
 
----
+Important backend milestones already merged:
 
-## 👥 Team TensorTruss
-- **Jb Anmol**: Team Member, IIT Madras
-- **Pratham Amritkar**: Team Member, IIT Madras
-- **Aparna Jha**: Team Leader, IIT Madras
+- Hardened the prototype API, RFI workflow, constraints, tests, and CI.
+- Added verified PostgreSQL migrations, pgvector schema checks, and synthetic
+  seeding.
+- Added immutable upload provenance, project-scoped idempotency, neutral PDF
+  integrity signals, and page-coordinate evidence.
+- Added versioned reassessment history that preserves prior patrol results and
+  human officer decisions.
+
+Ownership indicates the primary point of contact, not an exclusive boundary.
+Cross-stack API changes should be reviewed by both frontend and backend owners;
+domain formulas require domain/QA approval.
+
+## Collaboration workflow
+
+1. Keep `main` deployable and protected.
+2. Create one focused feature branch per change.
+3. Update the relevant OpenSpec artifacts before or with implementation.
+4. Open a pull request to `main`; do not force-merge conflicts.
+5. Let CI validate the frontend, backend, OpenAPI snapshot, PostgreSQL
+   foundation, extraction baseline, and all active OpenSpecs.
+6. Resolve conflicts in the feature branch by updating it from `main`, rerun
+   checks, and push the resolution.
+7. Merge only after review and green checks.
+
+For conflicts, the feature author should not guess across another owner's
+files. Open the PR, describe the conflict, and resolve it with the affected
+owner.
+
+## Remaining roadmap
+
+The next production-critical work is:
+
+1. Review the final `/api/v1` pagination, error, and lifecycle contract.
+2. Obtain domain approval for carbon units, Vice Squad scoring, and TCO² units.
+3. Connect FastAPI CRUD to Supabase PostgreSQL.
+4. Add authentication, project isolation, RLS, and object storage.
+5. Complete paginated bid, supplier, and append-only audit APIs.
+6. Finish frontend evidence, dimension, RFI, supplier, and audit integration.
+7. Run labeled Ollama/Gemini evaluations; add OpenAI or Anthropic only when
+   measured results justify the extra provider.
+8. Deploy backend staging, run health and end-to-end checks, then promote.
+
+The detailed source of truth is in `openspec/changes/`. Executed code and
+assertion-based tests describe current behavior; accepted OpenSpec artifacts
+describe intended behavior.
