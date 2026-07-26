@@ -55,7 +55,7 @@ export default function CaseFilesPanel() {
           <span className="flex items-center gap-2">
             Review queue
             <span className="flex h-1.5 w-1.5 items-center">
-              <span className="h-1.5 w-1.5 animate-ping rounded-full bg-green/60" />
+              <span className="h-1.5 w-1.5 animate-ping rounded-full bg-cyan/60" />
             </span>
           </span>
         }

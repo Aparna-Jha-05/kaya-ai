@@ -89,7 +89,7 @@ export default function CaseFile({ bid }: { bid: Bid }) {
             disabled={approved}
             className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               approved
-                ? "cursor-default bg-green/15 text-green"
+                ? "cursor-default bg-cyan/15 text-cyan"
                 : "bg-violet/20 text-violet hover:bg-violet/30"
             }`}
           >
@@ -104,7 +104,7 @@ export default function CaseFile({ bid }: { bid: Bid }) {
               !approved
                 ? "cursor-not-allowed bg-white/5 text-text/25"
                 : handed
-                ? "cursor-default bg-green/15 text-green"
+                ? "cursor-default bg-cyan/15 text-cyan"
                 : "bg-blue/20 text-blue hover:bg-blue/30"
             }`}
           >
@@ -123,9 +123,9 @@ export default function CaseFile({ bid }: { bid: Bid }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-xl border border-green/30 bg-[#0a1a13] px-4 py-3 shadow-2xl"
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-xl border border-cyan/30 bg-[#0a1a13] px-4 py-3 shadow-2xl"
           >
-            <CheckCircle2 className="h-5 w-5 text-green" />
+            <CheckCircle2 className="h-5 w-5 text-cyan" />
             <div>
               <div className="flex items-center gap-2 text-sm font-medium text-text">
                 Workflow item queued <MockBadge />

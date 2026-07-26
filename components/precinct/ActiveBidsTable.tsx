@@ -81,7 +81,7 @@ export default function ActiveBidsTable() {
                       />
                       <span className="font-sans font-medium text-text">{bid.vendor}</span>
                       {isReject && (
-                        <span className="rounded bg-red/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-red">
+                        <span className="rounded bg-rose/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-rose">
                           review
                         </span>
                       )}

@@ -36,9 +36,9 @@ function seed() {
 }
 
 const statusColor = (a: string) => {
-  if (a.includes("FAIL")) return "text-red";
+  if (a.includes("FAIL")) return "text-rose";
   if (a.includes("FLAG")) return "text-amber";
-  if (a.includes("PASS")) return "text-green";
+  if (a.includes("PASS")) return "text-cyan";
   return "text-violet";
 };
 
@@ -60,7 +60,7 @@ export default function AuditPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-text">
-            <Lock className="h-5 w-5 text-green" /> Audit trail
+            <Lock className="h-5 w-5 text-cyan" /> Audit trail
           </h1>
           <p className="mt-1 text-sm text-text/50">
             Every check and workflow action is timestamped for review.
@@ -68,7 +68,7 @@ export default function AuditPage() {
         </div>
         <button
           onClick={() => downloadCsv()}
-          className="inline-flex items-center gap-2 rounded-lg bg-green/15 px-4 py-2 text-sm font-medium text-green transition-colors hover:bg-green/25"
+          className="inline-flex items-center gap-2 rounded-lg bg-cyan/15 px-4 py-2 text-sm font-medium text-cyan transition-colors hover:bg-cyan/25"
         >
           <Download className="h-4 w-4" /> Export CSV
         </button>

@@ -90,7 +90,7 @@ export default function VlmCadDemo({
         <div className="flex flex-col justify-center gap-3">
           {scanning ? (
             <div className="flex items-center gap-2 font-mono text-sm text-text/50">
-              <span className="h-2 w-2 animate-ping rounded-full bg-green" />
+              <span className="h-2 w-2 animate-ping rounded-full bg-cyan" />
               reading drawing geometry…
             </div>
           ) : (
@@ -103,7 +103,7 @@ export default function VlmCadDemo({
                 <PatrolBadge status={pass ? "PASS" : "FAIL"} />
               </div>
               {!pass && (
-                <p className="text-xs text-red/90">
+                <p className="text-xs text-rose/90">
                   {dims.weight_kg_m2} &gt; {SITE.floor_load_limit_kg_m2} kg/m² — floor-load
                   breach. Structural sign-off required.
                 </p>

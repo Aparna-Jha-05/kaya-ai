@@ -75,7 +75,7 @@ export default function PatrolRunner({
               <Loader2 className="h-3 w-3 animate-spin" /> {revealed}/4 run
             </span>
           ) : (
-            <span className="font-mono text-[11px] text-green">✓ 4/4 complete</span>
+            <span className="font-mono text-[11px] text-cyan">✓ 4/4 complete</span>
           )
         }
       />

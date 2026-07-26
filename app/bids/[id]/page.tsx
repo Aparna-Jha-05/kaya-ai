@@ -51,7 +51,7 @@ export default function BidDetailPage({ params }: { params: { id: string } }) {
               href={`/bids/${b.id}`}
               className={`rounded-md border px-3 py-1.5 font-mono text-xs transition-colors ${
                 b.id === bid.id
-                  ? "border-green/50 bg-green/10 text-green"
+                  ? "border-cyan/50 bg-cyan/10 text-cyan"
                   : "border-white/10 text-text/50 hover:border-white/25 hover:text-text"
               }`}
             >
@@ -62,7 +62,7 @@ export default function BidDetailPage({ params }: { params: { id: string } }) {
       </div>
 
       {isReject && (
-        <div className="rounded-lg border border-red/25 bg-red/5 px-4 py-2.5 text-sm text-red/90 animate-pulseRed">
+        <div className="rounded-lg border border-rose/25 bg-rose/5 px-4 py-2.5 text-sm text-rose/90 animate-pulseRed">
           This bid includes a substituted chiller. Review the extraction and checks to see the resulting engineering, carbon, and schedule exposure.
         </div>
       )}

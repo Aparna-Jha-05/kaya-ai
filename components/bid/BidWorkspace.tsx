@@ -55,7 +55,7 @@ export default function BidWorkspace({ bid }: { bid: Bid }) {
                     className="flex h-9 w-9 items-center justify-center rounded-lg border"
                   >
                     {isDone ? (
-                      <Check className="h-4 w-4 text-green" />
+                      <Check className="h-4 w-4 text-cyan" />
                     ) : (
                       <p.Icon
                         className="h-4 w-4"
@@ -76,7 +76,7 @@ export default function BidWorkspace({ bid }: { bid: Bid }) {
                       initial={{ width: "0%" }}
                       animate={{ width: i < lit ? "100%" : "0%" }}
                       transition={{ duration: 0.5 }}
-                      className="absolute inset-y-0 left-0 bg-green"
+                      className="absolute inset-y-0 left-0 bg-cyan"
                     />
                   </div>
                 )}
