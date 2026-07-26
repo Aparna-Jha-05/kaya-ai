@@ -42,7 +42,7 @@ export default function BidReviewWorkspace({ bid }: { bid: Bid }) {
       <section className="rounded-xl border border-white/10 bg-card/60 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-widest text-blue">Bid review</p>
+            <p className="page-eyebrow">Bid review</p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <h2 className="text-xl font-semibold text-text">{bid.vendor}</h2>
               <span className="rounded px-2 py-1 text-[10px] font-bold uppercase" style={{ color: reviewState.color, backgroundColor: `${reviewState.color}18` }}>{reviewState.label}</span>

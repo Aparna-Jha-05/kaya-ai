@@ -35,4 +35,22 @@ export default function BidDetailClient({ id }: { id: string }) {
   return <div className="space-y-6"><Header title={sample.vendor} subtitle={`${sample.equipment_type} · ${sample.model} · ${sample.po_number}`} badge={isReject ? "Do not select" : sample.recommendation === "RECOMMENDED" ? "Ready for decision" : "Needs review"} color={isReject ? COLORS.rose : sample.recommendation === "RECOMMENDED" ? COLORS.cyan : COLORS.amber} /><p className="rounded-lg border border-amber/25 bg-amber/5 px-4 py-2.5 text-sm text-amber/90">Sample fallback is shown because the bid service is unavailable. It cannot record actions or replace an uploaded record.</p><div className="flex gap-2">{BIDS.map((bid) => <Link key={bid.id} href={`/bids/${bid.id}`} className={`rounded-md border px-3 py-1.5 font-mono text-xs transition-colors ${bid.id === sample.id ? "border-cyan/50 bg-cyan/10 text-cyan" : "border-white/10 text-text/50 hover:border-white/25 hover:text-text"}`}>{bid.vendor.replace("Vendor ", "V")}</Link>)}</div><BidReviewWorkspace bid={sample} key={sample.id} /></div>;
 }
 
-function Header({ title, subtitle, badge, color }: { title: string; subtitle: string; badge?: string; color?: string }) { return <div><Link href="/bids" className="mb-2 inline-flex items-center gap-1.5 text-xs text-text/50 hover:text-text"><ArrowLeft className="h-3.5 w-3.5" /> Back to comparison</Link><h1 className="flex items-center gap-3 text-2xl font-bold tracking-tight text-text">{title}{badge && <span className="rounded-md px-2 py-0.5 text-[11px] font-bold uppercase" style={{ color, backgroundColor: `${color}1a` }}>{badge}</span>}</h1><p className="mt-1 font-mono text-sm text-text/45">{subtitle}</p></div>; }
+function Header({ title, subtitle, badge, color }: { title: string; subtitle: string; badge?: string; color?: string }) {
+  return (
+    <div>
+      <Link href="/bids" className="mb-3 inline-flex items-center gap-1.5 text-xs text-text/50 hover:text-text">
+        <ArrowLeft className="h-3.5 w-3.5" /> Back to comparison
+      </Link>
+      <p className="page-eyebrow mt-1">Bid review</p>
+      <h1 className="mt-1 flex flex-wrap items-center gap-3 text-2xl font-bold tracking-tight text-text">
+        {title}
+        {badge && (
+          <span className="rounded-md px-2 py-0.5 text-[11px] font-bold uppercase" style={{ color, backgroundColor: `${color}1a` }}>
+            {badge}
+          </span>
+        )}
+      </h1>
+      <p className="mt-1 text-sm leading-relaxed text-text/50">{subtitle}</p>
+    </div>
+  );
+}

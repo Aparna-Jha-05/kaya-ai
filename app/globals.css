@@ -104,10 +104,29 @@ textarea {
 
 /* Dense uppercase utility text remains legible on standard laptop displays. */
 .ui-label {
+  font-family: var(--font-mono), monospace;
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   line-height: 1.35;
+}
+
+.page-eyebrow {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-cyan));
+}
+
+.table-header {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(var(--color-text), 0.45);
 }
 
 /* Code and machine values need a little more leading than prose at small sizes. */
