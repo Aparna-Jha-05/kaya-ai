@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: po-lice-backend-staging
+    runtime: python
+    plan: free
+    region: singapore
+    branch: main
+    autoDeployTrigger: checksPass
+    buildCommand: python -m pip install -r backend/requirements.txt
+    startCommand: PYTHONPATH=backend uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    buildFilter:
+      paths:
+        - backend/**
+        - scripts/**
+        - render.yaml
+    envVars:
+      - key: PO_LICE_ALLOWED_ORIGINS
+        sync: false
+      - key: PO_LICE_PROJECT_ID
+        value: demo
+      - key: OLLAMA_ENABLED
+        value: "false"
+      - key: REMOTE_EXTRACTION_ENABLED
+        value: "false"
