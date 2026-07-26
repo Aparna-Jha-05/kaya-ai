@@ -15,7 +15,7 @@ class ConstraintGraph:
     contractual_warranty_min_years: int = 5
     market_benchmark_inr: float = 50_000_000.0
     maximum_delivery_weeks: int = 12
-    mcp_sync_source: str = "demo-revit"
+    constraint_source: str = "local project configuration"
 
 
 class PatrolEngineService:
@@ -50,7 +50,7 @@ class PatrolEngineService:
         results.append(PatrolResult(patrol_name="BUILDING_PATROL", status=building_status,
             reason=("; ".join(building_breaches).capitalize() + "." if building_breaches else f"Review required: no extracted {', '.join(building_gaps)}." if building_gaps else "Extracted dimensions and contractual warranty are within the approved constraint envelope."),
             rule_broken="CONSTRAINT_ENVELOPE_BREACH" if building_breaches else "INSUFFICIENT_EVIDENCE" if building_gaps else None,
-            evidence={"power_draw_kw": equipment.power_draw_kw, "substation_limit_kw": graph.substation_limit_kw, "width_m": equipment.width_m, "door_limit_m": graph.door_limit_m, "warranty_years": warranty, "contractual_warranty_min_years": graph.contractual_warranty_min_years, "constraint_sync": {"active": True, "source": graph.mcp_sync_source}}))
+            evidence={"power_draw_kw": equipment.power_draw_kw, "substation_limit_kw": graph.substation_limit_kw, "width_m": equipment.width_m, "door_limit_m": graph.door_limit_m, "warranty_years": warranty, "contractual_warranty_min_years": graph.contractual_warranty_min_years, "constraint_source": graph.constraint_source}))
 
         market_floor = graph.market_benchmark_inr * .8
         carbon_fail = equipment.embodied_carbon_factor is not None and equipment.embodied_carbon_factor > graph.carbon_cap_kgco2e

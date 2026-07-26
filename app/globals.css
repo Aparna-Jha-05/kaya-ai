@@ -2,24 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * A restrained blue-slate light scheme reduces glare in long review sessions;
+ * the dark scheme uses a non-black canvas to avoid halation. Status hues are
+ * deeper in light mode so small labels retain useful contrast.
+ */
 :root {
+  color-scheme: light;
+  --color-bg: 248 250 252;
+  --color-card: 255 255 255;
+  --color-surface: 241 245 249;
+  --color-inset: 248 250 252;
+  --color-line: 203 213 225;
+  --color-text: 15 23 42;
+  --color-muted: 71 85 105;
+  --color-overlay: 15 23 42;
+  --color-on-accent: 248 250 252;
+  --color-cyan: 3 105 161;
+  --color-violet: 91 75 196;
+  --color-amber: 161 98 7;
+  --color-blue: 29 78 216;
+  --color-rose: 190 18 60;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --color-bg: 9 13 22;
+    --color-card: 17 24 39;
+    --color-surface: 15 23 42;
+    --color-inset: 11 18 32;
+    --color-line: 30 41 59;
+    --color-text: 248 250 252;
+    --color-muted: 148 163 184;
+    --color-overlay: 248 250 252;
+    --color-on-accent: 9 13 22;
+    --color-cyan: 56 189 248;
+    --color-violet: 129 140 248;
+    --color-amber: 251 191 36;
+    --color-blue: 96 165 250;
+    --color-rose: 244 63 94;
+  }
+}
+
+:root[data-theme="dark"] {
   color-scheme: dark;
-  --canvas: #090d16;
-  --surface: #111827;
-  --surface-inset: #080e1a;
-  --line: #1e293b;
-  --text: #f8fafc;
-  --muted: #94a3b8;
-  --cyan: #38bdf8;
-  --violet: #818cf8;
-  --amber: #fbbf24;
-  --rose: #f43f5e;
+  --color-bg: 9 13 22;
+  --color-card: 17 24 39;
+  --color-surface: 15 23 42;
+  --color-inset: 11 18 32;
+  --color-line: 30 41 59;
+  --color-text: 248 250 252;
+  --color-muted: 148 163 184;
+  --color-overlay: 248 250 252;
+  --color-on-accent: 9 13 22;
+  --color-cyan: 56 189 248;
+  --color-violet: 129 140 248;
+  --color-amber: 251 191 36;
+  --color-blue: 96 165 250;
+  --color-rose: 244 63 94;
 }
 
 html,
 body {
-  background-color: var(--canvas);
-  color: var(--text);
+  background-color: rgb(var(--color-bg));
+  color: rgb(var(--color-text));
+}
+
+html {
+  /* Preserve readable proportions when users increase their browser type size. */
+  font-size: 100%;
 }
 
 :focus-visible {
@@ -28,11 +80,39 @@ body {
 }
 
 body {
+  font-size: 0.9375rem;
+  line-height: 1.5;
   font-feature-settings: "cv11", "ss01";
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Thin dark slate scrollbars */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* Dense uppercase utility text remains legible on standard laptop displays. */
+.ui-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+}
+
+/* Code and machine values need a little more leading than prose at small sizes. */
+code,
+kbd,
+.font-mono {
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+/* Thin slate scrollbars keep dense review tables visually quiet. */
 *::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -41,14 +121,14 @@ body {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background: var(--line);
+  background: rgb(var(--color-line));
   border-radius: 3px;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: var(--cyan);
+  background: rgb(var(--color-cyan));
 }
 
-/* Custom Glow Effects for Motion & Visual Polish */
+/* Status glows are reserved for compact attention signals. */
 .glow-cyan {
   box-shadow: 0 0 18px rgba(56, 189, 248, 0.25);
 }
@@ -65,7 +145,14 @@ body {
   box-shadow: 0 0 18px rgba(129, 140, 248, 0.25);
 }
 
-/* Subtle grid backdrop */
+/* Native controls otherwise retain a browser-default canvas after theme changes. */
+input,
+select,
+textarea {
+  color-scheme: inherit;
+}
+
+/* Optional subtle grid for data-heavy visualizations. */
 .terminal-grid {
   background-image:
     linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),

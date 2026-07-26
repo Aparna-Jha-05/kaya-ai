@@ -9,6 +9,9 @@ npm-debug.log*
 .vercel
 *.tsbuildinfo
 next-env.d.ts
+__pycache__/
+*.py[cod]
+backend/data/
 
 # Documentation & PDF exclusions
 /docs/

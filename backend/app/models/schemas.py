@@ -76,6 +76,29 @@ class DocketScorecard(StrictModel):
     compliance_drift_report: Optional[Dict[str, Any]] = None
 
 
+class BidRecord(StrictModel):
+    id: str
+    filename: str
+    submitted_at: str
+    source: VendorBidExtract
+    scorecard: DocketScorecard
+
+
+class ActivityEvent(StrictModel):
+    id: str
+    bid_id: str
+    timestamp: str
+    check_name: str
+    action: str
+    rule: str
+    evidence: str
+
+
+class ReviewerActionRequest(StrictModel):
+    action: str = Field(pattern="^(RFI_DRAFT_APPROVED|REVIEWED_DO_NOT_SELECT|REVIEWED_READY_FOR_DECISION)$")
+    note: str = Field(min_length=3, max_length=2_000)
+
+
 class SimulationRequest(StrictModel):
     """Scenario inputs only; no compliance outcome can be supplied by a client."""
     base_capex_inr: float = Field(gt=0, le=10**13)

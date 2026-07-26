@@ -1,18 +1,19 @@
 // Design tokens + thresholds + labels, kept in one place so a judge can audit them.
 
 export const COLORS = {
-  bg: "#090D16",
-  card: "#111827",
-  surface: "#0F172A",
-  inset: "#080E1A",
-  line: "#1E293B",
-  text: "#F8FAFC",
-  muted: "#94A3B8",
-  cyan: "#38BDF8",
-  violet: "#818CF8",
-  amber: "#FBBF24",
-  blue: "#60A5FA",
-  rose: "#F43F5E",
+  // CSS variables keep SVG, charts, and inline styles in sync with the UI theme.
+  bg: "rgb(var(--color-bg))",
+  card: "rgb(var(--color-card))",
+  surface: "rgb(var(--color-surface))",
+  inset: "rgb(var(--color-inset))",
+  line: "rgb(var(--color-line))",
+  text: "rgb(var(--color-text))",
+  muted: "rgb(var(--color-muted))",
+  cyan: "rgb(var(--color-cyan))",
+  violet: "rgb(var(--color-violet))",
+  amber: "rgb(var(--color-amber))",
+  blue: "rgb(var(--color-blue))",
+  rose: "rgb(var(--color-rose))",
 } as const;
 
 export const PATROL_META = {
@@ -39,7 +40,7 @@ export const PATROL_META = {
   },
   traffic: {
     key: "traffic",
-    name: "Schedule risk",
+    name: "Schedule impact",
     color: COLORS.blue,
     caption: "estimates the effect of late delivery on the schedule",
     icon: "Truck",
@@ -56,7 +57,7 @@ export const GLOSSARY: Record<string, string> = {
   ROJ: "Required-On-Job date — the deadline a piece of equipment must be on site to keep the master schedule.",
   Engineering: "Checks power, cooling, water and floor load against hard site limits.",
   Carbon: "Compares embodied carbon with the project kgCO₂e budget.",
-  "Schedule risk": "Estimates delay exposure in days from the project schedule.",
+  "Schedule impact": "Estimates delay exposure in days from the project schedule.",
   "Pydantic JSON": "A schema-validated JSON object — every field has a type and confidence score.",
 };
 
@@ -67,3 +68,9 @@ export const STATUS_COLOR: Record<Status, string> = {
   FAIL: COLORS.rose,
   FLAG: COLORS.amber,
 };
+
+export const REVIEW_STATE = {
+  RECOMMENDED: { label: "Ready for decision", color: COLORS.cyan },
+  ACCEPTABLE: { label: "Needs review", color: COLORS.amber },
+  REJECT: { label: "Do not select", color: COLORS.rose },
+} as const;
