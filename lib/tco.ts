@@ -1,19 +1,19 @@
 // TCO² scorecard helpers.
 // scorecardFromRecord / allScorecardsFromRecords operate on live BidRecord objects.
 // scorecard / allScorecards retain the mock-Bid path for offline/demo seeding.
-import type { BidRecord } from "@/lib/api";
+import type { BidRecord, CheckStatus } from "@/lib/api";
 import { Bid, BIDS } from "./mockData";
 import { runAllPatrols } from "./patrols";
 
 export interface ScorecardRow {
   id: string;
   vendor: string;
-  upfront_cost_cr: number;
-  engineering: "PASS" | "FAIL";
-  vendorRisk: "Low" | "Med" | "High";
-  carbon: "PASS" | "FAIL";
-  scheduleRisk: "Low" | "Med" | "High";
-  tco2_cr: number;
+  upfront_cost_cr: number | null;
+  engineering: CheckStatus;
+  vendorRisk: "Low" | "Med" | "High" | "Unknown";
+  carbon: CheckStatus;
+  scheduleRisk: "Low" | "Med" | "High" | "Unknown";
+  tco2_cr: number | null;
   decision: "RECOMMENDED" | "REVIEW_REQUIRED" | "REJECT";
 }
 
@@ -43,17 +43,17 @@ export function scorecardFromRecord(record: BidRecord): ScorecardRow {
   const delayDays =
     typeof traffic?.evidence?.delay_days === "number"
       ? (traffic.evidence.delay_days as number)
-      : 0;
+      : null;
 
   return {
     id: record.id,
     vendor: record.source.vendor_name,
-    upfront_cost_cr: record.source.bid_amount_inr != null ? record.source.bid_amount_inr / 10_000_000 : 0,
-    engineering: building?.status === "FAIL" ? "FAIL" : "PASS",
-    vendorRisk: riskBucket(vice?.risk_score ?? 0),
-    carbon: green?.status === "FAIL" ? "FAIL" : "PASS",
-    scheduleRisk: scheduleBucket(delayDays),
-    tco2_cr: record.scorecard.calculated_tco2_inr != null ? record.scorecard.calculated_tco2_inr / 10_000_000 : 0,
+    upfront_cost_cr: record.source.bid_amount_inr != null ? record.source.bid_amount_inr / 10_000_000 : null,
+    engineering: building?.status ?? "FLAG",
+    vendorRisk: vice?.risk_score == null ? "Unknown" : riskBucket(vice.risk_score),
+    carbon: green?.status ?? "FLAG",
+    scheduleRisk: delayDays == null ? "Unknown" : scheduleBucket(delayDays),
+    tco2_cr: record.scorecard.calculated_tco2_inr != null ? record.scorecard.calculated_tco2_inr / 10_000_000 : null,
     decision: record.scorecard.recommendation,
   };
 }
