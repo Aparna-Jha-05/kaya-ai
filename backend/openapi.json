@@ -66,6 +66,9 @@
           "source": {
             "$ref": "#/components/schemas/VendorBidExtract"
           },
+          "source_document": {
+            "$ref": "#/components/schemas/SourceDocumentProvenance"
+          },
           "submitted_at": {
             "title": "Submitted At",
             "type": "string"
@@ -81,6 +84,7 @@
           "filename",
           "submitted_at",
           "source",
+          "source_document",
           "scorecard"
         ],
         "title": "BidRecord",
@@ -139,6 +143,95 @@
           "max_embodied_carbon_kg"
         ],
         "title": "ConstraintUpdateRequest",
+        "type": "object"
+      },
+      "DimensionAnnotation": {
+        "additionalProperties": false,
+        "properties": {
+          "bbox": {
+            "maxItems": 4,
+            "minItems": 4,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Bbox",
+            "type": "array"
+          },
+          "coordinate_system": {
+            "default": "PDF_POINTS_TOP_LEFT",
+            "title": "Coordinate System",
+            "type": "string"
+          },
+          "field": {
+            "$ref": "#/components/schemas/FactField"
+          },
+          "interpretation_status": {
+            "default": "DETECTED_TEXT_ANNOTATION",
+            "title": "Interpretation Status",
+            "type": "string"
+          },
+          "normalized_value": {
+            "title": "Normalized Value",
+            "type": "number"
+          },
+          "page": {
+            "maximum": 100000.0,
+            "minimum": 1.0,
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_height": {
+            "exclusiveMinimum": 0.0,
+            "title": "Page Height",
+            "type": "number"
+          },
+          "page_rotation": {
+            "maximum": 359.0,
+            "minimum": 0.0,
+            "title": "Page Rotation",
+            "type": "integer"
+          },
+          "page_width": {
+            "exclusiveMinimum": 0.0,
+            "title": "Page Width",
+            "type": "number"
+          },
+          "source_excerpt": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Source Excerpt",
+            "type": "string"
+          },
+          "unit": {
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "normalized_value",
+          "unit",
+          "source_excerpt",
+          "page",
+          "bbox",
+          "page_width",
+          "page_height",
+          "page_rotation"
+        ],
+        "title": "DimensionAnnotation",
         "type": "object"
       },
       "DocketScorecard": {
@@ -249,6 +342,51 @@
               }
             ],
             "title": "Creator Tool"
+          },
+          "is_encrypted": {
+            "default": false,
+            "title": "Is Encrypted",
+            "type": "boolean"
+          },
+          "modification_date": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modification Date"
+          },
+          "parser_warnings": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Parser Warnings",
+            "type": "array"
+          },
+          "producer": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Producer"
+          },
+          "review_signals": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Review Signals",
+            "type": "array"
           }
         },
         "title": "DocumentMetadata",
@@ -458,6 +596,14 @@
             "title": "Candidates",
             "type": "array"
           },
+          "dimension_annotations": {
+            "items": {
+              "$ref": "#/components/schemas/DimensionAnnotation"
+            },
+            "maxItems": 100,
+            "title": "Dimension Annotations",
+            "type": "array"
+          },
           "issues": {
             "items": {
               "$ref": "#/components/schemas/ExtractionIssue"
@@ -534,6 +680,18 @@
             ],
             "title": "Bbox"
           },
+          "coordinate_system": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coordinate System"
+          },
           "extractor": {
             "maxLength": 64,
             "minLength": 1,
@@ -585,6 +743,43 @@
               }
             ],
             "title": "Page"
+          },
+          "page_height": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Height"
+          },
+          "page_rotation": {
+            "anyOf": [
+              {
+                "maximum": 359.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Rotation"
+          },
+          "page_width": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Width"
           },
           "provider": {
             "$ref": "#/components/schemas/ExtractionProvider"
@@ -1062,6 +1257,77 @@
           "created_at"
         ],
         "title": "SiteConstraintRecord",
+        "type": "object"
+      },
+      "SourceDocumentProvenance": {
+        "additionalProperties": false,
+        "properties": {
+          "byte_length": {
+            "minimum": 0.0,
+            "title": "Byte Length",
+            "type": "integer"
+          },
+          "ingestion_time": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Ingestion Time",
+            "type": "string"
+          },
+          "integrity_signals": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Integrity Signals",
+            "type": "array"
+          },
+          "media_type": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Media Type",
+            "type": "string"
+          },
+          "original_filename": {
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Original Filename",
+            "type": "string"
+          },
+          "project_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Project Id",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256",
+            "type": "string"
+          },
+          "storage_reference": {
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Storage Reference",
+            "type": "string"
+          },
+          "uploader_identity": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Uploader Identity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "storage_reference",
+          "sha256",
+          "original_filename",
+          "media_type",
+          "byte_length",
+          "uploader_identity",
+          "ingestion_time"
+        ],
+        "title": "SourceDocumentProvenance",
         "type": "object"
       },
       "ValidationError": {

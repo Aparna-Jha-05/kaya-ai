@@ -5,6 +5,7 @@ import shutil
 import tempfile
 import unittest
 
+import fitz
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
@@ -50,6 +51,101 @@ class ApiContractTests(unittest.TestCase):
         )
         scorecard = PatrolEngineService.run_all_patrols(source, graph=ConstraintGraph())
         return api.bid_repository.save_bid("api.pdf", b"%PDF-1.4 API", source, scorecard)
+
+    @staticmethod
+    def _pdf_bid(include_width: bool = True) -> bytes:
+        document = fitz.open()
+        page = document.new_page(width=612, height=792)
+        width_line = "Equipment Width: 1.8 m\n" if include_width else ""
+        page.insert_text(
+            (72, 72),
+            "VENDOR: Evidence Test Vendor\n"
+            "Equipment Model: EV-1\n"
+            "Upfront Bid Amount: INR 42,000,000\n"
+            "Promised Delivery: 10 Weeks\n"
+            "OSHA Certified: Yes\n"
+            "Substation Power Draw: 1000 kW\n"
+            "Cooling Capacity: 1200 kW\n"
+            f"{width_line}"
+            "Embodied Carbon Factor: 400 kgCO2e/ton",
+        )
+        document.set_metadata(
+            {
+                "producer": "PO-LICE test fixture",
+                "creationDate": "D:20260102000000Z",
+                "modDate": "D:20250101000000Z",
+            }
+        )
+        contents = document.tobytes()
+        document.close()
+        return contents
+
+    def test_upload_provenance_idempotency_and_evidence_regions(self):
+        contents = self._pdf_bid()
+        first = self.client.post(
+            "/api/v1/bids/upload",
+            headers={"Idempotency-Key": "upload-contract-1"},
+            files={"file": ("evidence.pdf", contents, "application/pdf")},
+        )
+        self.assertEqual(first.status_code, 200)
+        record = first.json()
+        self.assertEqual(record["source_document"]["byte_length"], len(contents))
+        self.assertEqual(record["source_document"]["project_id"], api.PROJECT_ID)
+        self.assertEqual(len(record["source_document"]["sha256"]), 64)
+        self.assertIn(
+            "MODIFICATION_BEFORE_CREATION",
+            record["source"]["document_metadata"]["review_signals"],
+        )
+
+        annotation = record["source"]["extraction_report"]["dimension_annotations"][0]
+        self.assertEqual(annotation["field"], "equipment.width_m")
+        self.assertEqual(annotation["unit"], "m")
+        self.assertEqual(annotation["page"], 1)
+        self.assertEqual(annotation["page_rotation"], 0)
+        self.assertEqual(annotation["coordinate_system"], "PYMUPDF_PAGE_SPACE_TOP_LEFT_POINTS")
+        self.assertEqual(len(annotation["bbox"]), 4)
+        self.assertGreater(annotation["page_width"], 0)
+        self.assertGreater(annotation["page_height"], 0)
+
+        replay = self.client.post(
+            "/api/v1/bids/upload",
+            headers={"Idempotency-Key": "upload-contract-1"},
+            files={"file": ("retry.pdf", contents, "application/pdf")},
+        )
+        self.assertEqual(replay.status_code, 200)
+        self.assertEqual(replay.json()["id"], record["id"])
+        self.assertEqual(len(api.bid_repository.list_bids()), 1)
+
+        duplicate = self.client.post(
+            "/api/v1/bids/upload",
+            headers={"Idempotency-Key": "upload-contract-2"},
+            files={"file": ("duplicate.pdf", contents, "application/pdf")},
+        )
+        self.assertEqual(duplicate.status_code, 200)
+        self.assertNotEqual(duplicate.json()["id"], record["id"])
+        self.assertIn(
+            f"DUPLICATE_BYTES:{record['id']}",
+            duplicate.json()["source_document"]["integrity_signals"],
+        )
+
+        unsupported = self.client.post(
+            "/api/v1/bids/upload",
+            headers={"Idempotency-Key": "upload-contract-3"},
+            files={
+                "file": (
+                    "no-width.pdf",
+                    self._pdf_bid(include_width=False),
+                    "application/pdf",
+                )
+            },
+        )
+        self.assertEqual(unsupported.status_code, 200)
+        report = unsupported.json()["source"]["extraction_report"]
+        self.assertEqual(report["dimension_annotations"], [])
+        self.assertIn(
+            "DIMENSION_ANNOTATION_UNAVAILABLE",
+            [issue["code"] for issue in report["issues"]],
+        )
 
     def test_officer_decision_payload_and_conflict(self):
         bid = self._saved_bid()

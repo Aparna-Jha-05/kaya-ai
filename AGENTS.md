@@ -43,10 +43,14 @@ As of the current checkout:
 
 - FastAPI exposes upload, simulation, bid list/detail/source/delete, reviewer action, and activity endpoints.
 - Uploaded bid records and source PDFs use explicit demo-mode
-  SQLite/filesystem persistence.
+  SQLite/filesystem persistence with immutable source provenance and
+  project-scoped upload idempotency.
 - SQLite persists optimistic officer-decision versions, site-constraint
   versions, and separate RFI draft/approval states.
-- PDF extraction is PyMuPDF plus conservative regex parsing, followed by optional Ollama/Gemini extraction that is disabled by default.
+- PDF extraction is PyMuPDF plus conservative regex parsing with page
+  rectangles, page geometry, dimension annotations, and neutral metadata
+  review signals, followed by optional Ollama/Gemini extraction that is
+  disabled by default.
 - Patrol decisions use in-process Python rules and hard-coded `ConstraintGraph` values.
 - duplicate/integrity correlation is process-local memory and resets on restart.
 - the dashboard uses `lib/api.ts` for the implemented bid workflow.
