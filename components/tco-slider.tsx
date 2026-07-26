@@ -129,13 +129,13 @@ export default function TCOSlider({
           <div className="text-sm font-bold font-mono text-[#fbbf24] mt-0.5">₹{riskPenaltyCr.toFixed(2)}Cr</div>
         </div>
         <div>
-          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">5-year total</div>
+          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">5-year cost</div>
           <div className={`text-sm font-bold font-mono mt-0.5 ${isReject ? "text-[#f43f5e]" : "text-[#38bdf8]"}`}>
             ₹{recalculatedTCO2.toFixed(2)}Cr
           </div>
         </div>
         <div>
-          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">Review result</div>
+          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">Review state</div>
           <div className={`text-xs font-extrabold uppercase mt-1 ${isReject ? "text-[#f43f5e]" : "text-[#38bdf8]"}`}>
             {isReject ? "Do not select" : "Ready for decision"}
           </div>

@@ -11,7 +11,6 @@ import PatrolBadge from "@/components/bid/PatrolBadge";
 import EvidenceBoard from "@/components/bid/EvidenceBoard";
 import CADVisualizer from "@/components/cad-visualizer";
 import CaseFile from "@/components/agent/CaseFile";
-import ConfidenceHeatmap from "@/components/confidence-heatmap";
 import { integritySignal, marketSignal } from "@/lib/integrity";
 
 type Tab = "decision" | "evidence" | "checks" | "consequences" | "activity";
@@ -55,7 +54,7 @@ export default function BidReviewWorkspace({ bid }: { bid: Bid }) {
           <div className="grid grid-cols-3 gap-3 text-right text-xs">
             <Metric label="Upfront cost" value={`₹${bid.upfront_cost_cr.toFixed(1)} Cr`} />
             <Metric label="5-year cost" value={`₹${bid.tco2_cr.toFixed(1)} Cr`} />
-            <Metric label="Schedule p95" value={`${results.traffic.p95_days}d`} />
+            <Metric label="P95 delay" value={`+${results.traffic.p95_days}d`} />
           </div>
         </div>
       </section>
@@ -111,32 +110,23 @@ function EvidenceTab({ bid }: { bid: Bid }) {
   return (
     <div className="space-y-5">
       <Card>
-        <CardHeader title="Extracted source data" caption="Values include extraction confidence. Confirm low-confidence values before using them in a review." />
+        <CardHeader title="Extracted source data" caption="Confirm low-confidence values before using them in a review." />
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-white/10 text-left text-[11px] uppercase tracking-wide text-text/40"><th className="px-4 py-3 font-medium">Field</th><th className="px-4 py-3 font-medium">Extracted value</th><th className="px-4 py-3 font-medium">Confidence</th><th className="px-4 py-3 font-medium">Evidence state</th></tr></thead>
+            <thead><tr className="border-b border-white/10 text-left text-[11px] uppercase tracking-wide text-text/40"><th className="px-4 py-3 font-medium">Field</th><th className="px-4 py-3 font-medium">Extracted value</th><th className="px-4 py-3 font-medium">Confidence</th></tr></thead>
             <tbody>
               {displayFields.map(({ key, label, unit }) => {
                 const raw = bid[key];
                 const value = typeof raw === "boolean" ? (raw ? "Present" : "Missing") : `${Number(raw).toLocaleString()}${unit ? ` ${unit}` : ""}`;
                 const score = confidence[key as string];
                 const needsReview = score != null && score < 0.85;
-                return <tr key={key} className="border-b border-white/5"><td className="px-4 py-3 text-text/75">{label}</td><td className="px-4 py-3 font-mono text-text">{value}</td><td className="px-4 py-3 font-mono" style={{ color: needsReview ? COLORS.amber : COLORS.cyan }}>{score == null ? "Not scored" : `${Math.round(score * 100)}%`}</td><td className="px-4 py-3 text-xs" style={{ color: needsReview ? COLORS.amber : COLORS.cyan }}>{needsReview ? "Review required" : "Ready for validation"}</td></tr>;
+                return <tr key={key} className="border-b border-white/5"><td className="px-4 py-3 text-text/75">{label}</td><td className="px-4 py-3 font-mono text-text">{value}</td><td className="px-4 py-3 font-mono" style={{ color: needsReview ? COLORS.amber : COLORS.cyan }}>{score == null ? "Not scored" : `${Math.round(score * 100)}%`}</td></tr>;
               })}
             </tbody>
           </table>
         </div>
       </Card>
-      <Card>
-        <CardHeader title="Document metadata" caption="Metadata gives context; it is not evidence of coordination." />
-        <div className="flex flex-wrap gap-2 p-4 text-xs">
-          <span className="rounded border border-white/10 bg-surface px-2 py-1 font-mono text-text/55">Source: submitted bid PDF</span>
-          <span className="rounded border border-white/10 bg-surface px-2 py-1 font-mono text-text/55">Document author: proposal author</span>
-          <span className="rounded border border-white/10 bg-surface px-2 py-1 font-mono text-text/55">Submission record: retained</span>
-          {integrity.status === "FLAG" && <span className="rounded border border-violet/40 bg-violet/10 px-2 py-1 font-mono text-violet">Evidence signals: {integrity.metadata.length - 1} need review</span>}
-        </div>
-      </Card>
-      <ConfidenceHeatmap key={bid.id} vendorName={bid.vendor} />
+      {integrity.status === "FLAG" && <Card><CardHeader title="Related records" caption="Supporting signals from retained vendor records. They require reviewer interpretation." /><div className="p-4 text-sm text-violet">{integrity.metadata.length - 1} related-record signals need review.</div></Card>}
       {bid.id === "B" && <CADVisualizer initialWidthM={2.1} doorLimitM={1.9} />}
     </div>
   );
@@ -159,7 +149,7 @@ function PatrolEnhancements({ bid, patrol }: { bid: Bid; patrol: "building" | "g
       : patrol === "vice"
         ? [`Contract record score: ${integrity.aci}/100`, `Reliability evidence: ${integrity.summary}`, `Outlook: ${(integrity.aci > 0 || (bid.vendor_history.late_deliveries / bid.vendor_history.total_deliveries) >= 0.4) ? "risk increasing" : "stable"}`]
         : ["Safe order date: 02 Aug 2026", "Re-run this check if a post-award specification changes."];
-  return <div className="mt-3 border-t border-white/5 pt-3"><p className="font-mono text-[9px] uppercase tracking-wider text-text/40">Supporting context</p><ul className="mt-1.5 space-y-1 text-[11px] text-text/55">{content.map((item) => <li key={item}>• {item}</li>)}</ul></div>;
+  return <div className="mt-3 border-t border-white/5 pt-3"><p className="font-mono text-[9px] uppercase tracking-wider text-text/40">Review context</p><ul className="mt-1.5 space-y-1 text-[11px] text-text/55">{content.map((item) => <li key={item}>• {item}</li>)}</ul></div>;
 }
 
 function ActivityTab({ bid }: { bid: Bid }) {

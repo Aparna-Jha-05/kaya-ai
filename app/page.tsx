@@ -10,12 +10,11 @@ export default function ReviewQueuePage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-mono text-xs uppercase tracking-widest text-blue">Review queue</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-text">Prioritise procurement decisions</h1>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-text">Bids requiring review</h1>
           <p className="mt-1 max-w-2xl text-sm text-text/50">
-            IIT Smart Campus Phase 1 · chilled-water plant. Start with items that need action, then compare bids or inspect a single bid.
+            IIT Smart Campus Phase 1 · chilled-water plant. Open a bid for evidence, or compare bids side by side.
           </p>
         </div>
-        <p className="text-xs text-text/40">Demonstration review set</p>
       </div>
 
       <SummaryRow />

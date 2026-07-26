@@ -27,23 +27,23 @@ const ITEMS: CaseItem[] = [
   {
     icon: FileSearch,
     color: COLORS.blue,
-    title: "Vendor B reliability evidence reviewed",
+    title: "Review Vendor B delivery record",
     meta: "3 delivery delays · 1 dispute found",
     href: "/bids/B",
   },
   {
     icon: Clock,
     color: COLORS.amber,
-    title: "Vendor B schedule exposure needs review",
-    meta: "planning handoff pending",
+    title: "Review Vendor B schedule impact",
+    meta: "planning review pending",
     mocked: true,
     href: "/bids/B",
   },
   {
     icon: CheckCircle2,
     color: COLORS.cyan,
-    title: "Vendor A is ready for review",
-    meta: "all hard checks passed",
+    title: "Vendor A ready for decision",
+    meta: "hard checks passed",
     href: "/bids/A",
   },
 ];

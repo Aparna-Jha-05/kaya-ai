@@ -63,7 +63,7 @@ export default function AuditPage() {
             <Lock className="h-5 w-5 text-cyan" /> Activity log
           </h1>
           <p className="mt-1 text-sm text-text/50">
-            Every check and reviewer workflow action is timestamped.
+            Timestamped checks and reviewer actions.
           </p>
         </div>
         <button
@@ -77,10 +77,10 @@ export default function AuditPage() {
       <Card>
         <CardHeader
           title={`${rows.length} recorded events`}
-          caption="Demonstration data is stored in this browser session and resets on refresh."
+          caption="Demonstration data resets when this browser session ends."
           right={
             <Link href="/bids/B" className="text-xs text-blue hover:underline">
-              open Vendor B →
+              Open Vendor B →
             </Link>
           }
         />

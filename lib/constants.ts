@@ -41,7 +41,7 @@ export const PATROL_META = {
   },
   traffic: {
     key: "traffic",
-    name: "Schedule risk",
+    name: "Schedule impact",
     color: COLORS.blue,
     caption: "estimates the effect of late delivery on the schedule",
     icon: "Truck",
@@ -58,7 +58,7 @@ export const GLOSSARY: Record<string, string> = {
   ROJ: "Required-On-Job date — the deadline a piece of equipment must be on site to keep the master schedule.",
   Engineering: "Checks power, cooling, water and floor load against hard site limits.",
   Carbon: "Compares embodied carbon with the project kgCO₂e budget.",
-  "Schedule risk": "Estimates delay exposure in days from the project schedule.",
+  "Schedule impact": "Estimates delay exposure in days from the project schedule.",
   "Pydantic JSON": "A schema-validated JSON object — every field has a type and confidence score.",
 };
 

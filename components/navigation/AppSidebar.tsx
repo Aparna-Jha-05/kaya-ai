@@ -44,7 +44,7 @@ export default function AppSidebar() {
       </nav>
 
       <div className="mt-auto rounded-lg border border-white/10 bg-surface/60 p-3">
-        <p className="font-mono text-[10px] uppercase tracking-wider text-text/40">Review principle</p>
+        <p className="font-mono text-[10px] uppercase tracking-wider text-text/40">Decision rule</p>
         <p className="mt-1 text-xs leading-relaxed text-text/60">Extracted data is cited. Deterministic rules assess compliance. Reviewers authorize actions.</p>
       </div>
     </aside>

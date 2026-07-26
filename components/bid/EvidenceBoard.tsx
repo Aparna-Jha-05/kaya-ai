@@ -125,7 +125,7 @@ export default function EvidenceBoard({ bid }: { bid: Bid }) {
     <Card>
       <CardHeader
         title="Downstream impact"
-        caption="See how the proposed substitute affects engineering, carbon, reliability, documents, and schedule. Select a node for its supporting evidence."
+        caption="See how the proposed substitute affects engineering, carbon, vendor reliability, documents, and schedule. Select a node for evidence."
         right={bid.id === "B" ? <button type="button" aria-pressed={postAward} onClick={() => setPostAward((value) => !value)} className={`rounded border px-2 py-1 text-[10px] font-mono ${postAward ? "border-blue/50 bg-blue/10 text-blue" : "border-white/10 text-text/50 hover:text-text"}`}>Post-award re-validation: {postAward ? "on" : "off"}</button> : undefined}
       />
       <div className="terminal-grid overflow-x-auto rounded-b-xl p-4">
@@ -199,7 +199,7 @@ export default function EvidenceBoard({ bid }: { bid: Bid }) {
           ))}
         </div>
       </div>
-      {selected?.details && <div className="border-t border-white/5 bg-inset/40 px-4 py-3"><div className="flex items-center justify-between gap-3"><div><p className="font-mono text-[10px] uppercase tracking-wider" style={{ color: selected.color }}>{selected.kind} inspector</p><p className="mt-1 text-xs text-text/65">{selected.label}</p></div><button type="button" onClick={() => setSelectedId(null)} className="text-xs text-text/45 hover:text-text">Close</button></div><dl className="mt-3 grid gap-2 sm:grid-cols-2">{selected.details.map((detail) => <div key={detail.label} className="rounded border border-white/10 bg-surface px-3 py-2"><dt className="font-mono text-[9px] uppercase tracking-wide text-text/40">{detail.label}</dt><dd className="mt-1 font-mono text-xs text-text/75">{detail.value}</dd></div>)}</dl></div>}
+      {selected?.details && <div className="border-t border-white/5 bg-inset/40 px-4 py-3"><div className="flex items-center justify-between gap-3"><div><p className="font-mono text-[10px] uppercase tracking-wider" style={{ color: selected.color }}>{selected.kind} details</p><p className="mt-1 text-xs text-text/65">{selected.label}</p></div><button type="button" onClick={() => setSelectedId(null)} className="text-xs text-text/45 hover:text-text">Close</button></div><dl className="mt-3 grid gap-2 sm:grid-cols-2">{selected.details.map((detail) => <div key={detail.label} className="rounded border border-white/10 bg-surface px-3 py-2"><dt className="font-mono text-[9px] uppercase tracking-wide text-text/40">{detail.label}</dt><dd className="mt-1 font-mono text-xs text-text/75">{detail.value}</dd></div>)}</dl></div>}
     </Card>
   );
 }

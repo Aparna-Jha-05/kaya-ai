@@ -27,7 +27,7 @@ export default function ActiveBidsTable() {
     <Card>
       <CardHeader
         title="Submitted bids"
-        caption="Select a bid to inspect evidence. Engineering and carbon checks are hard constraints; vendor and schedule signals inform review."
+        caption="Engineering and carbon are hard checks. Vendor reliability and schedule impact inform the review."
       />
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -42,7 +42,7 @@ export default function ActiveBidsTable() {
                 <Tooltip term="Carbon">Carbon</Tooltip>
               </th>
               <th className="px-4 py-2.5 font-medium">
-                <Tooltip term="Vendor reliability">Reliability</Tooltip>
+                <Tooltip term="Vendor reliability">Vendor reliability</Tooltip>
               </th>
               <th className="px-4 py-2.5 font-medium">
                 <Tooltip term="TCO²">5-year total cost</Tooltip>

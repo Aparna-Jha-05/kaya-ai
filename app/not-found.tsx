@@ -13,7 +13,7 @@ export default function NotFound() {
         href="/"
         className="rounded-lg bg-cyan/15 px-4 py-2 text-sm font-medium text-cyan hover:bg-cyan/25"
       >
-        Back to bids
+        View bids
       </Link>
     </div>
   );
