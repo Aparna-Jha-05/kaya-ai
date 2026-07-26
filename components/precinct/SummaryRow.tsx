@@ -20,21 +20,21 @@ export default function SummaryRow() {
   const m = metrics();
   const cards = [
     {
-      label: "Bids reviewed",
+      label: "Submitted bids",
       value: m.total,
       color: COLORS.text,
       Icon: FileCheck2,
-      sub: "in this review set",
+      sub: "in the current review set",
     },
     {
-      label: "Engineering failures",
+      label: "Hard-limit failures",
       value: m.clashes,
       color: COLORS.rose,
       Icon: AlertOctagon,
-      sub: "hard limits exceeded",
+      sub: "engineering or carbon constraint exceeded",
     },
     {
-      label: "Missing documents",
+      label: "Documents missing",
       value: m.missingDocs,
       color: COLORS.amber,
       Icon: FileWarning,

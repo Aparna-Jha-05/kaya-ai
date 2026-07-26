@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { BIDS, getBid } from "@/lib/mockData";
-import BidWorkspace from "@/components/bid/BidWorkspace";
+import BidReviewWorkspace from "@/components/bid/BidReviewWorkspace";
 import { ArrowLeft } from "lucide-react";
 import { COLORS } from "@/lib/constants";
 
@@ -26,10 +26,10 @@ export default function BidDetailPage({ params }: { params: { id: string } }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link
-            href="/"
+            href="/bids"
             className="mb-2 inline-flex items-center gap-1.5 text-xs text-text/50 hover:text-text"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Back to bids
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to comparison
           </Link>
           <h1 className="flex items-center gap-3 text-2xl font-bold tracking-tight text-text">
             {bid.vendor}
@@ -37,11 +37,11 @@ export default function BidDetailPage({ params }: { params: { id: string } }) {
               className="rounded-md px-2 py-0.5 text-[11px] font-bold uppercase"
               style={{ color: decColor, backgroundColor: `${decColor}1a` }}
             >
-              {bid.recommendation}
+              {bid.recommendation === "REJECT" ? "Do not select" : bid.recommendation}
             </span>
           </h1>
           <p className="mt-1 font-mono text-sm text-text/45">
-            {bid.model} · {bid.equipment_type} · {bid.po_number}
+            {bid.equipment_type} · {bid.model} · {bid.po_number}
           </p>
         </div>
         <div className="flex gap-2">
@@ -62,12 +62,12 @@ export default function BidDetailPage({ params }: { params: { id: string } }) {
       </div>
 
       {isReject && (
-        <div className="rounded-lg border border-rose/25 bg-rose/5 px-4 py-2.5 text-sm text-rose/90 animate-pulseRed">
-          This bid includes a substituted chiller. Review the extraction and checks to see the resulting engineering, carbon, and schedule exposure.
+        <div className="rounded-lg border border-rose/25 bg-rose/5 px-4 py-2.5 text-sm text-rose/90">
+          Selection is blocked by a substituted chiller. Review the extracted values and cited checks before requesting a revised specification.
         </div>
       )}
 
-      <BidWorkspace bid={bid} key={bid.id} />
+      <BidReviewWorkspace bid={bid} key={bid.id} />
     </div>
   );
 }

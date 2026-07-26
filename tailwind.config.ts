@@ -9,10 +9,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: "#050F0B",
-        card: "#0D2218",
-        surface: "#09160F",
-        inset: "#06100A",
+        bg: "#090D16",
+        card: "#111827",
+        surface: "#0F172A",
+        inset: "#0B1220",
         line: "#1E293B",
         text: "#F8FAFC",
         muted: "#94A3B8",

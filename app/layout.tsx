@@ -11,7 +11,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: "PO-LICE · The Precinct",
+  title: "PO-LICE · Procurement Review",
   description:
     "Procurement enforcement layer for Amber. LLM extracts and explains, deterministic math validates.",
 };
@@ -31,14 +31,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   PO-LICE
                 </div>
                 <div className="text-[10px] uppercase tracking-[0.2em] text-text/40">
-                  The Precinct
+                  Procurement review
                 </div>
               </div>
             </Link>
             <nav className="flex items-center gap-1 overflow-x-auto text-xs">
-              <NavLink href="/">Review</NavLink>
-              <NavLink href="/bids">Bids</NavLink>
-              <NavLink href="/audit">Audit trail</NavLink>
+              <NavLink href="/">Queue</NavLink>
+              <NavLink href="/bids">Compare</NavLink>
+              <NavLink href="/audit">Activity</NavLink>
             </nav>
           </div>
         </header>
@@ -49,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CommandPalette />
         <Legend />
         <footer className="mx-auto max-w-[1400px] px-6 py-8 text-center text-[11px] text-text/30">
-          PO-LICE provides evidence; authorised reviewers make decisions.
+          PO-LICE presents cited evidence; authorised reviewers make decisions.
         </footer>
       </body>
     </html>

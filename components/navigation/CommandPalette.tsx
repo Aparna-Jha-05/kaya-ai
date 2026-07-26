@@ -17,7 +17,7 @@ const COMMANDS: Command[] = [
   { label: "Review Vendor A", hint: "⌘1", href: "/bids/A", Icon: FileText },
   { label: "Review Vendor B", hint: "⌘2", href: "/bids/B", Icon: ShieldAlert },
   { label: "Review Vendor C", hint: "⌘3", href: "/bids/C", Icon: FileText },
-  { label: "Prepare Vendor B RFI", hint: "⌘R", href: "/bids/B", Icon: ShieldAlert },
+  { label: "Open Vendor B action", hint: "⌘R", href: "/bids/B", Icon: ShieldAlert },
 ] as const;
 
 export default function CommandPalette() {

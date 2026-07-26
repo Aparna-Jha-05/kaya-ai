@@ -1,10 +1,12 @@
 // Design tokens + thresholds + labels, kept in one place so a judge can audit them.
 
 export const COLORS = {
-  bg: "#050F0B",
-  card: "#0D2218",
-  surface: "#09160F",
-  inset: "#06100A",
+  // A restrained navy system keeps long compliance reviews calm and legible.
+  // Meaning is carried by status accents, never by the entire canvas.
+  bg: "#090D16",
+  card: "#111827",
+  surface: "#0F172A",
+  inset: "#0B1220",
   line: "#1E293B",
   text: "#F8FAFC",
   muted: "#94A3B8",
@@ -67,3 +69,9 @@ export const STATUS_COLOR: Record<Status, string> = {
   FAIL: COLORS.rose,
   FLAG: COLORS.amber,
 };
+
+export const REVIEW_STATE = {
+  RECOMMENDED: { label: "Ready for decision", color: COLORS.cyan },
+  ACCEPTABLE: { label: "Needs review", color: COLORS.amber },
+  REJECT: { label: "Do not select", color: COLORS.rose },
+} as const;

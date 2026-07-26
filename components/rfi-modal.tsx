@@ -6,7 +6,6 @@ interface RFIModalProps {
   isOpen: boolean;
   onClose: () => void;
   vendorName?: string;
-  breachReason?: string;
   onHandoffSuccess?: (logMsg: string) => void;
 }
 
@@ -14,21 +13,20 @@ export default function RFIModal({
   isOpen,
   onClose,
   vendorName = "CoolTech Global Solutions",
-  breachReason = "Power Draw +200kW breach, Embodied Carbon +90kgCO2e breach, Equipment Width 2.10m door breach",
   onHandoffSuccess,
 }: RFIModalProps) {
   const [emailBody, setEmailBody] = useState<string>(
-    `Subject: RFI #8921 - Counter-Spec Required for PO-8921 (Chiller Model CTX-1400)
+    `Subject: Request for information — revised specification and safety certificate
 
 Dear ${vendorName},
 
-Your submitted commercial and technical bid for Chiller Model CTX-1400 does not meet the following project requirements:
+Your submitted commercial and technical bid requires clarification on the following project requirements:
 - Substation Power Draw: 1,400 kW exceeds site limit of 1,200 kW by 200 kW.
 - Embodied Carbon: 540 kgCO2e exceeds project carbon cap of 450 kgCO2e.
 - Equipment Width: 2.10m exceeds site door clearance of 1.90m.
 - Safety Certificate: OSHA Form 300 is currently missing.
 
-ACTION REQUIRED: Please submit a compliant alternative for Chiller Model CTX-1100 (Power Draw <= 1,150 kW, Width <= 1.85m) along with OSHA Form 300 by July 28, 2026.
+ACTION REQUIRED: Please submit a compliant alternative and the required safety certificate by July 28, 2026.
 
 Regards,
 Procurement Review Team (PO-LICE)`
@@ -41,7 +39,7 @@ Procurement Review Team (PO-LICE)`
   const handleHandoff = () => {
     setIsSent(true);
     if (onHandoffSuccess) {
-      onHandoffSuccess("Draft approved and queued for the configured workflow. No email or SMS is sent by this demo.");
+      onHandoffSuccess("Draft approved and queued for the configured workflow.");
     }
     setTimeout(() => {
       setIsSent(false);
@@ -58,7 +56,7 @@ Procurement Review Team (PO-LICE)`
               REQUEST FOR INFORMATION
             </div>
             <h3 id="rfi-title" className="text-lg font-bold flex items-center gap-2">
-              ✉️ Request a compliant specification
+              Request a revised specification
             </h3>
           </div>
           <button
@@ -71,7 +69,7 @@ Procurement Review Team (PO-LICE)`
         </div>
 
         <p className="text-xs text-[#94a3b8] mb-3">
-          This draft cites engineering and carbon failures. Review or edit it before it enters the workflow.
+          This editable draft cites the recorded findings. Review it before it enters the procurement workflow.
         </p>
 
         <textarea
@@ -83,7 +81,7 @@ Procurement Review Team (PO-LICE)`
 
         <div className="flex justify-between items-center mt-5 pt-3 border-t border-[#1e293b]">
           <span className="text-xs text-[#94a3b8]">
-            Status: <strong className="text-[#818cf8]">Awaiting approval</strong>
+            Status: <strong className="text-[#818cf8]">Awaiting reviewer approval</strong>
           </span>
 
           <button
@@ -91,7 +89,7 @@ Procurement Review Team (PO-LICE)`
             disabled={isSent}
             className="bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-[#090d16] font-bold text-xs px-5 py-2.5 rounded-lg shadow-lg hover:shadow-[#38bdf8]/20 transition-all flex items-center gap-2"
           >
-            {isSent ? "✓ Queued" : "Approve and queue"}
+            {isSent ? "✓ Queued" : "Approve and queue draft"}
           </button>
         </div>
       </div>

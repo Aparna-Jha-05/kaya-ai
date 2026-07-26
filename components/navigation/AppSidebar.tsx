@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ClipboardCheck, FileText, ShieldCheck, ScrollText } from "lucide-react";
+import { LayoutList, Scale, ShieldCheck, ScrollText } from "lucide-react";
 
 const NAV = [
-  { href: "/", label: "Review", Icon: ClipboardCheck },
-  { href: "/bids", label: "Bids", Icon: FileText },
-  { href: "/audit", label: "Audit trail", Icon: ScrollText },
+  { href: "/", label: "Review queue", Icon: LayoutList },
+  { href: "/bids", label: "Compare bids", Icon: Scale },
+  { href: "/audit", label: "Activity log", Icon: ScrollText },
 ];
 
 export default function AppSidebar() {
@@ -21,7 +21,7 @@ export default function AppSidebar() {
         </span>
         <span>
           <span className="block font-mono text-sm font-bold text-text">PO-LICE</span>
-          <span className="block text-[10px] uppercase tracking-[0.16em] text-text/40">The Precinct</span>
+          <span className="block text-[10px] uppercase tracking-[0.16em] text-text/40">Procurement review</span>
         </span>
       </Link>
 
@@ -44,8 +44,8 @@ export default function AppSidebar() {
       </nav>
 
       <div className="mt-auto rounded-lg border border-white/10 bg-surface/60 p-3">
-        <p className="font-mono text-[10px] uppercase tracking-wider text-text/40">Review standard</p>
-        <p className="mt-1 text-xs leading-relaxed text-text/60">Evidence is cited. Rules decide compliance. Humans authorize actions.</p>
+        <p className="font-mono text-[10px] uppercase tracking-wider text-text/40">Review principle</p>
+        <p className="mt-1 text-xs leading-relaxed text-text/60">Extracted data is cited. Deterministic rules assess compliance. Reviewers authorize actions.</p>
       </div>
     </aside>
   );

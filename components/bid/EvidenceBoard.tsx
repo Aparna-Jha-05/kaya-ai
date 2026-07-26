@@ -40,7 +40,7 @@ function buildGraph(bid: Bid, postAward: boolean): { nodes: GNode[]; edges: GEdg
   if (bid.id !== "B") {
     return {
       nodes: [
-        n("root", 20, 40, "Bid PDF matches the site spec", COLORS.cyan, "SOURCE", [{ label: "MCP_SYNC", value: "ACTIVE · demo-Revit constraint snapshot" }]),
+        n("root", 20, 40, "Bid matches the recorded site specification", COLORS.cyan, "SOURCE", [{ label: "Site constraint source", value: "Retained project snapshot" }]),
         n("ok", 340, 40, "All checks passed — no downstream impact", COLORS.cyan, "RESULT"),
       ],
       edges: [e("root", "ok", COLORS.cyan)],
@@ -50,11 +50,11 @@ function buildGraph(bid: Bid, postAward: boolean): { nodes: GNode[]; edges: GEdg
   const nodes: GNode[] = [
     n("root", 20, 210, "Chiller model substituted — looks equivalent in the bid PDF", COLORS.rose, "ROOT CAUSE"),
 
-    n("p1", 320, 20, "Power draw +10% (1400 kW)", COLORS.rose, "SIGNAL", [{ label: "MCP_SYNC", value: "ACTIVE · demo-Revit constraint snapshot" }, { label: "Constraint", value: "1,400 kW > 1,200 kW substation limit" }]),
+    n("p1", 320, 20, "Power draw +10% (1400 kW)", COLORS.rose, "SIGNAL", [{ label: "Site constraint source", value: "Retained project snapshot" }, { label: "Constraint", value: "1,400 kW > 1,200 kW substation limit" }]),
     n("p2", 620, 20, "Electrical panel redesign", COLORS.rose, "ENGINEERING"),
-    n("p3", 920, 20, "Reject or escalate", COLORS.rose, "ACTION"),
+    n("p3", 920, 20, "Do not select; request revision", COLORS.rose, "ACTION"),
 
-    n("w1", 320, 118, "Water usage +15% (460 gpm)", COLORS.amber, "SIGNAL", [{ label: "Market baseline", value: "LME steel baseline: -22% · anomaly" }, { label: "Carbon evidence", value: "920,000 kgCO₂e exceeds the project budget" }]),
+    n("w1", 320, 118, "Water usage +15% (460 gpm)", COLORS.amber, "SIGNAL", [{ label: "Carbon evidence", value: "920,000 kgCO₂e exceeds the project budget" }]),
     n("w2", 620, 118, "Sustainability + cooling risk", COLORS.amber, "CARBON"),
     n("w3", 920, 118, "Carbon / OPEX penalty", COLORS.amber, "ACTION"),
 
@@ -64,19 +64,15 @@ function buildGraph(bid: Bid, postAward: boolean): { nodes: GNode[]; edges: GEdg
 
     n("s1", 320, 314, "Vendor late 3 of 5 deliveries", COLORS.violet, "SIGNAL"),
     n("s2", 620, 314, postAward ? "Specification change requires re-validation" : "ROJ window risk", COLORS.blue, "SCHEDULE"),
-    n("s3", 920, 314, postAward ? "Re-run all four patrols" : "Schedule contingency", COLORS.blue, "ACTION"),
+    n("s3", 920, 314, postAward ? "Re-run all compliance checks" : "Schedule contingency", COLORS.blue, "ACTION"),
 
     n("c1", 320, 412, "Missing safety certificate", COLORS.rose, "SIGNAL"),
     n("c2", 620, 412, "Compliance hold", COLORS.rose, "LEGAL"),
     n("c3", 920, 412, "Legal / procurement flag", COLORS.rose, "ACTION"),
 
-    n("i1", 320, 510, `Integrity alert · ACI ${integrity.aci}`, COLORS.violet, "INTEGRITY", integrity.metadata),
-    n("i2", 620, 510, "Human integrity review", COLORS.violet, "REVIEW"),
-    n("i3", 920, 510, "Do not infer collusion", COLORS.amber, "GUARDRAIL"),
-
-    n("a1", 320, 608, "Clause 5.1: uncapped indemnity", COLORS.violet, "AGREEMENT"),
-    n("a2", 620, 608, "Liability exposure", COLORS.violet, "LEGAL"),
-    n("a3", 920, 608, "Escalate for legal review", COLORS.violet, "ACTION"),
+    n("i1", 320, 510, `Vendor record score ${integrity.aci}/100`, COLORS.violet, "VENDOR RECORD", integrity.metadata),
+    n("i2", 620, 510, "Reviewer checks supporting records", COLORS.violet, "REVIEW"),
+    n("i3", 920, 510, "Use as context, not proof", COLORS.amber, "GUARDRAIL"),
   ];
 
   const edges: GEdge[] = [
@@ -98,9 +94,6 @@ function buildGraph(bid: Bid, postAward: boolean): { nodes: GNode[]; edges: GEdg
     e("root", "i1", COLORS.violet),
     e("i1", "i2", COLORS.violet),
     e("i2", "i3", COLORS.amber),
-    e("root", "a1", COLORS.violet),
-    e("a1", "a2", COLORS.violet),
-    e("a2", "a3", COLORS.violet),
   ];
 
   return { nodes, edges };
@@ -131,8 +124,8 @@ export default function EvidenceBoard({ bid }: { bid: Bid }) {
   return (
     <Card>
       <CardHeader
-        title="Impact path"
-        caption="One visual model for engineering, market, integrity, agreement, and schedule signals. Select a node to inspect its deterministic evidence."
+        title="Downstream impact"
+        caption="See how the proposed substitute affects engineering, carbon, reliability, documents, and schedule. Select a node for its supporting evidence."
         right={bid.id === "B" ? <button type="button" aria-pressed={postAward} onClick={() => setPostAward((value) => !value)} className={`rounded border px-2 py-1 text-[10px] font-mono ${postAward ? "border-blue/50 bg-blue/10 text-blue" : "border-white/10 text-text/50 hover:text-text"}`}>Post-award re-validation: {postAward ? "on" : "off"}</button> : undefined}
       />
       <div className="terminal-grid overflow-x-auto rounded-b-xl p-4">

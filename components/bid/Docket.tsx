@@ -119,7 +119,7 @@ export default function Docket({ highlightId }: { highlightId?: string }) {
       </div>
 
       <div className="p-4">
-        <TcoChart data={rows.map((row) => ({ vendor: row.vendor.replace("Vendor ", "V"), Upfront: row.upfront_cost_cr, "5-Year TCO²": row.id === "B" && vendorBScenarioTco !== null ? vendorBScenarioTco : row.tco2_cr }))} />
+        <TcoChart data={rows.map((row) => ({ vendor: row.vendor.replace("Vendor ", "V"), Upfront: row.upfront_cost_cr, "5-year cost": row.id === "B" && vendorBScenarioTco !== null ? vendorBScenarioTco : row.tco2_cr }))} />
       </div>
 
       <div className="mx-4 mb-4 flex items-start gap-2.5 rounded-lg border border-amber/25 bg-amber/5 px-4 py-3">

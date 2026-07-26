@@ -60,10 +60,10 @@ export default function AuditPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-text">
-            <Lock className="h-5 w-5 text-cyan" /> Audit trail
+            <Lock className="h-5 w-5 text-cyan" /> Activity log
           </h1>
           <p className="mt-1 text-sm text-text/50">
-            Every check and workflow action is timestamped for review.
+            Every check and reviewer workflow action is timestamped.
           </p>
         </div>
         <button
@@ -76,11 +76,11 @@ export default function AuditPage() {
 
       <Card>
         <CardHeader
-          title={`${rows.length} logged events`}
-          caption="Demo data is stored in memory and resets on refresh."
+          title={`${rows.length} recorded events`}
+          caption="Demonstration data is stored in this browser session and resets on refresh."
           right={
             <Link href="/bids/B" className="text-xs text-blue hover:underline">
-              review Vendor B →
+              open Vendor B →
             </Link>
           }
         />
@@ -90,7 +90,7 @@ export default function AuditPage() {
               <tr className="border-b border-white/10 text-left text-[11px] uppercase tracking-wide text-text/40">
                 <th className="px-4 py-2.5 font-medium">Timestamp</th>
                 <th className="px-4 py-2.5 font-medium">Bid</th>
-                <th className="px-4 py-2.5 font-medium">Patrol</th>
+                <th className="px-4 py-2.5 font-medium">Compliance check</th>
                 <th className="px-4 py-2.5 font-medium">Action</th>
                 <th className="px-4 py-2.5 font-medium">Rule</th>
                 <th className="px-4 py-2.5 font-medium">Evidence</th>

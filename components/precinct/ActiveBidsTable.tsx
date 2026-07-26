@@ -26,15 +26,15 @@ export default function ActiveBidsTable() {
   return (
     <Card>
       <CardHeader
-        title="Bids"
-        caption="Each bid is checked against engineering, carbon, vendor, and schedule criteria. Select a bid to review its evidence."
+        title="Submitted bids"
+        caption="Select a bid to inspect evidence. Engineering and carbon checks are hard constraints; vendor and schedule signals inform review."
       />
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/5 text-left text-[11px] uppercase tracking-wide text-text/40">
               <th className="px-4 py-2.5 font-medium">Vendor</th>
-              <th className="px-4 py-2.5 font-medium">Bid Amount</th>
+              <th className="px-4 py-2.5 font-medium">Upfront cost</th>
               <th className="px-4 py-2.5 font-medium">
                 <Tooltip term="Engineering">Engineering</Tooltip>
               </th>
@@ -42,10 +42,10 @@ export default function ActiveBidsTable() {
                 <Tooltip term="Carbon">Carbon</Tooltip>
               </th>
               <th className="px-4 py-2.5 font-medium">
-                <Tooltip term="Vendor reliability">Vendor risk</Tooltip>
+                <Tooltip term="Vendor reliability">Reliability</Tooltip>
               </th>
               <th className="px-4 py-2.5 font-medium">
-                <Tooltip term="TCO²">5-year TCO²</Tooltip>
+                <Tooltip term="TCO²">5-year total cost</Tooltip>
               </th>
               <th className="px-4 py-2.5"></th>
             </tr>
@@ -66,9 +66,7 @@ export default function ActiveBidsTable() {
                   role="link"
                   tabIndex={0}
                   aria-label={`Review bid from ${bid.vendor}`}
-                  className={`group cursor-pointer border-b border-white/5 transition-colors hover:bg-white/[0.03] ${
-                    isReject ? "animate-pulseRed" : ""
-                  }`}
+                  className="group cursor-pointer border-b border-white/5 transition-colors hover:bg-white/[0.03]"
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -76,13 +74,12 @@ export default function ActiveBidsTable() {
                         className="h-2 w-2 rounded-full"
                         style={{
                           backgroundColor: isReject ? COLORS.rose : COLORS.cyan,
-                          boxShadow: `0 0 8px ${isReject ? COLORS.rose : COLORS.cyan}`,
                         }}
                       />
                       <span className="font-sans font-medium text-text">{bid.vendor}</span>
                       {isReject && (
                         <span className="rounded bg-rose/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-rose">
-                          review
+                          action needed
                         </span>
                       )}
                     </div>

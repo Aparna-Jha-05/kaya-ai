@@ -12,37 +12,38 @@ interface CaseItem {
   meta: string;
   href?: string;
   mocked?: boolean;
-  live?: boolean;
+  needsAction?: boolean;
 }
 
 const ITEMS: CaseItem[] = [
   {
     icon: Mail,
     color: COLORS.violet,
-    title: "RFI draft for Vendor B: safety certificate missing",
-    meta: "awaiting reviewer approval",
+    title: "Safety certificate needed for Vendor B",
+    meta: "draft request awaiting review",
     href: "/bids/B",
-    live: true,
+    needsAction: true,
   },
   {
     icon: FileSearch,
     color: COLORS.blue,
-    title: "Vendor B delivery history reviewed",
-    meta: "3 delay notices · 1 dispute surfaced",
+    title: "Vendor B reliability evidence reviewed",
+    meta: "3 delivery delays · 1 dispute found",
     href: "/bids/B",
   },
   {
     icon: Clock,
     color: COLORS.amber,
-    title: "Vendor B schedule exposure identified",
+    title: "Vendor B schedule exposure needs review",
     meta: "planning handoff pending",
     mocked: true,
+    href: "/bids/B",
   },
   {
     icon: CheckCircle2,
     color: COLORS.cyan,
-    title: "Vendor A passed all checks",
-    meta: "recommended for review",
+    title: "Vendor A is ready for review",
+    meta: "all hard checks passed",
     href: "/bids/A",
   },
 ];
@@ -53,13 +54,10 @@ export default function CaseFilesPanel() {
       <CardHeader
         title={
           <span className="flex items-center gap-2">
-            Review queue
-            <span className="flex h-1.5 w-1.5 items-center">
-              <span className="h-1.5 w-1.5 animate-ping rounded-full bg-cyan/60" />
-            </span>
+            Action queue
           </span>
         }
-        caption="Items that need reviewer attention."
+        caption="Items that need reviewer attention before a purchase order can progress."
       />
       <ul className="divide-y divide-white/5">
         {ITEMS.map((it, i) => {
@@ -76,7 +74,7 @@ export default function CaseFilesPanel() {
                 <div className="mt-1 flex items-center gap-2">
                   <span className="text-[11px] text-text/40">{it.meta}</span>
                   {it.mocked && <MockBadge />}
-                  {it.live && (
+                  {it.needsAction && (
                     <span className="rounded bg-violet/15 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-violet">
                       action needed
                     </span>

@@ -4,9 +4,9 @@
 
 :root {
   color-scheme: dark;
-  --canvas: #050f0b;
-  --surface: #0d2218;
-  --surface-inset: #06100a;
+  --canvas: #090d16;
+  --surface: #111827;
+  --surface-inset: #0b1220;
   --line: #1e293b;
   --text: #f8fafc;
   --muted: #94a3b8;
@@ -32,7 +32,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Thin dark slate scrollbars */
+/* Thin slate scrollbars keep dense review tables visually quiet. */
 *::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -48,7 +48,7 @@ body {
   background: var(--cyan);
 }
 
-/* Custom Glow Effects for Motion & Visual Polish */
+/* Status glows are reserved for compact attention signals. */
 .glow-cyan {
   box-shadow: 0 0 18px rgba(56, 189, 248, 0.25);
 }
@@ -65,7 +65,7 @@ body {
   box-shadow: 0 0 18px rgba(129, 140, 248, 0.25);
 }
 
-/* Subtle grid backdrop */
+/* Optional subtle grid for data-heavy visualizations. */
 .terminal-grid {
   background-image:
     linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
