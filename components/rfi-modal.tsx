@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import { procurementApi } from "@/lib/api";
 
 interface RFIModalProps {
@@ -41,11 +42,15 @@ Procurement Review Team`;
     if (!isOpen) return;
     closeRef.current?.focus();
     setEmailBody(draft);
+    document.body.classList.add("scroll-locked");
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !isSent) onClose();
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.classList.remove("scroll-locked");
+    };
   }, [draft, isOpen, isSent, onClose]);
 
   const handleHandoff = async () => {
@@ -68,7 +73,7 @@ Procurement Review Team`;
       <div role="dialog" aria-modal="true" aria-labelledby="rfi-title" className="w-full max-w-2xl rounded-xl border border-line bg-card p-6 shadow-2xl animate-in fade-in zoom-in duration-200" onMouseDown={(event) => event.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between border-b border-line pb-4">
           <div>
-            <div className="mb-0.5 font-mono text-[11px] uppercase tracking-widest text-cyan">
+            <div className="page-eyebrow mb-0.5">
               REQUEST FOR INFORMATION
             </div>
             <h3 id="rfi-title" className="text-lg font-bold flex items-center gap-2">
@@ -79,9 +84,9 @@ Procurement Review Team`;
             ref={closeRef}
             onClick={onClose}
             aria-label="Close RFI draft"
-            className="rounded border border-line px-2 py-1 text-sm text-text/60 hover:bg-surface hover:text-text"
+            className="inline-flex items-center gap-1 rounded border border-line px-2 py-1 text-xs text-text/60 hover:bg-surface hover:text-text"
           >
-            ✕ Close
+            <X className="h-3.5 w-3.5" /> Close
           </button>
         </div>
 

@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 /*
  * A restrained blue-slate light scheme reduces glare in long review sessions;
@@ -67,11 +67,16 @@ html,
 body {
   background-color: rgb(var(--color-bg));
   color: rgb(var(--color-text));
+  height: 100%;
 }
 
 html {
-  /* Preserve readable proportions when users increase their browser type size. */
   font-size: 100%;
+}
+
+/* Lock body scroll when a drawer or modal overlay is mounted. */
+body.scroll-locked {
+  overflow: hidden;
 }
 
 :focus-visible {
@@ -99,10 +104,29 @@ textarea {
 
 /* Dense uppercase utility text remains legible on standard laptop displays. */
 .ui-label {
+  font-family: var(--font-mono), monospace;
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   line-height: 1.35;
+}
+
+.page-eyebrow {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-cyan));
+}
+
+.table-header {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(var(--color-text), 0.45);
 }
 
 /* Code and machine values need a little more leading than prose at small sizes. */
@@ -126,6 +150,15 @@ kbd,
 }
 *::-webkit-scrollbar-thumb:hover {
   background: rgb(var(--color-cyan));
+}
+
+/* Hide scrollbar on tab strip overflow containers. */
+.tab-strip::-webkit-scrollbar {
+  display: none;
+}
+.tab-strip {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 /* Status glows are reserved for compact attention signals. */
