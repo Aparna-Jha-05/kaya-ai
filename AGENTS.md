@@ -46,19 +46,21 @@ As of the current checkout:
   SQLite/filesystem persistence with immutable source provenance and
   project-scoped upload idempotency.
 - SQLite persists optimistic officer-decision versions, site-constraint
-  versions, and separate RFI draft/approval states.
+  versions, immutable assessment history, and separate RFI draft/approval
+  states. Constraint-triggered reassessments preserve human decisions.
 - PDF extraction is PyMuPDF plus conservative regex parsing with page
   rectangles, page geometry, dimension annotations, and neutral metadata
   review signals, followed by optional Ollama/Gemini extraction that is
   disabled by default.
-- Patrol decisions use in-process Python rules and hard-coded `ConstraintGraph` values.
+- Patrol decisions use in-process Python rules against the current versioned
+  SQLite constraint snapshot.
 - duplicate/integrity correlation is process-local memory and resets on restart.
 - the dashboard uses `lib/api.ts` for the implemented bid workflow.
 - Ordered PostgreSQL/pgvector migrations, checksum verification, an idempotent
   synthetic seeder, and append-only audit enforcement are implemented and
   tested against a disposable database.
 - Supabase runtime CRUD, authentication/RLS, object storage, RFI dispatch,
-  immutable reassessment, verified supplier provenance, and durable
+  verified supplier provenance, and durable
   multi-project API persistence remain planned, not implemented.
 
 Never describe the current prototype as having MinIO storage, live RAG, database-backed patrols, immutable audit storage, VLM CAD extraction, Jarvis dispatch, or Kaya/Amber integration unless runtime evidence is added.

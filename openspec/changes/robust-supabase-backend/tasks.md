@@ -54,9 +54,9 @@
 ## 7. Constraint and Lifecycle Mutations
 
 - [x] 7.1 Implement versioned site-constraint updates in SQLite with optimistic concurrency (`expected_version`)
-- [ ] 7.2 Create new affected patrol-result versions while preserving prior assessments
+- [x] 7.2 Create new affected patrol-result versions while preserving prior assessments
 - [x] 7.3 Implement officer decision updates (`OfficerDecision`) with `expected_version` concurrency
-- [ ] 7.4 Preserve officer decisions when automated assessments change
+- [x] 7.4 Preserve officer decisions when automated assessments change
 
 ## 8. Query APIs and Shared Contract
 

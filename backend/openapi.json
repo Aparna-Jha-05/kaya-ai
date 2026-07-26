@@ -45,9 +45,61 @@
         "title": "ActivityEvent",
         "type": "object"
       },
+      "AssessmentVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "constraint_version": {
+            "minimum": 1.0,
+            "title": "Constraint Version",
+            "type": "integer"
+          },
+          "created_at": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Created At",
+            "type": "string"
+          },
+          "scorecard": {
+            "$ref": "#/components/schemas/DocketScorecard"
+          },
+          "trigger": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Trigger",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "constraint_version",
+          "scorecard",
+          "created_at",
+          "trigger"
+        ],
+        "title": "AssessmentVersion",
+        "type": "object"
+      },
       "BidRecord": {
         "additionalProperties": false,
         "properties": {
+          "assessment_history": {
+            "items": {
+              "$ref": "#/components/schemas/AssessmentVersion"
+            },
+            "title": "Assessment History",
+            "type": "array"
+          },
+          "assessment_version": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Assessment Version",
+            "type": "integer"
+          },
           "filename": {
             "title": "Filename",
             "type": "string"

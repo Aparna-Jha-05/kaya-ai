@@ -90,6 +90,14 @@ export type BidRecord = {
       evidence: Record<string, unknown> | null;
     }>;
   };
+  assessment_version: number;
+  assessment_history: Array<{
+    version: number;
+    constraint_version: number;
+    scorecard: BidRecord["scorecard"];
+    created_at: string;
+    trigger: string;
+  }>;
 };
 
 export type ActivityEvent = { id: string; bid_id: string; timestamp: string; check_name: string; action: string; rule: string; evidence: string };
