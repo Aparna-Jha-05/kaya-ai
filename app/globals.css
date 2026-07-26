@@ -4,16 +4,26 @@
 
 :root {
   color-scheme: dark;
+  --canvas: #050f0b;
+  --surface: #0d2218;
+  --surface-inset: #06100a;
+  --line: #1e293b;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --cyan: #38bdf8;
+  --violet: #818cf8;
+  --amber: #fbbf24;
+  --rose: #f43f5e;
 }
 
 html,
 body {
-  background-color: #090d16;
-  color: #f8fafc;
+  background-color: var(--canvas);
+  color: var(--text);
 }
 
 :focus-visible {
-  outline: 2px solid #38bdf8;
+  outline: 2px solid var(--cyan);
   outline-offset: 3px;
 }
 
@@ -31,11 +41,11 @@ body {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: var(--line);
   border-radius: 3px;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #38bdf8;
+  background: var(--cyan);
 }
 
 /* Custom Glow Effects for Motion & Visual Polish */
@@ -43,7 +53,7 @@ body {
   box-shadow: 0 0 18px rgba(56, 189, 248, 0.25);
 }
 
-.glow-red {
+.glow-rose {
   box-shadow: 0 0 18px rgba(244, 63, 94, 0.3);
 }
 

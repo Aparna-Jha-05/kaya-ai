@@ -1,11 +1,13 @@
 "use client";
 import dynamic from "next/dynamic";
-import { allScorecards, tcoChartData } from "@/lib/tco";
+import { Fragment, useState } from "react";
+import { allScorecards } from "@/lib/tco";
 import Card, { CardHeader } from "@/components/ui/Card";
 import Tooltip from "@/components/ui/Tooltip";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import { COLORS } from "@/lib/constants";
 import { Lightbulb } from "lucide-react";
+import TCOSlider from "@/components/tco-slider";
 
 // Dynamically import the chart so the first paint stays fast (SSR off).
 const TcoChart = dynamic(() => import("./TcoChart"), {
@@ -24,13 +26,14 @@ const decisionColor = (d: string) =>
 
 export default function Docket({ highlightId }: { highlightId?: string }) {
   const rows = allScorecards();
+  const [vendorBScenarioTco, setVendorBScenarioTco] = useState<number | null>(null);
 
   return (
     <Card>
       <CardHeader
         title={
           <span className="flex items-center gap-2">
-            Bid comparison · <Tooltip term="TCO²">5-year TCO²</Tooltip>
+            The Docket · <Tooltip term="TCO²">5-year TCO²</Tooltip>
           </span>
         }
         caption="Compare upfront cost, compliance, vendor risk, and schedule exposure. Lower total cost is better."
@@ -55,8 +58,8 @@ export default function Docket({ highlightId }: { highlightId?: string }) {
             {rows.map((r) => {
               const hl = highlightId === r.id;
               return (
+                <Fragment key={r.id}>
                 <tr
-                  key={r.id}
                   className="border-b border-white/5"
                   style={hl ? { backgroundColor: "rgba(255,77,77,0.05)" } : undefined}
                 >
@@ -83,7 +86,7 @@ export default function Docket({ highlightId }: { highlightId?: string }) {
                     </span>
                   </td>
                   <td className="py-3 px-3 tabular-nums font-bold text-text">
-                    ₹{r.tco2_cr.toFixed(1)} Cr
+                    ₹{(r.id === "B" && vendorBScenarioTco !== null ? vendorBScenarioTco : r.tco2_cr).toFixed(1)} Cr
                   </td>
                   <td className="py-3 pl-3">
                     <span
@@ -97,6 +100,18 @@ export default function Docket({ highlightId }: { highlightId?: string }) {
                     </span>
                   </td>
                 </tr>
+                {r.id === "B" && (
+                  <tr className="border-b border-white/5 bg-inset/40">
+                    <td colSpan={8} className="px-3 py-4">
+                      <div className="max-w-3xl">
+                        <p className="font-mono text-[10px] uppercase tracking-wider text-cyan">Vendor B · scenario modeling</p>
+                        <p className="mt-1 text-xs text-text/55">Adjust a bounded commercial input to recompute Vendor B&apos;s deterministic 5-year total. This does not override hard engineering or carbon failures.</p>
+                        <div className="mt-3"><TCOSlider baseCapexCr={r.upfront_cost_cr} onTCOChange={setVendorBScenarioTco} /></div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+                </Fragment>
               );
             })}
           </tbody>
@@ -104,7 +119,7 @@ export default function Docket({ highlightId }: { highlightId?: string }) {
       </div>
 
       <div className="p-4">
-        <TcoChart data={tcoChartData()} />
+        <TcoChart data={rows.map((row) => ({ vendor: row.vendor.replace("Vendor ", "V"), Upfront: row.upfront_cost_cr, "5-Year TCO²": row.id === "B" && vendorBScenarioTco !== null ? vendorBScenarioTco : row.tco2_cr }))} />
       </div>
 
       <div className="mx-4 mb-4 flex items-start gap-2.5 rounded-lg border border-amber/25 bg-amber/5 px-4 py-3">

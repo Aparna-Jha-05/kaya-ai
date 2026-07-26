@@ -1,0 +1,52 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ClipboardCheck, FileText, ShieldCheck, ScrollText } from "lucide-react";
+
+const NAV = [
+  { href: "/", label: "Review", Icon: ClipboardCheck },
+  { href: "/bids", label: "Bids", Icon: FileText },
+  { href: "/audit", label: "Audit trail", Icon: ScrollText },
+];
+
+export default function AppSidebar() {
+  const pathname = usePathname();
+
+  return (
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 border-r border-white/10 bg-bg/70 px-3 py-5 lg:flex lg:flex-col">
+      <Link href="/" className="mb-7 flex items-center gap-2.5 px-2">
+        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-cyan/15 ring-1 ring-cyan/40">
+          <ShieldCheck className="h-4 w-4 text-cyan" />
+        </span>
+        <span>
+          <span className="block font-mono text-sm font-bold text-text">PO-LICE</span>
+          <span className="block text-[10px] uppercase tracking-[0.16em] text-text/40">The Precinct</span>
+        </span>
+      </Link>
+
+      <nav aria-label="Primary navigation" className="space-y-1">
+        {NAV.map(({ href, label, Icon }) => {
+          const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                active ? "bg-cyan/10 text-cyan" : "text-text/55 hover:bg-white/5 hover:text-text"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="mt-auto rounded-lg border border-white/10 bg-surface/60 p-3">
+        <p className="font-mono text-[10px] uppercase tracking-wider text-text/40">Review standard</p>
+        <p className="mt-1 text-xs leading-relaxed text-text/60">Evidence is cited. Rules decide compliance. Humans authorize actions.</p>
+      </div>
+    </aside>
+  );
+}

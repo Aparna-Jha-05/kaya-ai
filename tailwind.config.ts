@@ -11,12 +11,16 @@ const config: Config = {
       colors: {
         bg: "#050F0B",
         card: "#0D2218",
-        text: "#F1FFF6",
-        green: "#5DE275",
-        violet: "#AB7EFF",
-        amber: "#F4B73F",
-        blue: "#4AA2FF",
-        red: "#FF4D4D",
+        surface: "#09160F",
+        inset: "#06100A",
+        line: "#1E293B",
+        text: "#F8FAFC",
+        muted: "#94A3B8",
+        cyan: "#38BDF8",
+        violet: "#818CF8",
+        amber: "#FBBF24",
+        blue: "#60A5FA",
+        rose: "#F43F5E",
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
@@ -24,8 +28,8 @@ const config: Config = {
       },
       keyframes: {
         pulseRed: {
-          "0%, 100%": { boxShadow: "0 0 0 0 rgba(255,77,77,0.4)" },
-          "50%": { boxShadow: "0 0 0 6px rgba(255,77,77,0)" },
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(244,63,94,0.4)" },
+          "50%": { boxShadow: "0 0 0 6px rgba(244,63,94,0)" },
         },
         flowDash: {
           to: { strokeDashoffset: "-20" },
