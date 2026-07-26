@@ -16,10 +16,34 @@ class ConstraintGraph:
     market_benchmark_inr: float = 50_000_000.0
     maximum_delivery_weeks: int = 12
     constraint_source: str = "local project configuration"
+    constraint_version: int = 1
 
 
 class PatrolEngineService:
-    graph = ConstraintGraph()
+    # Default graph used when no persisted constraints are available.
+    _default_graph = ConstraintGraph()
+
+    @classmethod
+    def load_constraints_from_repository(cls) -> ConstraintGraph:
+        """Load the current constraints from the repository.
+
+        Falls back to the default ConstraintGraph if the repository
+        does not have persisted constraints.
+        """
+        try:
+            from app.services.repository import bid_repository
+            record = bid_repository.get_current_constraints()
+            if record:
+                return ConstraintGraph(
+                    substation_limit_kw=record.max_substation_kw,
+                    door_limit_m=record.max_door_width_m,
+                    carbon_cap_kgco2e=record.max_embodied_carbon_kg,
+                    constraint_source=f"v{record.version} by {record.actor}",
+                    constraint_version=record.version,
+                )
+        except Exception:
+            pass
+        return cls._default_graph
 
     @staticmethod
     def _warranty_years(clauses: list[str]) -> int | None:
@@ -38,8 +62,14 @@ class PatrolEngineService:
             recommendation="REJECT" if request.delay_days > 5 or tco2 > 61_000_000 else "RECOMMENDED", lifecycle_mode=request.lifecycle_mode)
 
     @classmethod
-    def run_all_patrols(cls, bid: VendorBidExtract) -> DocketScorecard:
-        graph, equipment, results = cls.graph, bid.equipment, []
+    def run_all_patrols(cls, bid: VendorBidExtract, graph: ConstraintGraph | None = None) -> DocketScorecard:
+        """Run all four patrols against a bid.
+
+        If graph is not provided, loads the current constraints from the repository.
+        """
+        if graph is None:
+            graph = cls.load_constraints_from_repository()
+        equipment, results = bid.equipment, []
         warranty = cls._warranty_years(bid.extracted_clauses)
         building_gaps = [name for name, value in (("power draw", equipment.power_draw_kw), ("equipment width", equipment.width_m), ("warranty term", warranty)) if value is None]
         building_breaches = []
@@ -50,7 +80,7 @@ class PatrolEngineService:
         results.append(PatrolResult(patrol_name="BUILDING_PATROL", status=building_status,
             reason=("; ".join(building_breaches).capitalize() + "." if building_breaches else f"Review required: no extracted {', '.join(building_gaps)}." if building_gaps else "Extracted dimensions and contractual warranty are within the approved constraint envelope."),
             rule_broken="CONSTRAINT_ENVELOPE_BREACH" if building_breaches else "INSUFFICIENT_EVIDENCE" if building_gaps else None,
-            evidence={"power_draw_kw": equipment.power_draw_kw, "substation_limit_kw": graph.substation_limit_kw, "width_m": equipment.width_m, "door_limit_m": graph.door_limit_m, "warranty_years": warranty, "contractual_warranty_min_years": graph.contractual_warranty_min_years, "constraint_source": graph.constraint_source}))
+            evidence={"power_draw_kw": equipment.power_draw_kw, "substation_limit_kw": graph.substation_limit_kw, "width_m": equipment.width_m, "door_limit_m": graph.door_limit_m, "warranty_years": warranty, "contractual_warranty_min_years": graph.contractual_warranty_min_years, "constraint_source": graph.constraint_source, "constraint_version": graph.constraint_version}))
 
         market_floor = graph.market_benchmark_inr * .8
         carbon_fail = equipment.embodied_carbon_factor is not None and equipment.embodied_carbon_factor > graph.carbon_cap_kgco2e
