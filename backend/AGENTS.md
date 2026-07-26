@@ -13,9 +13,11 @@ multipart PDF
   -> FastAPI size/signature checks
   -> temporary file
   -> PyMuPDF text + metadata extraction
+  -> optional local-first model extraction for unresolved fields
   -> strict Pydantic `VendorBidExtract`
   -> four in-process patrols
-  -> `DocketScorecard` response
+  -> local SQLite/filesystem record
+  -> `BidRecord` response
 ```
 
 Current entry points:
@@ -23,14 +25,16 @@ Current entry points:
 - `backend/main.py`: upload and simulation HTTP endpoints.
 - `backend/app/models/schemas.py`: strict boundary models.
 - `backend/app/services/extractor.py`: PDF parsing and candidate extraction.
+- `backend/app/services/model_extraction.py`: disabled-by-default Ollama/Gemini candidate extraction and validation.
 - `backend/app/services/patrols.py`: deterministic patrol and TCO logic.
 - `backend/app/services/integrity.py`: prototype-only in-memory correlations.
+- `backend/app/services/repository.py`: local SQLite and source-PDF persistence.
 
 The database and frontend integration described by
 `openspec/changes/robust-supabase-backend/` are not implemented yet.
-The provider cascade described by
-`openspec/changes/multi-provider-pdf-extraction/` is also a specification,
-not current runtime behavior.
+The provider cascade is implemented behind configuration, but provider model
+selection and staging evaluation remain incomplete until measured evidence is
+recorded.
 
 ## Required boundaries
 
@@ -160,6 +164,8 @@ Run at minimum:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=backend python3 scripts/test_pipeline.py
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=backend python3 -m unittest discover -s backend/tests -v
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=backend python3 scripts/evaluate_extraction.py --assert-baseline
 openspec validate robust-supabase-backend --strict
 openspec validate multi-provider-pdf-extraction --strict
 ```

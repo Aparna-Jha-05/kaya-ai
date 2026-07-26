@@ -17,3 +17,9 @@ services:
     envVars:
       - key: PO_LICE_ALLOWED_ORIGINS
         sync: false
+      - key: PO_LICE_PROJECT_ID
+        value: demo
+      - key: OLLAMA_ENABLED
+        value: "false"
+      - key: REMOTE_EXTRACTION_ENABLED
+        value: "false"

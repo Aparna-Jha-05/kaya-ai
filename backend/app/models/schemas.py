@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class StrictModel(BaseModel):
@@ -13,6 +13,93 @@ class StrictModel(BaseModel):
 class LifecycleMode(str, Enum):
     PRE_AWARD = "PRE_AWARD"
     POST_AWARD = "POST_AWARD"
+
+
+class FactField(str, Enum):
+    VENDOR_NAME = "vendor_name"
+    MODEL_NUMBER = "equipment.model_number"
+    BID_AMOUNT_INR = "bid_amount_inr"
+    DELIVERY_WEEKS = "promised_delivery_weeks"
+    OSHA_CERT = "has_osha_cert"
+    POWER_DRAW_KW = "equipment.power_draw_kw"
+    COOLING_CAPACITY_KW = "equipment.cooling_capacity_kw"
+    WIDTH_M = "equipment.width_m"
+    EMBODIED_CARBON = "equipment.embodied_carbon_factor"
+
+
+class ExtractionProvider(str, Enum):
+    DETERMINISTIC = "deterministic"
+    OLLAMA = "ollama"
+    GEMINI = "gemini"
+
+
+CANONICAL_FACT_UNITS: dict[FactField, str | None] = {
+    FactField.VENDOR_NAME: None,
+    FactField.MODEL_NUMBER: None,
+    FactField.BID_AMOUNT_INR: "INR",
+    FactField.DELIVERY_WEEKS: "week",
+    FactField.OSHA_CERT: None,
+    FactField.POWER_DRAW_KW: "kW",
+    FactField.COOLING_CAPACITY_KW: "kW",
+    FactField.WIDTH_M: "m",
+    FactField.EMBODIED_CARBON: "kgCO2e/ton",
+}
+
+
+class FactCandidate(StrictModel):
+    field: FactField
+    raw_value: str = Field(min_length=1, max_length=256)
+    normalized_value: str | float | int | bool
+    unit: Optional[str] = Field(default=None, max_length=32)
+    source_excerpt: str = Field(min_length=1, max_length=1_000)
+    page: Optional[int] = Field(default=None, ge=1, le=100_000)
+    bbox: Optional[tuple[float, float, float, float]] = None
+    extractor: str = Field(min_length=1, max_length=64)
+    provider: ExtractionProvider
+    model: str = Field(min_length=1, max_length=160)
+    schema_version: str = Field(default="1.0", pattern=r"^\d+\.\d+$")
+    latency_ms: float = Field(default=0, ge=0, le=3_600_000)
+    validation_signals: List[str] = Field(default_factory=list, max_length=20)
+    accepted: bool = False
+
+    @model_validator(mode="after")
+    def validate_unit_and_bbox(self) -> "FactCandidate":
+        expected_unit = CANONICAL_FACT_UNITS[self.field]
+        if self.unit != expected_unit:
+            raise ValueError(f"{self.field.value} requires canonical unit {expected_unit!r}")
+        if self.bbox:
+            x0, y0, x1, y1 = self.bbox
+            if x1 < x0 or y1 < y0:
+                raise ValueError("bbox must use [x0, y0, x1, y1] ordering")
+        return self
+
+
+class ProviderExtractionResponse(StrictModel):
+    candidates: List[FactCandidate] = Field(default_factory=list, max_length=30)
+
+
+class ExtractionIssue(StrictModel):
+    code: str = Field(min_length=2, max_length=64)
+    message: str = Field(min_length=2, max_length=500)
+    field: Optional[FactField] = None
+    provider: Optional[ExtractionProvider] = None
+
+
+class RemoteDisclosure(StrictModel):
+    project_id: str = Field(min_length=1, max_length=128)
+    provider: ExtractionProvider
+    model: str = Field(min_length=1, max_length=160)
+    fields: List[FactField] = Field(default_factory=list, max_length=30)
+    timestamp: str = Field(min_length=1, max_length=64)
+
+
+class ExtractionReport(StrictModel):
+    schema_version: str = Field(default="1.0", pattern=r"^\d+\.\d+$")
+    selected: Dict[str, FactCandidate] = Field(default_factory=dict)
+    candidates: List[FactCandidate] = Field(default_factory=list, max_length=100)
+    issues: List[ExtractionIssue] = Field(default_factory=list, max_length=100)
+    providers_attempted: List[ExtractionProvider] = Field(default_factory=list, max_length=10)
+    remote_disclosures: List[RemoteDisclosure] = Field(default_factory=list, max_length=10)
 
 
 class EquipmentSpec(StrictModel):
@@ -49,6 +136,7 @@ class VendorBidExtract(StrictModel):
     extracted_clauses: List[str] = Field(default_factory=list, max_length=50)
     document_metadata: DocumentMetadata = Field(default_factory=DocumentMetadata)
     lifecycle_mode: LifecycleMode = LifecycleMode.PRE_AWARD
+    extraction_report: ExtractionReport = Field(default_factory=ExtractionReport)
 
     @field_validator("extracted_clauses")
     @classmethod

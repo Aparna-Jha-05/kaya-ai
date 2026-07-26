@@ -41,12 +41,13 @@ Do not mark an OpenSpec task complete from static inspection alone.
 
 As of the current checkout:
 
-- FastAPI exposes `POST /api/v1/bids/upload` and `POST /api/v1/bids/simulate`.
-- PDF extraction is PyMuPDF plus conservative regex parsing.
+- FastAPI exposes upload, simulation, bid list/detail/source/delete, reviewer action, and activity endpoints.
+- Uploaded bid records and source PDFs use local SQLite/filesystem persistence.
+- PDF extraction is PyMuPDF plus conservative regex parsing, followed by optional Ollama/Gemini extraction that is disabled by default.
 - Patrol decisions use in-process Python rules and hard-coded `ConstraintGraph` values.
 - duplicate/integrity correlation is process-local memory and resets on restart.
-- the dashboard still uses `lib/mockData.ts` for most screens and actions.
-- Supabase persistence, authentication, RLS, RFI persistence/approval, list/detail APIs, site-constraint updates, and durable audit logs are planned, not implemented.
+- the dashboard uses `lib/api.ts` for the implemented bid workflow.
+- Supabase persistence, authentication, RLS, RFI persistence/dispatch, site-constraint updates, and durable multi-project audit storage are planned, not implemented.
 
 Never describe the current prototype as having MinIO storage, live RAG, database-backed patrols, immutable audit storage, VLM CAD extraction, Jarvis dispatch, or Kaya/Amber integration unless runtime evidence is added.
 
@@ -60,6 +61,7 @@ openspec/changes/              Proposed behavior and implementation tasks
 .github/workflows/ci.yml       Required cross-stack pull-request checks
 render.yaml                    Backend staging deployment after CI checks pass
 scripts/test_pipeline.py       Smoke/demo runner; currently prints rather than asserts
+scripts/evaluate_extraction.py Labeled deterministic/model extraction evaluation
 docs/PO-LICE.pdf               Concept document, not implementation evidence
 ```
 
