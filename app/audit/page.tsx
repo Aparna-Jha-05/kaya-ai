@@ -23,10 +23,10 @@ function seed() {
         evidence: r.evidence.join(" | "),
       });
     });
-    if (!bid.has_insurance_cert) {
+    if (!bid.has_safety_cert) {
       appendAudit({
         bid: bid.vendor,
-        patrol: "Case Files (agent)",
+        patrol: "RFI draft",
         action: "EMAIL DRAFTED",
         rule: 'missing_doc = "OSHA-style Safety Certificate"',
         evidence: `PO ${bid.po_number}`,
@@ -36,9 +36,9 @@ function seed() {
 }
 
 const statusColor = (a: string) => {
-  if (a.includes("FAIL")) return "text-red";
+  if (a.includes("FAIL")) return "text-rose";
   if (a.includes("FLAG")) return "text-amber";
-  if (a.includes("PASS")) return "text-green";
+  if (a.includes("PASS")) return "text-cyan";
   return "text-violet";
 };
 
@@ -60,16 +60,15 @@ export default function AuditPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-text">
-            <Lock className="h-5 w-5 text-green" /> Immutable Audit Log
+            <Lock className="h-5 w-5 text-cyan" /> Audit trail
           </h1>
           <p className="mt-1 text-sm text-text/50">
-            Append-only. Every patrol decision and agent action, timestamped. No
-            edits, no deletes. Humans decide, PO-lice provides the evidence trail.
+            Every check and workflow action is timestamped for review.
           </p>
         </div>
         <button
           onClick={() => downloadCsv()}
-          className="inline-flex items-center gap-2 rounded-lg bg-green/15 px-4 py-2 text-sm font-medium text-green transition-colors hover:bg-green/25"
+          className="inline-flex items-center gap-2 rounded-lg bg-cyan/15 px-4 py-2 text-sm font-medium text-cyan transition-colors hover:bg-cyan/25"
         >
           <Download className="h-4 w-4" /> Export CSV
         </button>
@@ -78,10 +77,10 @@ export default function AuditPage() {
       <Card>
         <CardHeader
           title={`${rows.length} logged events`}
-          caption="This store lives in memory and resets on refresh — a real deployment would write to an append-only ledger."
+          caption="Demo data is stored in memory and resets on refresh."
           right={
             <Link href="/bids/B" className="text-xs text-blue hover:underline">
-              walk Vendor B →
+              review Vendor B →
             </Link>
           }
         />

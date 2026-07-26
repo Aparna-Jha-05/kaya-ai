@@ -68,14 +68,14 @@ export default function ConfidenceHeatmap({
   const unverifiedCount = fields.filter((f) => !f.isVerified).length;
 
   return (
-    <div className="bg-[#111827] border border-[#1e293b] rounded-xl p-5 hover:border-[#38bdf8]/40 transition-colors">
+    <div className="bg-card border border-line rounded-xl p-5 hover:border-cyan/40 transition-colors">
       <div className="flex justify-between items-center mb-3">
         <div>
           <div className="font-mono text-[11px] uppercase tracking-widest text-[#38bdf8] mb-0.5">
-            HUMAN_IN_THE_LOOP // EXTRACTION_CONFIDENCE_HEATMAP
+            EXTRACTION REVIEW
           </div>
           <h3 className="text-base font-bold flex items-center gap-2">
-            🔍 Extracted Spec Field Heatmap ({vendorName})
+            🔍 Extracted bid fields
           </h3>
         </div>
         <span
@@ -85,12 +85,12 @@ export default function ConfidenceHeatmap({
               : "bg-[#38bdf8]/15 text-[#38bdf8] border border-[#38bdf8]"
           }`}
         >
-          {unverifiedCount > 0 ? `${unverifiedCount} Field Review Needed` : "All Fields Verified"}
+          {unverifiedCount > 0 ? `${unverifiedCount} fields need review` : "All fields verified"}
         </span>
       </div>
 
       <p className="text-xs text-[#94a3b8] mb-3">
-        PO-lice flags low-confidence OCR fields for human procurement officer verification to guarantee zero hallucinations:
+        Confirm low-confidence fields before using them as evidence.
       </p>
 
       {/* Field List */}
@@ -104,7 +104,7 @@ export default function ConfidenceHeatmap({
               className={`p-3 rounded-lg border flex items-center justify-between text-xs transition-all ${
                 !field.isVerified
                   ? "bg-[#fbbf24]/10 border-[#fbbf24] shadow-[0_0_12px_rgba(251,191,36,0.15)]"
-                  : "bg-[#040711] border-[#1e293b]"
+                  : "bg-inset border-line"
               }`}
             >
               <div className="space-y-0.5">
@@ -126,7 +126,7 @@ export default function ConfidenceHeatmap({
                       : "bg-[#fbbf24]/15 text-[#fbbf24] border border-[#fbbf24]"
                   }`}
                 >
-                  {field.confidence}% Conf
+                  {field.confidence}% confidence
                 </span>
 
                 {/* Human Verify Action */}
@@ -135,10 +135,10 @@ export default function ConfidenceHeatmap({
                     onClick={() => verifyField(field.id)}
                     className="bg-[#fbbf24] hover:bg-[#fbbf24]/90 text-[#090d16] font-bold text-[10px] px-2.5 py-1 rounded transition-colors shadow"
                   >
-                    ✓ Confirm Field
+                    ✓ Confirm
                   </button>
                 ) : (
-                  <span className="text-[#38bdf8] font-mono text-[10px]">✓ Human Verified</span>
+                  <span className="text-[#38bdf8] font-mono text-[10px]">✓ Verified</span>
                 )}
               </div>
             </div>

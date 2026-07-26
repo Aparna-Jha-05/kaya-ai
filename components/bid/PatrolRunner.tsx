@@ -67,15 +67,15 @@ export default function PatrolRunner({
   return (
     <Card>
       <CardHeader
-        title="The Squad · Four Patrols"
-        caption="Every decision below is a real deterministic check. The LLM only supplied the numbers; the math draws the line."
+        title="Compliance checks"
+        caption="Each result is calculated from extracted bid data and fixed rules. AI does not decide pass or fail."
         right={
           revealed < ORDER.length ? (
             <span className="flex items-center gap-1.5 font-mono text-[11px] text-text/50">
               <Loader2 className="h-3 w-3 animate-spin" /> {revealed}/4 run
             </span>
           ) : (
-            <span className="font-mono text-[11px] text-green">✓ 4/4 complete</span>
+            <span className="font-mono text-[11px] text-cyan">✓ 4/4 complete</span>
           )
         }
       />
@@ -93,7 +93,7 @@ export default function PatrolRunner({
               key={key}
               initial={{ opacity: 0.35 }}
               animate={{ opacity: isRevealed || isActive ? 1 : 0.35 }}
-              className="relative overflow-hidden rounded-lg border bg-[#071510]"
+              className="relative overflow-hidden rounded-lg border bg-surface"
               style={{
                 borderColor: isActive
                   ? meta.color
@@ -176,7 +176,7 @@ export default function PatrolRunner({
                           {isTraffic && (
                             <li className="flex items-center gap-1.5 pt-1 text-[11px] text-text/55">
                               <span style={{ color: COLORS.blue }}>›</span>
-                              <span>sent to MCP Planner</span>
+                              <span>planning handoff pending</span>
                               <MockBadge />
                             </li>
                           )}

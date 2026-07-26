@@ -37,53 +37,53 @@ function buildGraph(bid: Bid): { nodes: GNode[]; edges: GEdge[] } {
   if (bid.id !== "B") {
     return {
       nodes: [
-        n("root", 20, 40, "Bid PDF matches the site spec", COLORS.green, "SOURCE"),
-        n("ok", 340, 40, "All four patrols cleared — no downstream consequences", COLORS.green, "RESULT"),
+        n("root", 20, 40, "Bid PDF matches the site spec", COLORS.cyan, "SOURCE"),
+        n("ok", 340, 40, "All checks passed — no downstream impact", COLORS.cyan, "RESULT"),
       ],
-      edges: [e("root", "ok", COLORS.green)],
+      edges: [e("root", "ok", COLORS.cyan)],
     };
   }
 
   const nodes: GNode[] = [
-    n("root", 20, 210, "Chiller model substituted — looks equivalent in the bid PDF", COLORS.red, "ROOT CAUSE"),
+    n("root", 20, 210, "Chiller model substituted — looks equivalent in the bid PDF", COLORS.rose, "ROOT CAUSE"),
 
-    n("p1", 320, 20, "Power draw +10% (1400 kW)", COLORS.red, "SIGNAL"),
-    n("p2", 620, 20, "Electrical panel redesign", COLORS.red, "ENGINEERING"),
-    n("p3", 920, 20, "Reject or escalate", COLORS.red, "ACTION"),
+    n("p1", 320, 20, "Power draw +10% (1400 kW)", COLORS.rose, "SIGNAL"),
+    n("p2", 620, 20, "Electrical panel redesign", COLORS.rose, "ENGINEERING"),
+    n("p3", 920, 20, "Reject or escalate", COLORS.rose, "ACTION"),
 
     n("w1", 320, 118, "Water usage +15% (460 gpm)", COLORS.amber, "SIGNAL"),
     n("w2", 620, 118, "Sustainability + cooling risk", COLORS.amber, "CARBON"),
     n("w3", 920, 118, "Carbon / OPEX penalty", COLORS.amber, "ACTION"),
 
-    n("f1", 320, 216, "Floor load +8% (1620 kg/m²)", COLORS.red, "SIGNAL"),
-    n("f2", 620, 216, "Structural tolerance breach", COLORS.red, "STRUCTURAL"),
-    n("f3", 920, 216, "Hard fail", COLORS.red, "ACTION"),
+    n("f1", 320, 216, "Floor load +8% (1620 kg/m²)", COLORS.rose, "SIGNAL"),
+    n("f2", 620, 216, "Structural tolerance breach", COLORS.rose, "STRUCTURAL"),
+    n("f3", 920, 216, "Hard fail", COLORS.rose, "ACTION"),
 
     n("s1", 320, 314, "Vendor late 3 of 5 deliveries", COLORS.violet, "SIGNAL"),
     n("s2", 620, 314, "ROJ window risk", COLORS.blue, "SCHEDULE"),
     n("s3", 920, 314, "Schedule contingency", COLORS.blue, "ACTION"),
 
-    n("c1", 320, 412, "Missing safety certificate", COLORS.red, "SIGNAL"),
-    n("c2", 620, 412, "Compliance hold", COLORS.red, "LEGAL"),
-    n("c3", 920, 412, "Legal / procurement flag", COLORS.red, "ACTION"),
+    n("c1", 320, 412, "Missing safety certificate", COLORS.rose, "SIGNAL"),
+    n("c2", 620, 412, "Compliance hold", COLORS.rose, "LEGAL"),
+    n("c3", 920, 412, "Legal / procurement flag", COLORS.rose, "ACTION"),
   ];
 
   const edges: GEdge[] = [
-    e("root", "p1", COLORS.red),
-    e("p1", "p2", COLORS.red),
-    e("p2", "p3", COLORS.red),
+    e("root", "p1", COLORS.rose),
+    e("p1", "p2", COLORS.rose),
+    e("p2", "p3", COLORS.rose),
     e("root", "w1", COLORS.amber),
     e("w1", "w2", COLORS.amber),
     e("w2", "w3", COLORS.amber),
-    e("root", "f1", COLORS.red),
-    e("f1", "f2", COLORS.red),
-    e("f2", "f3", COLORS.red),
+    e("root", "f1", COLORS.rose),
+    e("f1", "f2", COLORS.rose),
+    e("f2", "f3", COLORS.rose),
     e("root", "s1", COLORS.violet),
     e("s1", "s2", COLORS.blue),
     e("s2", "s3", COLORS.blue),
-    e("root", "c1", COLORS.red),
-    e("c1", "c2", COLORS.red),
-    e("c2", "c3", COLORS.red),
+    e("root", "c1", COLORS.rose),
+    e("c1", "c2", COLORS.rose),
+    e("c2", "c3", COLORS.rose),
   ];
 
   return { nodes, edges };
@@ -111,8 +111,8 @@ export default function EvidenceBoard({ bid }: { bid: Bid }) {
   return (
     <Card>
       <CardHeader
-        title="The Evidence Board"
-        caption="How one substituted chiller cascades into engineering, carbon, vendor and schedule consequences. Read each path left to right: cause → effect → action."
+        title="Impact path"
+        caption="How the submitted equipment affects engineering, carbon, vendor, and schedule outcomes. Read left to right: finding, impact, action."
       />
       <div className="terminal-grid overflow-x-auto rounded-b-xl p-4">
         <div className="relative mx-auto" style={{ width, height, minWidth: width }}>
@@ -163,7 +163,7 @@ export default function EvidenceBoard({ bid }: { bid: Bid }) {
           {nodes.map((nd) => (
             <div
               key={nd.id}
-              className="absolute flex flex-col justify-center rounded-lg border border-white/10 bg-[#0a1a13] px-3 py-2 shadow-lg"
+              className="absolute flex flex-col justify-center rounded-lg border border-white/10 bg-surface px-3 py-2 shadow-lg"
               style={{
                 left: nd.x,
                 top: nd.y,

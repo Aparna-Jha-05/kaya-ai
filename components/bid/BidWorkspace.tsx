@@ -16,10 +16,10 @@ type Stage = "upload" | "extract" | "vlm" | "patrols" | "results";
 
 const PIPELINE = [
   { key: "upload", label: "Vendor PDF", Icon: FileText },
-  { key: "extract", label: "Doc Intelligence", Icon: ScanText },
-  { key: "json", label: "Pydantic JSON", Icon: Braces },
-  { key: "patrols", label: "The Squad", Icon: Users },
-  { key: "results", label: "The Docket", Icon: ClipboardList },
+  { key: "extract", label: "Extract data", Icon: ScanText },
+  { key: "json", label: "Validate data", Icon: Braces },
+  { key: "patrols", label: "Run checks", Icon: Users },
+  { key: "results", label: "Review results", Icon: ClipboardList },
 ] as const;
 
 // Map a stage to how far the pipeline strip has lit up.
@@ -49,17 +49,17 @@ export default function BidWorkspace({ bid }: { bid: Bid }) {
                 <div className="flex flex-col items-center gap-1.5 px-1">
                   <motion.div
                     animate={{
-                      backgroundColor: active ? `${COLORS.green}1a` : "rgba(255,255,255,0.04)",
-                      borderColor: active ? `${COLORS.green}66` : "rgba(255,255,255,0.08)",
+                      backgroundColor: active ? `${COLORS.cyan}1a` : "rgba(255,255,255,0.04)",
+                      borderColor: active ? `${COLORS.cyan}66` : "rgba(255,255,255,0.08)",
                     }}
                     className="flex h-9 w-9 items-center justify-center rounded-lg border"
                   >
                     {isDone ? (
-                      <Check className="h-4 w-4 text-green" />
+                      <Check className="h-4 w-4 text-cyan" />
                     ) : (
                       <p.Icon
                         className="h-4 w-4"
-                        style={{ color: active ? COLORS.green : "rgba(241,255,246,0.35)" }}
+                        style={{ color: active ? COLORS.cyan : "rgba(248,250,252,0.35)" }}
                       />
                     )}
                   </motion.div>
@@ -76,7 +76,7 @@ export default function BidWorkspace({ bid }: { bid: Bid }) {
                       initial={{ width: "0%" }}
                       animate={{ width: i < lit ? "100%" : "0%" }}
                       transition={{ duration: 0.5 }}
-                      className="absolute inset-y-0 left-0 bg-green"
+                      className="absolute inset-y-0 left-0 bg-cyan"
                     />
                   </div>
                 )}

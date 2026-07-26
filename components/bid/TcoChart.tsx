@@ -20,9 +20,9 @@ interface Row {
 
 export default function TcoChart({ data }: { data: Row[] }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-[#071510] p-4">
+    <div className="rounded-lg border border-white/10 bg-surface p-4">
       <div className="mb-3 text-xs font-medium text-text/60">
-        Upfront cost vs 5-Year TCO² (₹ Cr) — lower is better
+        Upfront cost vs 5-year TCO² (₹ Cr) — lower is better
       </div>
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={data} barGap={6} barCategoryGap="28%">
@@ -44,7 +44,7 @@ export default function TcoChart({ data }: { data: Row[] }) {
           <RTooltip
             cursor={{ fill: "rgba(255,255,255,0.03)" }}
             contentStyle={{
-              backgroundColor: "#0a1a13",
+              backgroundColor: COLORS.surface,
               border: "1px solid rgba(255,255,255,0.15)",
               borderRadius: 8,
               fontSize: 12,
@@ -59,7 +59,7 @@ export default function TcoChart({ data }: { data: Row[] }) {
             {data.map((row, i) => (
               <Cell
                 key={i}
-                fill={row.vendor === "VB" ? COLORS.red : COLORS.amber}
+                fill={row.vendor === "VB" ? COLORS.rose : COLORS.amber}
               />
             ))}
           </Bar>

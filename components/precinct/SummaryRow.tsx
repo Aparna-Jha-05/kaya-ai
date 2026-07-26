@@ -11,7 +11,7 @@ function metrics() {
   for (const b of BIDS) {
     const { building } = runAllPatrols(b);
     if (building.status === "FAIL") clashes += 1;
-    if (!b.has_insurance_cert) missingDocs += 1;
+    if (!b.has_safety_cert) missingDocs += 1;
   }
   return { total: BIDS.length, clashes, missingDocs };
 }
@@ -20,21 +20,21 @@ export default function SummaryRow() {
   const m = metrics();
   const cards = [
     {
-      label: "Total Bids Audited",
+      label: "Bids reviewed",
       value: m.total,
       color: COLORS.text,
       Icon: FileCheck2,
-      sub: "across IIT Smart Campus Phase 1",
+      sub: "in this review set",
     },
     {
-      label: "Critical Engineering Clashes",
+      label: "Engineering failures",
       value: m.clashes,
-      color: COLORS.red,
+      color: COLORS.rose,
       Icon: AlertOctagon,
-      sub: "hard site limits breached",
+      sub: "hard limits exceeded",
     },
     {
-      label: "Missing Legal Docs",
+      label: "Missing documents",
       value: m.missingDocs,
       color: COLORS.amber,
       Icon: FileWarning,

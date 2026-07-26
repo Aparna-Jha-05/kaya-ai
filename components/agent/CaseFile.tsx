@@ -41,27 +41,27 @@ export default function CaseFile({ bid }: { bid: Bid }) {
   const [handed, setHanded] = useState(false);
   const [toast, setToast] = useState(false);
 
-  if (bid.has_insurance_cert) return null;
+  if (bid.has_safety_cert) return null;
 
   const approve = () => {
     setApproved(true);
     appendAudit({
       bid: bid.vendor,
-      patrol: "Case Files (agent)",
+      patrol: "RFI draft",
       action: "EMAIL DRAFTED & APPROVED",
       rule: `missing_doc = "${MISSING_DOC}"`,
       evidence: `PO ${bid.po_number} · deadline ${deadlineStr()}`,
     });
   };
 
-  const handToJarvis = () => {
+  const queueWorkflow = () => {
     setHanded(true);
     setToast(true);
     appendAudit({
       bid: bid.vendor,
-      patrol: "Jarvis handoff",
-      action: "HANDED TO JARVIS (mock)",
-      rule: "PO-lice detects, Jarvis acts",
+      patrol: "Workflow handoff",
+      action: "QUEUED FOR WORKFLOW (demo)",
+      rule: "Reviewer-approved RFI",
       evidence: `dispatch email re: ${MISSING_DOC}`,
     });
     setTimeout(() => setToast(false), 4000);
@@ -72,14 +72,14 @@ export default function CaseFile({ bid }: { bid: Bid }) {
       <CardHeader
         title={
           <span className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-violet" /> Case Files · Agent Draft
+            <Mail className="h-4 w-4 text-violet" /> RFI draft
           </span>
         }
-        caption="Triggered automatically because has_insurance_cert = false. The agent drafts; a human approves; Jarvis acts."
+        caption="The submitted safety certificate is missing. Review and approve the draft before it enters the workflow."
         right={<MockBadge label="AGENT" />}
       />
       <div className="p-4">
-        <pre className="whitespace-pre-wrap rounded-lg border border-white/10 bg-[#071510] p-4 font-mono text-[12px] leading-relaxed text-text/85">
+        <pre className="whitespace-pre-wrap rounded-lg border border-white/10 bg-surface p-4 font-mono text-[12px] leading-relaxed text-text/85">
           {draftEmail(bid)}
         </pre>
 
@@ -89,7 +89,7 @@ export default function CaseFile({ bid }: { bid: Bid }) {
             disabled={approved}
             className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               approved
-                ? "cursor-default bg-green/15 text-green"
+                ? "cursor-default bg-cyan/15 text-cyan"
                 : "bg-violet/20 text-violet hover:bg-violet/30"
             }`}
           >
@@ -98,23 +98,21 @@ export default function CaseFile({ bid }: { bid: Bid }) {
           </button>
 
           <button
-            onClick={handToJarvis}
+            onClick={queueWorkflow}
             disabled={!approved || handed}
             className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               !approved
                 ? "cursor-not-allowed bg-white/5 text-text/25"
                 : handed
-                ? "cursor-default bg-green/15 text-green"
+                ? "cursor-default bg-cyan/15 text-cyan"
                 : "bg-blue/20 text-blue hover:bg-blue/30"
             }`}
           >
             <Bot className="h-4 w-4" />
-            {handed ? "Handed to Jarvis" : "Hand to Jarvis"}
+            {handed ? "Queued for workflow" : "Queue for workflow"}
           </button>
 
-          <span className="text-xs text-text/40">
-            PO-lice detects, Jarvis acts.
-          </span>
+          <span className="text-xs text-text/40">No message is sent in this demo.</span>
         </div>
       </div>
 
@@ -125,12 +123,12 @@ export default function CaseFile({ bid }: { bid: Bid }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-xl border border-green/30 bg-[#0a1a13] px-4 py-3 shadow-2xl"
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-xl border border-cyan/30 bg-[#0f172a] px-4 py-3 shadow-2xl"
           >
-            <CheckCircle2 className="h-5 w-5 text-green" />
+            <CheckCircle2 className="h-5 w-5 text-cyan" />
             <div>
               <div className="flex items-center gap-2 text-sm font-medium text-text">
-                Jarvis accepted the handoff <MockBadge />
+                Workflow item queued <MockBadge />
               </div>
               <div className="text-xs text-text/50">
                 Email queued for dispatch to {bid.vendor}. Human sign-off logged.

@@ -28,7 +28,7 @@ function scheduleBucket(p95: number): "Low" | "Med" | "High" {
 
 export function scorecard(bid: Bid): ScorecardRow {
   const { building, green, vice, traffic } = runAllPatrols(bid);
-  const viceRisk = parseInt(vice.rule.split("= ").pop() || "0", 10);
+  const viceRisk = vice.riskScore ?? 0;
 
   return {
     id: bid.id,

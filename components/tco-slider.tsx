@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_PO_LICE_API_URL ?? "http://localhost:8000";
 
 interface TCOSliderProps {
   baseCapexCr?: number;
@@ -13,24 +15,56 @@ export default function TCOSlider({
 }: TCOSliderProps) {
   const [discountPercent, setDiscountPercent] = useState<number>(0);
   const [delayDays, setDelayDays] = useState<number>(12);
+  const [result, setResult] = useState({
+    adjusted_capex_inr: baseCapexCr * 10_000_000,
+    delay_penalty_inr: delayDays * 200_000,
+    calculated_tco2_inr: baseCapexCr * 10_000_000 + delayDays * 200_000 + 27_600_000,
+    recommendation: "REJECTED",
+  });
+  const [connection, setConnection] = useState<"live" | "offline">("offline");
 
-  const finalCapexCr = baseCapexCr * (1 - discountPercent / 100);
-  const riskPenaltyCr = (delayDays * 2.0) / 100; // ₹2.0 Lakhs per day
-  const opexCarbon5YrCr = 2.76;
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/bids/simulate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            base_capex_inr: baseCapexCr * 10_000_000,
+            discount_percent: discountPercent,
+            delay_days: delayDays,
+            opex_carbon_5yr_inr: 27_600_000,
+            lifecycle_mode: "PRE_AWARD",
+          }),
+        });
+        if (!response.ok) throw new Error("Simulation service unavailable");
+        const next = await response.json();
+        setResult(next);
+        setConnection("live");
+        onTCOChange?.(next.calculated_tco2_inr / 10_000_000);
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") setConnection("offline");
+      }
+    }, 120);
+    return () => { controller.abort(); window.clearTimeout(timer); };
+  }, [baseCapexCr, delayDays, discountPercent, onTCOChange]);
 
-  const recalculatedTCO2 = finalCapexCr + riskPenaltyCr + opexCarbon5YrCr;
-
-  const isReject = recalculatedTCO2 > 6.1 || delayDays > 5;
+  const finalCapexCr = result.adjusted_capex_inr / 10_000_000;
+  const riskPenaltyCr = result.delay_penalty_inr / 10_000_000;
+  const recalculatedTCO2 = result.calculated_tco2_inr / 10_000_000;
+  const isReject = result.recommendation === "REJECT" || result.recommendation === "REJECTED";
 
   return (
-    <div className="bg-[#111827] border border-[#1e293b] rounded-xl p-5 hover:border-[#38bdf8]/40 transition-colors">
+    <div className="bg-card border border-line rounded-xl p-5 hover:border-cyan/40 transition-colors">
       <div className="flex justify-between items-center mb-3">
         <div>
           <div className="font-mono text-[11px] uppercase tracking-widest text-[#38bdf8] mb-0.5">
-            FEATURE_A // WHAT_IF_RECALCULATION
+            COST SCENARIO
           </div>
           <h3 className="text-base font-bold flex items-center gap-2">
-            🎛️ What-If $TCO^2$ Simulator
+            🎛️ 5-year total cost
           </h3>
         </div>
         <span
@@ -40,22 +74,23 @@ export default function TCOSlider({
               : "bg-[#38bdf8]/15 text-[#38bdf8] border border-[#38bdf8]"
           }`}
         >
-          {isReject ? "REJECTED BY TCO²" : "RECOMMENDED"}
+          {isReject ? "Not recommended" : "Recommended"}
         </span>
       </div>
 
       <p className="text-xs text-[#94a3b8] mb-4">
-        Adjust Capex discount or delivery delays to recalculate 5-Year Total Cost of Ownership ($TCO^2$) in real-time:
+        Test commercial assumptions. This result informs review; it does not approve a purchase order. <span className={connection === "live" ? "text-[#38bdf8]" : "text-[#94a3b8]"}>[{connection === "live" ? "live calculation" : "demo calculation"}]</span>
       </p>
 
-      <div className="space-y-4 bg-[#060a12] p-4 rounded-lg border border-[#1e293b] mb-4">
+      <div className="space-y-4 bg-surface p-4 rounded-lg border border-line mb-4">
         {/* Discount Slider */}
         <div>
           <div className="flex justify-between text-xs font-medium mb-1">
-            <span>Vendor B Capex Discount: <strong className="text-[#38bdf8]">{discountPercent}%</strong></span>
-            <span className="text-[#94a3b8]">Base: ₹{baseCapexCr.toFixed(2)} Cr</span>
+            <span>Upfront discount: <strong className="text-[#38bdf8]">{discountPercent}%</strong></span>
+            <span className="text-[#94a3b8]">Base cost: ₹{baseCapexCr.toFixed(2)} Cr</span>
           </div>
           <input
+            aria-label="Capex discount percentage"
             type="range"
             min="0"
             max="25"
@@ -68,10 +103,11 @@ export default function TCOSlider({
         {/* Delay Slider */}
         <div>
           <div className="flex justify-between text-xs font-medium mb-1">
-            <span>Promised Delivery Delay: <strong className="text-[#fbbf24]">{delayDays} Days</strong></span>
+            <span>Delivery delay: <strong className="text-[#fbbf24]">{delayDays} days</strong></span>
             <span className="text-[#94a3b8]">Penalty: ₹2.0L / Day</span>
           </div>
           <input
+            aria-label="Delivery delay in days"
             type="range"
             min="0"
             max="30"
@@ -83,25 +119,25 @@ export default function TCOSlider({
       </div>
 
       {/* Recalculation Results */}
-      <div className="grid grid-cols-4 gap-2 bg-[#040711] p-3.5 rounded-lg border border-[#1e293b] text-center">
+      <div aria-live="polite" aria-atomic="true" className="grid grid-cols-4 gap-2 bg-inset p-3.5 rounded-lg border border-line text-center">
         <div>
-          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">CAPEX</div>
+          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">Upfront cost</div>
           <div className="text-sm font-bold font-mono mt-0.5">₹{finalCapexCr.toFixed(2)}Cr</div>
         </div>
         <div>
-          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">RISK COST</div>
+          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">Delay cost</div>
           <div className="text-sm font-bold font-mono text-[#fbbf24] mt-0.5">₹{riskPenaltyCr.toFixed(2)}Cr</div>
         </div>
         <div>
-          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">5-YR TCO²</div>
+          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">5-year total</div>
           <div className={`text-sm font-bold font-mono mt-0.5 ${isReject ? "text-[#f43f5e]" : "text-[#38bdf8]"}`}>
             ₹{recalculatedTCO2.toFixed(2)}Cr
           </div>
         </div>
         <div>
-          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">DECISION</div>
+          <div className="text-[10px] text-[#94a3b8] font-mono uppercase">Review result</div>
           <div className={`text-xs font-extrabold uppercase mt-1 ${isReject ? "text-[#f43f5e]" : "text-[#38bdf8]"}`}>
-            {isReject ? "REJECT" : "PASS"}
+            {isReject ? "Do not recommend" : "Recommend"}
           </div>
         </div>
       </div>

@@ -40,7 +40,7 @@ export interface Bid {
   floor_load_kg_m2: number;
   carbon_intensity_kgco2e: number;
   delivery_weeks: number;
-  has_insurance_cert: boolean;
+  has_safety_cert: boolean;
   upfront_cost_cr: number;
   tco2_cr: number;
   vendor_history: VendorHistory;
@@ -60,7 +60,7 @@ export const BIDS: Bid[] = [
     floor_load_kg_m2: 1400,
     carbon_intensity_kgco2e: 800000,
     delivery_weeks: 15,
-    has_insurance_cert: true,
+    has_safety_cert: true,
     upfront_cost_cr: 4.2,
     tco2_cr: 6.0,
     vendor_history: { late_deliveries: 1, total_deliveries: 6, disputes: 0 },
@@ -78,7 +78,7 @@ export const BIDS: Bid[] = [
     floor_load_kg_m2: 1620, // over 1500
     carbon_intensity_kgco2e: 920000, // over 850000 -> Green Patrol FAIL
     delivery_weeks: 18, // over 16
-    has_insurance_cert: false, // missing safety cert -> Case Files trigger
+    has_safety_cert: false, // missing safety certificate -> Case Files trigger
     upfront_cost_cr: 3.8, // cheapest upfront
     tco2_cr: 6.8, // most expensive over 5 years
     vendor_history: { late_deliveries: 3, total_deliveries: 5, disputes: 1 },
@@ -96,7 +96,7 @@ export const BIDS: Bid[] = [
     floor_load_kg_m2: 1480,
     carbon_intensity_kgco2e: 830000,
     delivery_weeks: 16,
-    has_insurance_cert: true,
+    has_safety_cert: true,
     upfront_cost_cr: 4.5,
     tco2_cr: 6.0,
     vendor_history: { late_deliveries: 2, total_deliveries: 6, disputes: 0 },
@@ -152,7 +152,7 @@ export const FIELD_CONFIDENCE: Record<string, Record<string, number>> = {
     floor_load_kg_m2: 0.94,
     carbon_intensity_kgco2e: 0.92,
     delivery_weeks: 0.99,
-    has_insurance_cert: 0.99,
+    has_safety_cert: 0.99,
   },
   B: {
     power_draw_kw: 0.72, // handwritten annotation on the spec sheet -> low confidence
@@ -161,7 +161,7 @@ export const FIELD_CONFIDENCE: Record<string, Record<string, number>> = {
     floor_load_kg_m2: 0.93,
     carbon_intensity_kgco2e: 0.88,
     delivery_weeks: 0.97,
-    has_insurance_cert: 0.99,
+    has_safety_cert: 0.99,
   },
   C: {
     power_draw_kw: 0.97,
@@ -170,7 +170,7 @@ export const FIELD_CONFIDENCE: Record<string, Record<string, number>> = {
     floor_load_kg_m2: 0.94,
     carbon_intensity_kgco2e: 0.93,
     delivery_weeks: 0.98,
-    has_insurance_cert: 0.99,
+    has_safety_cert: 0.99,
   },
 };
 

@@ -19,30 +19,30 @@ const ITEMS: CaseItem[] = [
   {
     icon: Mail,
     color: COLORS.violet,
-    title: "Agent drafted email to Vendor B for a missing safety certificate",
-    meta: "awaiting Jarvis handoff",
+    title: "RFI draft for Vendor B: safety certificate missing",
+    meta: "awaiting reviewer approval",
     href: "/bids/B",
     live: true,
   },
   {
     icon: FileSearch,
     color: COLORS.blue,
-    title: "Vice Squad retrieved Vendor B delivery history",
+    title: "Vendor B delivery history reviewed",
     meta: "3 delay notices · 1 dispute surfaced",
     href: "/bids/B",
   },
   {
     icon: Clock,
     color: COLORS.amber,
-    title: "Traffic Control flagged schedule exposure on Vendor B",
-    meta: "sent to MCP Planner",
+    title: "Vendor B schedule exposure identified",
+    meta: "planning handoff pending",
     mocked: true,
   },
   {
     icon: CheckCircle2,
-    color: COLORS.green,
-    title: "Vendor A cleared all four patrols",
-    meta: "recommended for award",
+    color: COLORS.cyan,
+    title: "Vendor A passed all checks",
+    meta: "recommended for review",
     href: "/bids/A",
   },
 ];
@@ -53,13 +53,13 @@ export default function CaseFilesPanel() {
       <CardHeader
         title={
           <span className="flex items-center gap-2">
-            Case Files
+            Review queue
             <span className="flex h-1.5 w-1.5 items-center">
-              <span className="h-1.5 w-1.5 animate-ping rounded-full bg-green/60" />
+              <span className="h-1.5 w-1.5 animate-ping rounded-full bg-cyan/60" />
             </span>
           </span>
         }
-        caption="Agent actions awaiting a human. PO-lice detects, Jarvis acts."
+        caption="Items that need reviewer attention."
       />
       <ul className="divide-y divide-white/5">
         {ITEMS.map((it, i) => {

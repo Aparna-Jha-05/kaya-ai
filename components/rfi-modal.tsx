@@ -22,16 +22,16 @@ export default function RFIModal({
 
 Dear ${vendorName},
 
-Your submitted commercial & technical bid for Chiller Model CTX-1400 failed PO-lice hard-gate validation:
+Your submitted commercial and technical bid for Chiller Model CTX-1400 does not meet the following project requirements:
 - Substation Power Draw: 1,400 kW exceeds site limit of 1,200 kW by 200 kW.
 - Embodied Carbon: 540 kgCO2e exceeds project carbon cap of 450 kgCO2e.
 - Equipment Width: 2.10m exceeds site door clearance of 1.90m.
 - Safety Certificate: OSHA Form 300 is currently missing.
 
-ACTION REQUIRED: Please submit a counter-proposal for Chiller Model CTX-1100 (Power Draw <= 1,150 kW, Width <= 1.85m) along with OSHA Form 300 by July 28, 2026.
+ACTION REQUIRED: Please submit a compliant alternative for Chiller Model CTX-1100 (Power Draw <= 1,150 kW, Width <= 1.85m) along with OSHA Form 300 by July 28, 2026.
 
 Regards,
-Procurement Enforcement Team (PO-lice)`
+Procurement Review Team (PO-LICE)`
   );
 
   const [isSent, setIsSent] = useState<boolean>(false);
@@ -41,9 +41,7 @@ Procurement Enforcement Team (PO-lice)`
   const handleHandoff = () => {
     setIsSent(true);
     if (onHandoffSuccess) {
-      onHandoffSuccess(
-        `[Jarvis Assistant] Auto-generated counter-spec RFI email dispatched to sales@cooltech.com. SMS ping sent to vendor contact.`
-      );
+      onHandoffSuccess("Draft approved and queued for the configured workflow. No email or SMS is sent by this demo.");
     }
     setTimeout(() => {
       setIsSent(false);
@@ -52,38 +50,40 @@ Procurement Enforcement Team (PO-lice)`
   };
 
   return (
-    <div className="fixed inset-0 bg-[#090d16]/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-[#111827] border border-[#1e293b] rounded-xl w-full max-w-2xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
-        <div className="flex justify-between items-center pb-4 border-b border-[#1e293b] mb-4">
+    <div className="fixed inset-0 bg-[#090d16]/80 backdrop-blur-md z-50 flex items-center justify-center p-4" role="presentation" onMouseDown={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="rfi-title" className="bg-card border border-line rounded-xl w-full max-w-2xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200" onMouseDown={(event) => event.stopPropagation()}>
+        <div className="flex justify-between items-center pb-4 border-b border-line mb-4">
           <div>
             <div className="font-mono text-[11px] uppercase tracking-widest text-[#38bdf8] mb-0.5">
-              FEATURE_C // AUTOMATED_COUNTER_SPEC_RFI
+              REQUEST FOR INFORMATION
             </div>
-            <h3 className="text-lg font-bold flex items-center gap-2">
-              ✉️ Counter-Spec RFI Email Drafter
+            <h3 id="rfi-title" className="text-lg font-bold flex items-center gap-2">
+              ✉️ Request a compliant specification
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="text-[#94a3b8] hover:text-white text-sm px-2 py-1 rounded border border-[#1e293b] hover:bg-[#1f2937]"
+            aria-label="Close RFI draft"
+            className="text-muted hover:text-white text-sm px-2 py-1 rounded border border-line hover:bg-surface"
           >
             ✕ Close
           </button>
         </div>
 
         <p className="text-xs text-[#94a3b8] mb-3">
-          Generated automatically from Building & Green Patrol failure logs. Review or edit text before Jarvis handoff:
+          This draft cites engineering and carbon failures. Review or edit it before it enters the workflow.
         </p>
 
         <textarea
+          aria-label="Editable RFI email draft"
           value={emailBody}
           onChange={(e) => setEmailBody(e.target.value)}
-          className="w-full h-56 bg-[#040711] border border-[#1e293b] rounded-lg p-3 text-xs font-mono text-[#e2e8f0] focus:border-[#38bdf8] outline-none resize-none leading-relaxed"
+          className="w-full h-56 bg-inset border border-line rounded-lg p-3 text-xs font-mono text-[#e2e8f0] focus:border-cyan outline-none resize-none leading-relaxed"
         />
 
-        <div className="flex justify-between items-center mt-5 pt-3 border-t border-[#1e293b]">
+        <div className="flex justify-between items-center mt-5 pt-3 border-t border-line">
           <span className="text-xs text-[#94a3b8]">
-            Status: <strong className="text-[#818cf8]">Awaiting Human Approval</strong>
+            Status: <strong className="text-[#818cf8]">Awaiting approval</strong>
           </span>
 
           <button
@@ -91,7 +91,7 @@ Procurement Enforcement Team (PO-lice)`
             disabled={isSent}
             className="bg-[#38bdf8] hover:bg-[#38bdf8]/90 text-[#090d16] font-bold text-xs px-5 py-2.5 rounded-lg shadow-lg hover:shadow-[#38bdf8]/20 transition-all flex items-center gap-2"
           >
-            {isSent ? "✓ Handed off to Jarvis!" : "⚡ Approve & Hand Off to Jarvis"}
+            {isSent ? "✓ Queued" : "Approve and queue"}
           </button>
         </div>
       </div>

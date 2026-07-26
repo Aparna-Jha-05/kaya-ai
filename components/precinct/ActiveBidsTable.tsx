@@ -9,9 +9,9 @@ import { COLORS } from "@/lib/constants";
 import { ChevronRight } from "lucide-react";
 
 function riskColor(risk: number) {
-  if (risk > 6) return COLORS.red;
+  if (risk > 6) return COLORS.rose;
   if (risk >= 4) return COLORS.amber;
-  return COLORS.green;
+  return COLORS.cyan;
 }
 
 export default function ActiveBidsTable() {
@@ -19,15 +19,15 @@ export default function ActiveBidsTable() {
 
   const rows = BIDS.map((b) => {
     const { building, green, vice } = runAllPatrols(b);
-    const risk = parseInt(vice.rule.split("= ").pop() || "0", 10);
+    const risk = vice.riskScore ?? 0;
     return { bid: b, building, green, risk };
   });
 
   return (
     <Card>
       <CardHeader
-        title="Active Vendor Bids"
-        caption="Each row is one extracted bid, validated by all four patrols. Click to open the case."
+        title="Bids"
+        caption="Each bid is checked against engineering, carbon, vendor, and schedule criteria. Select a bid to review its evidence."
       />
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -36,16 +36,16 @@ export default function ActiveBidsTable() {
               <th className="px-4 py-2.5 font-medium">Vendor</th>
               <th className="px-4 py-2.5 font-medium">Bid Amount</th>
               <th className="px-4 py-2.5 font-medium">
-                <Tooltip term="Building Patrol">Building</Tooltip>
+                <Tooltip term="Engineering">Engineering</Tooltip>
               </th>
               <th className="px-4 py-2.5 font-medium">
-                <Tooltip term="Green Patrol">Green</Tooltip>
+                <Tooltip term="Carbon">Carbon</Tooltip>
               </th>
               <th className="px-4 py-2.5 font-medium">
-                <Tooltip term="Vice Squad">Vice Risk</Tooltip>
+                <Tooltip term="Vendor reliability">Vendor risk</Tooltip>
               </th>
               <th className="px-4 py-2.5 font-medium">
-                <Tooltip term="TCO²">5-Yr TCO²</Tooltip>
+                <Tooltip term="TCO²">5-year TCO²</Tooltip>
               </th>
               <th className="px-4 py-2.5"></th>
             </tr>
@@ -57,6 +57,15 @@ export default function ActiveBidsTable() {
                 <tr
                   key={bid.id}
                   onClick={() => router.push(`/bids/${bid.id}`)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      router.push(`/bids/${bid.id}`);
+                    }
+                  }}
+                  role="link"
+                  tabIndex={0}
+                  aria-label={`Review bid from ${bid.vendor}`}
                   className={`group cursor-pointer border-b border-white/5 transition-colors hover:bg-white/[0.03] ${
                     isReject ? "animate-pulseRed" : ""
                   }`}
@@ -66,14 +75,14 @@ export default function ActiveBidsTable() {
                       <span
                         className="h-2 w-2 rounded-full"
                         style={{
-                          backgroundColor: isReject ? COLORS.red : COLORS.green,
-                          boxShadow: `0 0 8px ${isReject ? COLORS.red : COLORS.green}`,
+                          backgroundColor: isReject ? COLORS.rose : COLORS.cyan,
+                          boxShadow: `0 0 8px ${isReject ? COLORS.rose : COLORS.cyan}`,
                         }}
                       />
                       <span className="font-sans font-medium text-text">{bid.vendor}</span>
                       {isReject && (
-                        <span className="rounded bg-red/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-red">
-                          flagged
+                        <span className="rounded bg-rose/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-rose">
+                          review
                         </span>
                       )}
                     </div>

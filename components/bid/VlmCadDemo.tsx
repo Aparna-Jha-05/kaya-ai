@@ -49,7 +49,7 @@ export default function VlmCadDemo({
       />
       <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
         {/* CAD screenshot */}
-        <div className="relative overflow-hidden rounded-lg border border-white/10 bg-[#071510]">
+        <div className="relative overflow-hidden rounded-lg border border-white/10 bg-surface">
           <div className="absolute left-2 top-2 z-10 rounded bg-black/40 px-2 py-0.5 font-mono text-[10px] text-text/50">
             chiller_footprint_rev-{bid.id}.dwg
           </div>
@@ -75,12 +75,12 @@ export default function VlmCadDemo({
             {scanning && (
               <motion.line
                 x1="20" x2="300" y1="20" y2="20"
-                stroke={COLORS.green}
+                stroke={COLORS.cyan}
                 strokeWidth="2"
                 initial={{ y1: 20, y2: 20 }}
                 animate={{ y1: [20, 180, 20], y2: [20, 180, 20] }}
                 transition={{ duration: 1.6, ease: "easeInOut" }}
-                style={{ filter: `drop-shadow(0 0 4px ${COLORS.green})` }}
+                style={{ filter: `drop-shadow(0 0 4px ${COLORS.cyan})` }}
               />
             )}
           </svg>
@@ -90,7 +90,7 @@ export default function VlmCadDemo({
         <div className="flex flex-col justify-center gap-3">
           {scanning ? (
             <div className="flex items-center gap-2 font-mono text-sm text-text/50">
-              <span className="h-2 w-2 animate-ping rounded-full bg-green" />
+              <span className="h-2 w-2 animate-ping rounded-full bg-cyan" />
               reading drawing geometry…
             </div>
           ) : (
@@ -98,12 +98,12 @@ export default function VlmCadDemo({
               <Row label="footprint" value={`${dims.footprint_m} m`} />
               <Row label="floor_load_kg_m2 (read)" value={String(dims.weight_kg_m2)} />
               <Row label="floor_load_limit_kg_m2" value={String(SITE.floor_load_limit_kg_m2)} muted />
-              <div className="!mt-3 flex items-center justify-between rounded-lg border border-white/10 bg-[#071510] px-3 py-2">
+              <div className="!mt-3 flex items-center justify-between rounded-lg border border-white/10 bg-surface px-3 py-2">
                 <span className="text-xs text-text/60">Structural tolerance</span>
                 <PatrolBadge status={pass ? "PASS" : "FAIL"} />
               </div>
               {!pass && (
-                <p className="text-xs text-red/90">
+                <p className="text-xs text-rose/90">
                   {dims.weight_kg_m2} &gt; {SITE.floor_load_limit_kg_m2} kg/m² — floor-load
                   breach. Structural sign-off required.
                 </p>

@@ -58,6 +58,11 @@
 
 ## 🧪 Verification & Development Workflow
 
+### 0. Install backend dependencies
+```bash
+python3 -m pip install -r backend/requirements.txt
+```
+
 ### 1. Seed Demo Data & Test Python Compliance Engine
 ```bash
 python3 scripts/seed_demo_data.py
@@ -74,6 +79,17 @@ uvicorn backend.main:app --reload --port 8000
 export PATH=$PATH:/opt/homebrew/bin
 npm run dev      # Opens http://localhost:3000
 npm run build    # Verify clean production build
+```
+
+### Enriched Constraint Graph demo
+
+The upload API validates PDF type and size before extracting a SHA-256 fingerprint, PyMuPDF metadata, agreement clauses, and the connection IP in its validated bid record. Missing fields remain explicit review flags; they are never guessed. The four patrols deterministically evaluate contractual warranty, market-price anomalies, the Agreement Compliance Index, Bid Integrity Matrix correlations, and lifecycle state. `POST /api/v1/bids/simulate` is the backend source of truth for Dynamic Docket Scenario Modeling.
+
+To initialise PostgreSQL after your base Amber tables exist:
+
+```bash
+psql "$DATABASE_URL" -f scripts/postgres_schema.sql
+DATABASE_URL="$DATABASE_URL" python3 scripts/seed_postgres.py
 ```
 
 ---
