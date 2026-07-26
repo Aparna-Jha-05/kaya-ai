@@ -49,8 +49,8 @@ export default function BidWorkspace({ bid }: { bid: Bid }) {
                 <div className="flex flex-col items-center gap-1.5 px-1">
                   <motion.div
                     animate={{
-                      backgroundColor: active ? `${COLORS.green}1a` : "rgba(255,255,255,0.04)",
-                      borderColor: active ? `${COLORS.green}66` : "rgba(255,255,255,0.08)",
+                      backgroundColor: active ? `${COLORS.cyan}1a` : "rgba(255,255,255,0.04)",
+                      borderColor: active ? `${COLORS.cyan}66` : "rgba(255,255,255,0.08)",
                     }}
                     className="flex h-9 w-9 items-center justify-center rounded-lg border"
                   >
@@ -59,7 +59,7 @@ export default function BidWorkspace({ bid }: { bid: Bid }) {
                     ) : (
                       <p.Icon
                         className="h-4 w-4"
-                        style={{ color: active ? COLORS.green : "rgba(241,255,246,0.35)" }}
+                        style={{ color: active ? COLORS.cyan : "rgba(241,255,246,0.35)" }}
                       />
                     )}
                   </motion.div>

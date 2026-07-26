@@ -20,9 +20,9 @@ const TcoChart = dynamic(() => import("./TcoChart"), {
 });
 
 const riskColor = (r: string) =>
-  r === "High" ? COLORS.red : r === "Med" ? COLORS.amber : COLORS.green;
+  r === "High" ? COLORS.rose : r === "Med" ? COLORS.amber : COLORS.cyan;
 const decisionColor = (d: string) =>
-  d === "REJECT" ? COLORS.red : d === "RECOMMENDED" ? COLORS.green : COLORS.amber;
+  d === "REJECT" ? COLORS.rose : d === "RECOMMENDED" ? COLORS.cyan : COLORS.amber;
 
 export default function Docket({ highlightId }: { highlightId?: string }) {
   const rows = allScorecards();

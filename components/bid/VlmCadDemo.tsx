@@ -75,12 +75,12 @@ export default function VlmCadDemo({
             {scanning && (
               <motion.line
                 x1="20" x2="300" y1="20" y2="20"
-                stroke={COLORS.green}
+                stroke={COLORS.cyan}
                 strokeWidth="2"
                 initial={{ y1: 20, y2: 20 }}
                 animate={{ y1: [20, 180, 20], y2: [20, 180, 20] }}
                 transition={{ duration: 1.6, ease: "easeInOut" }}
-                style={{ filter: `drop-shadow(0 0 4px ${COLORS.green})` }}
+                style={{ filter: `drop-shadow(0 0 4px ${COLORS.cyan})` }}
               />
             )}
           </svg>

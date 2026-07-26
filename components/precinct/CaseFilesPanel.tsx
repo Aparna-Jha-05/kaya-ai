@@ -40,7 +40,7 @@ const ITEMS: CaseItem[] = [
   },
   {
     icon: CheckCircle2,
-    color: COLORS.green,
+    color: COLORS.cyan,
     title: "Vendor A passed all checks",
     meta: "recommended for review",
     href: "/bids/A",

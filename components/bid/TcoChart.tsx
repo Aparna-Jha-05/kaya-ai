@@ -59,7 +59,7 @@ export default function TcoChart({ data }: { data: Row[] }) {
             {data.map((row, i) => (
               <Cell
                 key={i}
-                fill={row.vendor === "VB" ? COLORS.red : COLORS.amber}
+                fill={row.vendor === "VB" ? COLORS.rose : COLORS.amber}
               />
             ))}
           </Bar>

@@ -16,9 +16,9 @@ export default function BidDetailPage({ params }: { params: { id: string } }) {
   const isReject = bid.recommendation === "REJECT";
   const decColor =
     bid.recommendation === "REJECT"
-      ? COLORS.red
+      ? COLORS.rose
       : bid.recommendation === "RECOMMENDED"
-      ? COLORS.green
+      ? COLORS.cyan
       : COLORS.amber;
 
   return (

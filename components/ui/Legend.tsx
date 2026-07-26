@@ -4,11 +4,11 @@ import { COLORS } from "@/lib/constants";
 import { Palette, X } from "lucide-react";
 
 const ITEMS: { color: string; label: string }[] = [
-  { color: COLORS.green, label: "Pass" },
+  { color: COLORS.cyan, label: "Pass" },
   { color: COLORS.amber, label: "Review needed" },
   { color: COLORS.violet, label: "Vendor reliability" },
   { color: COLORS.blue, label: "Schedule risk" },
-  { color: COLORS.red, label: "Failure" },
+  { color: COLORS.rose, label: "Failure" },
 ];
 
 // Persistent color legend, collapsible, pinned bottom-left.
