@@ -2,6 +2,8 @@ fastapi>=0.110,<1.0
 python-multipart>=0.0.9,<1.0
 uvicorn[standard]>=0.27,<1.0
 pydantic>=2.0,<3.0
+pydantic-settings>=2.0,<3.0
 PyMuPDF>=1.24,<2.0
-# Optional: required only by scripts/seed_postgres.py
+asyncpg>=0.29.0
+pgvector>=0.2.5
 psycopg[binary]>=3.1,<4.0

@@ -42,12 +42,17 @@ Do not mark an OpenSpec task complete from static inspection alone.
 As of the current checkout:
 
 - FastAPI exposes upload, simulation, bid list/detail/source/delete, reviewer action, and activity endpoints.
-- Uploaded bid records and source PDFs use local SQLite/filesystem persistence.
+- Uploaded bid records and source PDFs use explicit demo-mode
+  SQLite/filesystem persistence.
+- SQLite persists optimistic officer-decision versions, site-constraint
+  versions, and separate RFI draft/approval states.
 - PDF extraction is PyMuPDF plus conservative regex parsing, followed by optional Ollama/Gemini extraction that is disabled by default.
 - Patrol decisions use in-process Python rules and hard-coded `ConstraintGraph` values.
 - duplicate/integrity correlation is process-local memory and resets on restart.
 - the dashboard uses `lib/api.ts` for the implemented bid workflow.
-- Supabase persistence, authentication, RLS, RFI persistence/dispatch, site-constraint updates, and durable multi-project audit storage are planned, not implemented.
+- Supabase CRUD, authentication/RLS, RFI dispatch, immutable reassessment,
+  verified supplier provenance, and durable multi-project audit storage remain
+  planned, not implemented.
 
 Never describe the current prototype as having MinIO storage, live RAG, database-backed patrols, immutable audit storage, VLM CAD extraction, Jarvis dispatch, or Kaya/Amber integration unless runtime evidence is added.
 
@@ -60,7 +65,7 @@ app/, components/, lib/        Next.js dashboard and current mock client state
 openspec/changes/              Proposed behavior and implementation tasks
 .github/workflows/ci.yml       Required cross-stack pull-request checks
 render.yaml                    Backend staging deployment after CI checks pass
-scripts/test_pipeline.py       Smoke/demo runner; currently prints rather than asserts
+scripts/test_pipeline.py       Small assertion-based demo runner; not a full integration test
 scripts/evaluate_extraction.py Labeled deterministic/model extraction evaluation
 docs/PO-LICE.pdf               Concept document, not implementation evidence
 ```
@@ -86,7 +91,9 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=backend python3 scripts/test_pipeline.py
 npm run build
 ```
 
-The pipeline script is only a smoke check until it contains assertions. For backend changes, add the smallest runnable assertion-based test covering the changed rule or contract. Report separately:
+The pipeline script covers only a few demo fixtures. For backend changes, add
+the smallest runnable assertion-based test covering the changed rule or
+contract. Report separately:
 
 - static validation,
 - smoke execution,

@@ -28,10 +28,13 @@ Current entry points:
 - `backend/app/services/model_extraction.py`: disabled-by-default Ollama/Gemini candidate extraction and validation.
 - `backend/app/services/patrols.py`: deterministic patrol and TCO logic.
 - `backend/app/services/integrity.py`: prototype-only in-memory correlations.
-- `backend/app/services/repository.py`: local SQLite and source-PDF persistence.
+- `backend/app/services/repository.py`: local SQLite/source-PDF persistence,
+  optimistic officer decisions, versioned constraints, and persisted RFI drafts.
 
-The database and frontend integration described by
-`openspec/changes/robust-supabase-backend/` are not implemented yet.
+The SQLite prototype slice described by
+`openspec/changes/robust-supabase-backend/` is partially implemented.
+Supabase CRUD, authentication/RLS, project isolation, pgvector retrieval,
+immutable reassessment versions, and staging deployment are not implemented.
 The provider cascade is implemented behind configuration, but provider model
 selection and staging evaluation remain incomplete until measured evidence is
 recorded.
@@ -145,7 +148,8 @@ Do not add a backend endpoint for the static project-plan page unless it becomes
 
 ## Verification expectations
 
-The existing `scripts/test_pipeline.py` prints results but does not assert them. It is a smoke test, not proof of correctness.
+`scripts/test_pipeline.py` contains a few assertion-based demo checks, but it
+does not replace focused unit, API-contract, database, or end-to-end tests.
 
 For each backend change, leave one smallest relevant assertion-based check. The backend test matrix must eventually cover:
 

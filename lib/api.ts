@@ -1,10 +1,12 @@
 export type CheckStatus = "PASS" | "FAIL" | "FLAG";
-export type ReviewAction = "RFI_DRAFT_APPROVED" | "REVIEWED_DO_NOT_SELECT" | "REVIEWED_READY_FOR_DECISION";
+export type ReviewAction = "REVIEWED_DO_NOT_SELECT" | "REVIEWED_READY_FOR_DECISION";
 
 export type BidRecord = {
   id: string;
   filename: string;
   submitted_at: string;
+  officer_decision: "UNDECIDED" | "AWARDED" | "REJECTED" | "RFI_PENDING";
+  version: number;
   source: {
     vendor_name: string;
     bid_amount_inr: number | null;
@@ -39,8 +41,23 @@ export type BidRecord = {
     }>;
   };
 };
+
 export type ActivityEvent = { id: string; bid_id: string; timestamp: string; check_name: string; action: string; rule: string; evidence: string };
 export type SimulationResponse = { adjusted_capex_inr: number; delay_penalty_inr: number; calculated_tco2_inr: number; recommendation: "REJECT" | "REVIEW_REQUIRED" | "RECOMMENDED"; lifecycle_mode: "PRE_AWARD" | "POST_AWARD" };
+
+export type SupplierProfile = { vendor_id: string; name: string; lat: number; lng: number; distance_km: number; risk_score: number; disputes: number };
+export type AuditLogEntry = { id: string; actor: string; action: string; target_id: string; details: Record<string, unknown>; timestamp: string };
+export type RFIDraftResponse = {
+  rfi_id: string;
+  bid_id: string;
+  vendor_name: string;
+  status: "DRAFT" | "APPROVED";
+  human_reviewed: boolean;
+  rfi_text: string;
+  protected_facts: Record<string, unknown>;
+  created_at: string;
+};
+
 const base = process.env.NEXT_PUBLIC_PO_LICE_API_URL ?? "http://localhost:8000";
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${base}${path}`, init);
@@ -73,4 +90,12 @@ export const procurementApi = {
     body: JSON.stringify({ ...input, opex_carbon_5yr_inr: 27_600_000, lifecycle_mode: "PRE_AWARD" }),
   }),
   sourceUrl: (id: string) => `${base}/api/v1/bids/${id}/source`,
+
+  rfiDraft: (bid_id: string) => request<RFIDraftResponse>("/api/v1/agent/rfi-draft", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ bid_id }) }),
+  approveRfi: (rfi_id: string, edited_text: string) => request<RFIDraftResponse>(`/api/v1/rfis/${rfi_id}/approve`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ edited_text, note: "Approved after human review" }) }),
+  updateOfficerDecision: (bid_id: string, decision: BidRecord["officer_decision"], expected_version: number, reason: string) => request<BidRecord>(`/api/v1/bids/${bid_id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision, expected_version, reason }) }),
+  updateConstraints: (expected_version: number, max_substation_kw: number, max_door_width_m: number, max_embodied_carbon_kg: number) => request<{ status: string }>("/api/v1/site-constraints", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ expected_version, max_substation_kw, max_door_width_m, max_embodied_carbon_kg }) }),
+  suppliers: () => request<SupplierProfile[]>("/api/v1/suppliers"),
+  auditLogs: () => request<AuditLogEntry[]>("/api/v1/audit/logs"),
+  readiness: () => request<{ status: string; demo_mode: boolean; persistence: "sqlite" | "unavailable"; postgresql: { status: string; connected: boolean } }>("/api/v1/readiness"),
 };

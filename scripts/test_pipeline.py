@@ -1,7 +1,7 @@
 """
-End-to-End Pipeline Test Script
+End-to-End Pipeline Test Script with Assertion Verification
 Parses synthetic PDFs for Vendor A, Vendor B, and Vendor C, runs the 4 Patrols,
-and verifies deterministic TCO² calculations and recommendations.
+and asserts deterministic TCO² calculations and recommendations.
 """
 
 import os
@@ -33,17 +33,31 @@ def test_bid(pdf_filename: str):
         status_symbol = "✓" if res.status == "PASS" else ("❌" if res.status == "FAIL" else "⚠️")
         print(f"  [{status_symbol} {res.patrol_name}] Status: {res.status} | Reason: {res.reason}")
 
+    return scorecard
+
 def main():
     print("============================================================")
     print("🚀 PO-lice End-to-End Compliance Pipeline Verification")
     print("============================================================")
 
-    test_bid("VendorA_Trane_Chiller_Bid.pdf")
-    test_bid("VendorB_CoolTech_Chiller_Bid.pdf")
-    test_bid("VendorC_Carrier_Chiller_Bid.pdf")
+    # 1. Vendor A (Trane) - Compliant
+    sc_a = test_bid("VendorA_Trane_Chiller_Bid.pdf")
+    assert sc_a.vendor_name == "Trane Solutions Pvt Ltd."
+    assert sc_a.recommendation in ("RECOMMENDED", "REVIEW_REQUIRED")
+
+    # 2. Vendor B (CoolTech) - Breach (Power Draw 1400kW > 1200kW Limit, Carbon 540 > 450 Cap)
+    sc_b = test_bid("VendorB_CoolTech_Chiller_Bid.pdf")
+    assert sc_b.recommendation == "REJECT", f"Expected REJECT for Vendor B breach, got {sc_b.recommendation}"
+    failed_patrols = [p.patrol_name for p in sc_b.patrol_results if p.status == "FAIL"]
+    assert "BUILDING_PATROL" in failed_patrols, "Expected BUILDING_PATROL to FAIL for Vendor B"
+    assert "GREEN_PATROL" in failed_patrols, "Expected GREEN_PATROL to FAIL for Vendor B"
+
+    # 3. Vendor C (Carrier) - Compliant
+    sc_c = test_bid("VendorC_Carrier_Chiller_Bid.pdf")
+    assert sc_c.vendor_name == "Carrier HVAC India Ltd."
 
     print("\n============================================================")
-    print("✨ End-to-End Pipeline Verification COMPLETE!")
+    print("✨ ALL ASSERTION-BASED BACKEND CHECKS PASSED SUCCESSFULLY!")
     print("============================================================")
 
 if __name__ == '__main__':

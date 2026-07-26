@@ -15,6 +15,14 @@ class LifecycleMode(str, Enum):
     POST_AWARD = "POST_AWARD"
 
 
+class OfficerDecision(str, Enum):
+    """Officer decision is independent of procurement lifecycle."""
+    UNDECIDED = "UNDECIDED"
+    AWARDED = "AWARDED"
+    REJECTED = "REJECTED"
+    RFI_PENDING = "RFI_PENDING"
+
+
 class FactField(str, Enum):
     VENDOR_NAME = "vendor_name"
     MODEL_NUMBER = "equipment.model_number"
@@ -170,6 +178,8 @@ class BidRecord(StrictModel):
     submitted_at: str
     source: VendorBidExtract
     scorecard: DocketScorecard
+    officer_decision: OfficerDecision = OfficerDecision.UNDECIDED
+    version: int = 1
 
 
 class ActivityEvent(StrictModel):
@@ -183,8 +193,63 @@ class ActivityEvent(StrictModel):
 
 
 class ReviewerActionRequest(StrictModel):
-    action: str = Field(pattern="^(RFI_DRAFT_APPROVED|REVIEWED_DO_NOT_SELECT|REVIEWED_READY_FOR_DECISION)$")
+    action: str = Field(pattern="^(REVIEWED_DO_NOT_SELECT|REVIEWED_READY_FOR_DECISION)$")
     note: str = Field(min_length=3, max_length=2_000)
+
+
+# --- Officer decision update (separate from ReviewerActionRequest) ---
+
+class OfficerDecisionRequest(StrictModel):
+    """Request to change the officer decision on a bid.
+    Requires expected_version for optimistic concurrency."""
+    decision: OfficerDecision
+    expected_version: int = Field(ge=1)
+    reason: str = Field(min_length=3, max_length=2_000)
+
+
+# --- RFI models ---
+
+class RFIDraft(StrictModel):
+    """A persisted RFI draft with protected facts."""
+    rfi_id: str
+    bid_id: str
+    vendor_name: str
+    status: str = "DRAFT"
+    human_reviewed: bool = False
+    rfi_text: str
+    protected_facts: Dict[str, Any]
+    created_at: str
+
+
+class RFIApprovalRequest(StrictModel):
+    """Approve a persisted RFI draft. Approval is a separate action from generation."""
+    edited_text: str = Field(min_length=20, max_length=20_000)
+    note: str = Field(default="Approved for dispatch", min_length=3, max_length=2_000)
+
+
+# --- Site constraint models ---
+
+class SiteConstraintRecord(StrictModel):
+    """A versioned site constraint snapshot."""
+    id: str
+    project_id: str = "PRJ-AMBER-01"
+    version: int
+    is_current: bool = True
+    max_substation_kw: float
+    max_door_width_m: float
+    max_embodied_carbon_kg: float
+    actor: str = "SYSTEM"
+    reason: str = "Initial baseline"
+    created_at: str
+
+
+class ConstraintUpdateRequest(StrictModel):
+    """Update site constraints with optimistic concurrency."""
+    expected_version: int = Field(ge=1)
+    max_substation_kw: float = Field(gt=0)
+    max_door_width_m: float = Field(gt=0)
+    max_embodied_carbon_kg: float = Field(gt=0)
+    reason: str = Field(default="Updated site operational requirements", min_length=3, max_length=2_000)
 
 
 class SimulationRequest(StrictModel):
