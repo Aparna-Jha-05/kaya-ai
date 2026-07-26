@@ -239,6 +239,18 @@ def _provider_candidates(
     ]
 
 
+def _gemini_schema(value: object) -> object:
+    unsupported = {
+        "additionalProperties", "default", "maxItems", "maxLength", "maximum",
+        "minItems", "minLength", "minimum", "pattern", "prefixItems", "title",
+    }
+    if isinstance(value, dict):
+        return {key: _gemini_schema(item) for key, item in value.items() if key not in unsupported}
+    if isinstance(value, list):
+        return [_gemini_schema(item) for item in value]
+    return value
+
+
 class OllamaExtractor:
     def __init__(self, settings: ExtractionSettings, transport: JsonTransport = _post_json) -> None:
         self.settings = settings
@@ -291,7 +303,9 @@ class GeminiExtractor:
                 "generationConfig": {
                     "temperature": 0,
                     "responseMimeType": "application/json",
-                    "responseJsonSchema": ProviderExtractionResponse.model_json_schema(),
+                    "responseJsonSchema": _gemini_schema(
+                        ProviderExtractionResponse.model_json_schema()
+                    ),
                 },
             },
             {"x-goog-api-key": self.settings.gemini_api_key},

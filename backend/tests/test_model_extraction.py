@@ -173,7 +173,9 @@ class ProviderContractTests(unittest.TestCase):
         self.assertEqual(result[0].provider, ExtractionProvider.GEMINI)
         self.assertEqual(captured["headers"]["x-goog-api-key"], "secret-test-key")
         self.assertNotIn("secret-test-key", captured["url"])
-        self.assertIn("responseJsonSchema", captured["body"]["generationConfig"])
+        schema = captured["body"]["generationConfig"]["responseJsonSchema"]
+        self.assertNotIn("pattern", json.dumps(schema))
+        self.assertNotIn("maxLength", json.dumps(schema))
 
 
 class CascadeTests(unittest.TestCase):
