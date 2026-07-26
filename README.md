@@ -9,116 +9,196 @@
 
 ---
 
-## 🎯 Core Golden Rule & Philosophy
+## 💡 Core Golden Rule & Architecture Philosophy
 
 > **"LLM / VLM extracts and explains; deterministic SQL and math validate."**
 
-1. **Zero Hallucination Engineering Compliance**: Generative AI models are never permitted to vote or guess on engineering limits, substation power caps, or carbon allocations.
-2. **Boundary Architecture**:
-   - **Cognitive Extraction Layer**: PyMuPDF & LLaVA 1.6 VLM extract unstructured PDF text, tables, and 2D CAD blueprint coordinates $\rightarrow$ validated Pydantic JSON.
-   - **Deterministic Judgment Layer**: PostgreSQL SQL queries & Python math run strict inequalities against Amber's Project Graph $\rightarrow$ PASS / FAIL / FLAG decision with exact evidence proof.
-   - **Human Action Layer**: Procurement officers approve, reject, or request counter-spec RFIs with full audit trail fidelity.
+PO-lice enforces a **zero-hallucination hard firewall** between cognitive extraction and compliance judgment:
 
----
-
-## ⚡ Key Features & Innovations
-
-- 🌐 **The Evidence Board (Level-1 Differentiator)**: Interactive SVG directed consequence graph showing exactly how one substituted line item cascades into power draw, electrical panel redesign, carbon cap breach, door width clearance breach, vendor risk, schedule slip, and 5-Year $TCO^2$ financial loss.
-- 🎛️ **Feature A (What-If $TCO^2$ Simulator)**: Real-time interactive slider component recalculating upfront Capex discounts, delivery delay penalties ($\text{₹}2.0\text{L/day}$), and 5-Year $TCO^2$ in real-time.
-- 📐 **Feature B (VLM CAD Spatial Overlay)**: LLaVA Vision AI equipment width extraction rendering a glowing SVG bounding box over a 2D CAD blueprint image to detect physical door clearance breaches ($\text{2.10m} > \text{1.90m}$).
-- ✉️ **Feature C & D (Jarvis Agent Handoff & RFI Drafter)**: Converts patrol breaches into an automated Counter-Spec RFI email draft, with an animated "Approve & Hand Off to Jarvis" dispatch log stream.
-- 🔍 **Human-in-the-Loop Confidence Heatmap**: Displays field extraction confidence scores ($99\%$ vs $82\%$) and surfaces low-confidence OCR notes for 1-click human verification.
-- ⌨️ **Raycast Command Bar (`⌘K`)**: High-speed keyboard shortcuts (`⌘1`, `⌘2`, `⌘3`, `⌘R`) for institutional command center navigation.
+1. **Cognitive Extraction Layer**: PyMuPDF & LLaVA VLM parse unstructured vendor PDFs, tables, and 2D CAD blueprint coordinates into strict **Pydantic JSON**.
+2. **Deterministic Judgment Layer**: PostgreSQL queries & Python math evaluate strict constraints against Amber's Project Graph. If a vendor equipment load exceeds limits, the system triggers a hard mechanical reject—no LLM opinion involved.
+3. **Human Action Layer**: Procurement officers review evidence-backed verdicts with complete audit trails, approving purchase orders or dispatching automated counter-spec RFIs.
 
 ---
 
 ## 🛡️ The Four Patrols Specification
 
-| Patrol | Check Type | Logic / Method | Output |
+Every patrol runs deterministically. Generative AI models never vote on engineering compliance.
+
+| Patrol | Scope | Logic / Method | Verdict Output |
 | :--- | :--- | :--- | :--- |
-| **Patrol 1: Building Patrol** | Engineering SQL | Substation power limit ($\le 1200\text{ kW}$) & Door width clearance ($\le 1.9\text{ m}$) | PASS / FAIL |
-| **Patrol 2: Green Patrol** | Carbon Budget SQL | Embodied carbon EPD factor lookup ($\le 450\text{ kgCO2e}$) | PASS / FAIL |
-| **Patrol 3: Vice Squad** | Vendor RAG Memory | `pgvector` hybrid search over historical contracts & dispute counts | Risk Score (1–10) / FLAG |
-| **Patrol 4: Traffic Control** | Schedule Ripple | NetworkX DAG + Bayesian Monte Carlo delay slip ($\text{₹}2.0\text{L/day}$ penalty) | 5-Yr $TCO^2$ / FLAG |
+| **Patrol 1: Building Patrol** | Engineering Physics | Substation power limit ($\le 1200\text{ kW}$) & Door width clearance ($\le 1.9\text{ m}$) | **PASS / FAIL** |
+| **Patrol 2: Green Patrol** | Carbon Budget | Embodied carbon EPD factor lookup ($\le 450\text{ kgCO2e}$) | **PASS / FAIL** |
+| **Patrol 3: Vice Squad** | Vendor Reliability | `pgvector` hybrid search over historical contracts & dispute counts | **Risk Score (1–10) / FLAG** |
+| **Patrol 4: Traffic Control** | Schedule Ripple | NetworkX DAG + Bayesian Monte Carlo delay slip ($\text{₹}2.0\text{L/day}$ penalty) | **5-Yr $TCO^2$ / FLAG** |
+
+### Mechanical Energy Balance Inequality (Patrol 1 Example):
+$$\dot{Q}_{load} = \sum_{i=1}^{n} \dot{m}_i c_{p,i}(T_{out,i} - T_{in,i}) + \dot{Q}_{parasitic} \le \dot{Q}_{plant,max}$$
 
 ---
 
-## 🎨 Visual Design Language Tokens (Cohere & Supabase Theme)
+## ⚡ Key Dashboard Features & Differentiators
+
+- 🌐 **The Evidence Board (Level-1 Differentiator)**: Interactive SVG directed graph mapping how one line-item substitution cascades into electrical panel redesign, carbon cap breach, door width clearance breach, vendor risk, and 5-Year $TCO^2$ financial loss.
+- 🎛️ **What-If $TCO^2$ Simulator**: Dynamic slider recalculating upfront Capex discounts, delivery delay penalties ($\text{₹}2.0\text{L/day}$), and total operating cost in real-time.
+- 📐 **VLM CAD Spatial Bounding Box**: Vision AI extracts equipment dimensions and renders a glowing SVG bounding box over 2D CAD blueprints to detect physical door clearance breaches ($\text{2.10m} > \text{1.90m}$).
+- ✉️ **Jarvis Agent Handoff & RFI Drafter**: Converts patrol breaches into automated counter-spec RFI email drafts with an animated dispatch log stream.
+- 🔍 **Human-in-the-Loop Confidence Heatmap**: Highlights field extraction confidence scores ($99\%$ vs $82\%$) and surfaces low-confidence OCR notes for instant verification.
+
+---
+
+## 📊 The Aha Moment: 5-Year $TCO^2$ Comparison
+
+**Total Cost of Ownership Squared ($TCO^2$):** Upfront Capex + 5-Year OPEX + Carbon Liability + Schedule Delay Risk.
+
+| Vendor | Upfront Cost | Engineering | Vendor Risk | Carbon | Schedule Risk | 5-Year $TCO^2$ | Decision |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Vendor A** | ₹4.2Cr | PASS | Low | PASS | Low | **₹6.0Cr** | 🟢 **Recommended** |
+| **Vendor B** | ₹3.8Cr | **FAIL** | High | **FAIL** | Medium | **₹6.8Cr** | 🔴 **Hard Reject** |
+| **Vendor C** | ₹4.5Cr | PASS | Medium | PASS | Low | **₹6.0Cr** | 🟡 **Acceptable** |
+
+*The cheapest upfront bid (Vendor B) is the most expensive and riskiest once lifecycle operating cost, carbon penalties, and delay risks are factored in.*
+
+---
+
+## 🥊 Competitive Matrix
+
+| Capability | ACC / BuildingConnected | Procore | EC3 Carbon | SAP Ariba | **PO-lice** |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| Bid RFP & Document Parsing | Partial | Partial | ❌ | Partial | 🟢 **Full PDF Extract** |
+| Engineering/BIM Compliance Hard Gate | ❌ | ❌ | ❌ | ❌ | 🟢 **SQL / Physics Gate** |
+| Vendor Track Record RAG Memory | Partial | ❌ | ❌ | ❌ | 🟢 **pgvector Search** |
+| Equipment-Level Embodied Carbon Gate | ❌ | ❌ | Partial | ❌ | 🟢 **EPD SQL Gate** |
+| Schedule Ripple & Downstream Impact | ❌ | ❌ | ❌ | ❌ | 🟢 **NetworkX DAG** |
+| **Unified 5-Yr $TCO^2$ Decision Engine** | ❌ | ❌ | ❌ | ❌ | 🟢 **Deterministic Gate** |
+
+---
+
+## 🏗️ System Architecture & Data Pipeline
+
+```
+Vendor PDF → Document Intelligence → Pydantic JSON → The 4 Patrols → Unified Docket
+                                                            │
+    ┌───────────────────────┬───────────────────────────────┼──────────────────────────────┐
+    ▼                       ▼                               ▼                              ▼
+Patrol 1: Building      Patrol 2: Green                 Patrol 3: Vice                 Patrol 4: Traffic
+(PostgreSQL BIM SQL)    (EPD Carbon Factor SQL)         (pgvector Vendor RAG)          (Monte Carlo & MCP™)
+```
+
+---
+
+## 🎨 Design Tokens (Cohere & Supabase Theme)
 
 | Token | Hex Code | Usage |
 | :--- | :--- | :--- |
 | **Deep Canvas** | `#090D16` | Main obsidian dark slate canvas |
-| **Cards & Panels** | `#111827` | Elevated dark chrome surfaces with `#1E293B` micro-borders |
+| **Cards & Panels** | `#111827` | Elevated dark chrome surfaces with `#1E293B` borders |
 | **Primary Accent (PASS)** | `#38BDF8` | **Electric Cyan** for PASS badges & primary actions *(Zero green)* |
-| **Vice / RAG Accent** | `#818CF8` | **Indigo Violet** for Vice Squad RAG memory & Jarvis agent logs |
+| **Vice / RAG Accent** | `#818CF8` | **Indigo Violet** for Vice Squad RAG memory & agent logs |
 | **Green Patrol Accent** | `#FBBF24` | **Amber Gold** for Green Patrol warnings & $TCO^2$ highlights |
-| **Alert / Breach Accent** | `#F43F5E` | **Rose Red** for FAIL badges, hard rejects, and door limit breaches |
+| **Alert / Breach Accent** | `#F43F5E` | **Rose Red** for FAIL badges and door clearance breaches |
 
 ---
 
-## 🧪 Verification & Development Workflow
+## 🧪 Quickstart & Verification Workflow
 
-### 0. Install backend dependencies
+### 1. Backend Verification & Test Engine
 ```bash
+# Install Python dependencies
 python3 -m pip install -r backend/requirements.txt
-```
 
-### 1. Seed Demo Data & Test Python Compliance Engine
-```bash
+# Seed synthetic vendor bids & run compliance engine test harness
 python3 scripts/seed_demo_data.py
 PYTHONPATH=backend python3 scripts/test_pipeline.py
-```
 
-### 2. Run FastAPI Backend Server
-```bash
+# Run FastAPI backend server (Port 8000)
 uvicorn backend.main:app --reload --port 8000
 ```
 
-### 3. Run Next.js Frontend Command Center
+### 2. Frontend Precinct Dashboard
 ```bash
-export PATH=$PATH:/opt/homebrew/bin
-npm run dev      # Opens http://localhost:3000
-npm run build    # Verify clean production build
-```
+# Run Next.js App Router UI (Port 3000)
+npm run dev
 
-### Enriched Constraint Graph demo
-
-The upload API validates PDF type and size before extracting a SHA-256 fingerprint, PyMuPDF metadata, agreement clauses, and the connection IP in its validated bid record. Missing fields remain explicit review flags; they are never guessed. The four patrols deterministically evaluate contractual warranty, market-price anomalies, the Agreement Compliance Index, Bid Integrity Matrix correlations, and lifecycle state. `POST /api/v1/bids/simulate` is the backend source of truth for Dynamic Docket Scenario Modeling.
-
-To initialise PostgreSQL after your base Amber tables exist:
-
-```bash
-psql "$DATABASE_URL" -f scripts/postgres_schema.sql
-DATABASE_URL="$DATABASE_URL" python3 scripts/seed_postgres.py
+# Verify clean production build
+npm run build
 ```
 
 ---
 
-## 📂 Repository Directory Map
+## 📂 Repository Layout
 
 ```
 po-lice/
-├── AGENTS.md                  # Developer & AI Agent guidelines and rules
-├── DESIGN.md                  # Design system tokens and component specs
+├── AGENTS.md                  # Developer & AI Agent guidelines
 ├── README.md                  # Master documentation & setup guide
-├── backend/                   # FastAPI Python 3.11+ Server
-│   ├── main.py                # REST API entrypoint (/api/v1/bids/upload, /api/v1/agent/rfi-draft)
-│   └── app/
-│       ├── models/
-│       │   └── schemas.py     # Pydantic schemas (VendorBidExtract, PatrolResult, DocketScorecard)
-│       └── services/
-│           ├── extractor.py   # PyMuPDF text & spec extractor
-│           └── patrols.py     # Deterministic 4 Patrols compliance engine
+├── next.config.mjs            # Next.js configuration
+├── package.json               # Frontend dependencies & scripts
+├── tailwind.config.ts         # Tailwind CSS styling configuration
 ├── app/                       # Next.js 14 App Router UI (The Precinct Dashboard)
-├── components/                # React UI components (Evidence Board, CAD visualizer, TCO slider, RFI modal)
-└── scripts/                   # Fixture seeders & testing harnesses
-    ├── seed_demo_data.py      # Generates synthetic vendor bid PDFs in scripts/fixtures/
-    └── test_pipeline.py       # End-to-end Python compliance engine test script
+│   ├── layout.tsx             # Root layout with sidebar navigation
+│   ├── page.tsx               # Primary dashboard overview & metrics
+│   ├── globals.css            # Global CSS design tokens
+│   ├── audit/                 # Audit trail view
+│   │   └── page.tsx           # Audit log page component
+│   └── bids/                  # Bids management & detailed workspace views
+│       ├── page.tsx           # Bids portfolio overview
+│       └── [id]/              # Dynamic bid detail route
+│           └── page.tsx       # Individual bid workspace page
+├── backend/                   # FastAPI Python 3.11+ Server
+│   ├── main.py                # REST API endpoints & server entrypoint
+│   ├── requirements.txt       # Python backend dependencies
+│   ├── app/
+│   │   ├── models/
+│   │   │   └── schemas.py     # Pydantic schemas (VendorBidExtract, PatrolResult, DocketScorecard)
+│   │   └── services/
+│   │       ├── extractor.py   # PyMuPDF text & spec parser
+│   │       ├── integrity.py   # Bid integrity matrix & correlation analyzer
+│   │       ├── patrols.py     # Deterministic 4 Patrols compliance engine
+│   │       └── repository.py  # Local SQLite / file-backed bid store
+│   └── data/                  # SQLite DB & PDF upload storage
+│       └── po_lice.sqlite3    # Local evidence database
+├── components/                # React UI components
+│   ├── cad-visualizer.tsx     # CAD spatial overlay visualizer
+│   ├── rfi-modal.tsx          # Counter-spec RFI email drafter modal
+│   ├── tco-slider.tsx         # What-If TCO² dynamic simulator
+│   ├── bid/                   # Bid review & evidence board components
+│   │   ├── ActiveBidsTable.tsx
+│   │   ├── BidDetailClient.tsx
+│   │   ├── BidPortfolio.tsx
+│   │   ├── BidReviewWorkspace.tsx
+│   │   ├── EvidenceBoard.tsx  # Level-1 Differentiator SVG directed graph
+│   │   └── RecordBidReview.tsx
+│   ├── navigation/            # App sidebar, Command Palette & theme controls
+│   │   ├── AppSidebar.tsx
+│   │   ├── CommandPalette.tsx
+│   │   └── ThemeToggle.tsx
+│   ├── precinct/              # Precinct dashboard widgets & panels
+│   │   ├── ActiveBidsTable.tsx
+│   │   ├── CaseFilesPanel.tsx
+│   │   └── SummaryRow.tsx
+│   └── ui/                    # Base UI components (Card, StatusDot, Tooltip)
+├── lib/                       # Next.js client utilities & deterministic patrol engines
+│   ├── api.ts                 # Backend API client bridge
+│   ├── constants.ts           # Status tokens & UI constants
+│   ├── integrity.ts           # Client-side integrity helpers
+│   ├── mockData.ts            # Site constraints & mock bid fixtures
+│   ├── patrols.ts             # Deterministic 4 Patrols TypeScript engine
+│   └── tco.ts                 # TCO² calculation formulas
+└── scripts/                   # Data seeders & test harnesses
+    ├── postgres_schema.sql    # PostgreSQL schema for site constraints & EPD tables
+    ├── seed_demo_data.py      # Synthetic bid PDF seeder (creates PDFs in scripts/fixtures/)
+    ├── seed_postgres.py       # Seed script for PostgreSQL database
+    ├── test_pipeline.py       # End-to-end Python compliance engine test script
+    └── fixtures/              # Synthetic vendor bid PDF files
+        ├── VendorA_Trane_Chiller_Bid.pdf
+        ├── VendorB_CoolTech_Chiller_Bid.pdf
+        └── VendorC_Carrier_Chiller_Bid.pdf
 ```
 
 ---
 
-## 👥 Team TensorTruss (IIT Madras)
-- **Jb Anmol**: Full-Stack & Extraction Lead *(IIT Madras)*
-- **Pratham Amritkar**: Core Technical Lead — RAG & AI Systems *(IIT Madras)*
-- **Aparna Jha**: Research, Domain Specs & QA Lead *(IIT Madras)*
+## 👥 Team TensorTruss
+- **Jb Anmol**: Team Member, IIT Madras
+- **Pratham Amritkar**: Team Member, IIT Madras
+- **Aparna Jha**: Team Leader, IIT Madras

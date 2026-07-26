@@ -19,7 +19,7 @@ export default function AppSidebar() {
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 overflow-hidden border-r border-white/10 bg-bg/70 px-3 py-5 lg:flex lg:flex-col">
       <Link href="/" className="mb-7 flex items-center gap-2.5 px-2">
         <span className="flex h-8 w-8 items-center justify-center rounded-md bg-cyan/15 ring-1 ring-cyan/40">
-          <Image src="/wordmark-dark.svg" alt="PO-LICE" width={120} height={32} priority />
+          <Image src="../app/icon.svg" alt="PO-LICE" width={120} height={32} priority />
         </span>
         <span>
           <span className="block font-mono text-sm font-bold tracking-tight text-text">PO-LICE</span>
@@ -53,9 +53,22 @@ export default function AppSidebar() {
 
       <div className="mt-auto space-y-3">
         <ThemeToggle />
-        <div className="rounded-lg border border-white/10 bg-surface/60 p-3">
-          <p className="ui-label font-mono uppercase text-text/50">Decision rule</p>
-          <p className="mt-1 text-[13px] leading-relaxed text-text/65">Extracted data is cited. Deterministic rules assess compliance. Reviewers authorize actions.</p>
+        <div className="rounded-lg border border-white/10 bg-surface/60 p-3 space-y-2">
+          <p className="ui-label font-mono uppercase text-text/50 tracking-widest text-[9px]">Architecture</p>
+          <div className="space-y-1.5">
+            <div className="flex items-start gap-2">
+              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet/70" />
+              <p className="text-[11px] leading-snug text-text/60"><span className="text-violet/90 font-medium">AI extracts</span> — multimodal LLM parses unstructured PDFs into typed JSON</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan/70" />
+              <p className="text-[11px] leading-snug text-text/60"><span className="text-cyan/90 font-medium">SQL validates</span> — deterministic inequalities enforce hard engineering limits</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber/70" />
+              <p className="text-[11px] leading-snug text-text/60"><span className="text-amber/90 font-medium">Humans decide</span> — officers approve, reject, or issue RFIs with full evidence trails</p>
+            </div>
+          </div>
         </div>
       </div>
     </aside>
