@@ -16,10 +16,10 @@ export default function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 overflow-hidden border-r border-white/10 bg-bg/70 px-3 py-5 lg:flex lg:flex-col">
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-white/10 bg-bg/70 px-3 py-5 lg:flex">
       <Link href="/" className="mb-7 flex items-center gap-2.5 px-2">
         <span className="flex h-8 w-8 items-center justify-center rounded-md bg-cyan/15 ring-1 ring-cyan/40">
-          <Image src="../app/icon.svg" alt="PO-LICE" width={120} height={32} priority />
+          <Image src="/icon.svg" alt="PO-LICE" width={120} height={32} priority />
         </span>
         <span>
           <span className="block font-mono text-sm font-bold tracking-tight text-text">PO-LICE</span>
