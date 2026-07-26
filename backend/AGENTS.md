@@ -33,8 +33,10 @@ Current entry points:
 
 The SQLite prototype slice described by
 `openspec/changes/robust-supabase-backend/` is partially implemented.
-Supabase CRUD, authentication/RLS, project isolation, pgvector retrieval,
-immutable reassessment versions, and staging deployment are not implemented.
+PostgreSQL/pgvector migrations, checksum verification, synthetic seeding, and
+append-only audit enforcement have integration coverage. Supabase runtime CRUD,
+authentication/RLS, pgvector retrieval, immutable reassessment versions, and
+staging deployment are not implemented.
 The provider cascade is implemented behind configuration, but provider model
 selection and staging evaluation remain incomplete until measured evidence is
 recorded.

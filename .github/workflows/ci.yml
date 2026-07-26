@@ -31,6 +31,20 @@ jobs:
   backend:
     name: Backend
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: po_lice
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d po_lice"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -49,6 +63,10 @@ jobs:
           OLLAMA_ENABLED: "false"
           REMOTE_EXTRACTION_ENABLED: "false"
         run: PYTHONPATH=backend python -m unittest discover -s backend/tests -v
+      - name: Verify PostgreSQL foundation
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/po_lice
+        run: python scripts/test_postgres_foundation.py
       - name: Verify deterministic extraction baseline
         run: PYTHONPATH=backend python scripts/evaluate_extraction.py --assert-baseline
       - name: Run deterministic pipeline smoke
@@ -56,10 +74,7 @@ jobs:
           python scripts/seed_demo_data.py
           PYTHONPATH=backend python scripts/test_pipeline.py
       - name: Verify current API contract
-        run: >-
-          PYTHONPATH=backend python -c
-          'from main import app; paths = app.openapi()["paths"];
-          assert {"/", "/api/v1/bids/upload", "/api/v1/bids/simulate"} <= set(paths)'
+        run: python scripts/export_openapi.py --check
 
   frontend:
     name: Frontend

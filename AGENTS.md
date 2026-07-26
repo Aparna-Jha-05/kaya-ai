@@ -50,9 +50,12 @@ As of the current checkout:
 - Patrol decisions use in-process Python rules and hard-coded `ConstraintGraph` values.
 - duplicate/integrity correlation is process-local memory and resets on restart.
 - the dashboard uses `lib/api.ts` for the implemented bid workflow.
-- Supabase CRUD, authentication/RLS, RFI dispatch, immutable reassessment,
-  verified supplier provenance, and durable multi-project audit storage remain
-  planned, not implemented.
+- Ordered PostgreSQL/pgvector migrations, checksum verification, an idempotent
+  synthetic seeder, and append-only audit enforcement are implemented and
+  tested against a disposable database.
+- Supabase runtime CRUD, authentication/RLS, object storage, RFI dispatch,
+  immutable reassessment, verified supplier provenance, and durable
+  multi-project API persistence remain planned, not implemented.
 
 Never describe the current prototype as having MinIO storage, live RAG, database-backed patrols, immutable audit storage, VLM CAD extraction, Jarvis dispatch, or Kaya/Amber integration unless runtime evidence is added.
 

@@ -105,7 +105,7 @@ Patrol 1: Building      Patrol 2: Green                 Patrol 3: Vice          
 ### 1. Backend Verification & Test Engine
 ```bash
 # Install Python dependencies
-python3 -m pip install -r backend/requirements.txt
+python3 -m pip install -r backend/requirements-test.txt
 
 # Seed synthetic vendor bids & run compliance engine test harness
 python3 scripts/seed_demo_data.py
@@ -114,6 +114,21 @@ PYTHONPATH=backend python3 scripts/test_pipeline.py
 # Run FastAPI backend server (Port 8000)
 uvicorn backend.main:app --reload --port 8000
 ```
+
+To validate the PostgreSQL/Supabase schema foundation, apply migrations before
+inserting the clearly labelled synthetic demo records:
+
+```bash
+export SUPABASE_DATABASE_URL='postgresql://...'
+python3 scripts/migrate_postgres.py
+python3 scripts/seed_supabase.py
+```
+
+These commands prepare the database only. The HTTP API still uses the explicit
+SQLite demo path until the PostgreSQL repository and authentication work lands.
+
+`backend/openapi.json` is the committed frontend compatibility baseline.
+Regenerate it with `python3 scripts/export_openapi.py`; CI rejects stale output.
 
 ### 2. Frontend Precinct Dashboard
 ```bash
@@ -186,9 +201,10 @@ po-lice/
 │   ├── patrols.ts             # Deterministic 4 Patrols TypeScript engine
 │   └── tco.ts                 # TCO² calculation formulas
 └── scripts/                   # Data seeders & test harnesses
-    ├── postgres_schema.sql    # PostgreSQL schema for site constraints & EPD tables
+    ├── migrations/            # Ordered PostgreSQL/pgvector migrations
+    ├── migrate_postgres.py    # Checksum-verified migration runner
     ├── seed_demo_data.py      # Synthetic bid PDF seeder (creates PDFs in scripts/fixtures/)
-    ├── seed_postgres.py       # Seed script for PostgreSQL database
+    ├── seed_supabase.py       # Idempotent, synthetic-labelled PostgreSQL seeder
     ├── test_pipeline.py       # End-to-end Python compliance engine test script
     └── fixtures/              # Synthetic vendor bid PDF files
         ├── VendorA_Trane_Chiller_Bid.pdf

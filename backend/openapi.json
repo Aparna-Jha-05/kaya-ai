@@ -1,0 +1,1931 @@
+{
+  "components": {
+    "schemas": {
+      "ActivityEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "bid_id": {
+            "title": "Bid Id",
+            "type": "string"
+          },
+          "check_name": {
+            "title": "Check Name",
+            "type": "string"
+          },
+          "evidence": {
+            "title": "Evidence",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "rule": {
+            "title": "Rule",
+            "type": "string"
+          },
+          "timestamp": {
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "bid_id",
+          "timestamp",
+          "check_name",
+          "action",
+          "rule",
+          "evidence"
+        ],
+        "title": "ActivityEvent",
+        "type": "object"
+      },
+      "BidRecord": {
+        "additionalProperties": false,
+        "properties": {
+          "filename": {
+            "title": "Filename",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "officer_decision": {
+            "$ref": "#/components/schemas/OfficerDecision",
+            "default": "UNDECIDED"
+          },
+          "scorecard": {
+            "$ref": "#/components/schemas/DocketScorecard"
+          },
+          "source": {
+            "$ref": "#/components/schemas/VendorBidExtract"
+          },
+          "submitted_at": {
+            "title": "Submitted At",
+            "type": "string"
+          },
+          "version": {
+            "default": 1,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "filename",
+          "submitted_at",
+          "source",
+          "scorecard"
+        ],
+        "title": "BidRecord",
+        "type": "object"
+      },
+      "Body_upload_and_audit_bid_api_v1_bids_upload_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_and_audit_bid_api_v1_bids_upload_post",
+        "type": "object"
+      },
+      "ConstraintUpdateRequest": {
+        "additionalProperties": false,
+        "description": "Update site constraints with optimistic concurrency.",
+        "properties": {
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "max_door_width_m": {
+            "exclusiveMinimum": 0.0,
+            "title": "Max Door Width M",
+            "type": "number"
+          },
+          "max_embodied_carbon_kg": {
+            "exclusiveMinimum": 0.0,
+            "title": "Max Embodied Carbon Kg",
+            "type": "number"
+          },
+          "max_substation_kw": {
+            "exclusiveMinimum": 0.0,
+            "title": "Max Substation Kw",
+            "type": "number"
+          },
+          "reason": {
+            "default": "Updated site operational requirements",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_version",
+          "max_substation_kw",
+          "max_door_width_m",
+          "max_embodied_carbon_kg"
+        ],
+        "title": "ConstraintUpdateRequest",
+        "type": "object"
+      },
+      "DocketScorecard": {
+        "additionalProperties": false,
+        "properties": {
+          "bid_id": {
+            "title": "Bid Id",
+            "type": "string"
+          },
+          "calculated_tco2_inr": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calculated Tco2 Inr"
+          },
+          "compliance_drift_report": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Compliance Drift Report"
+          },
+          "lifecycle_mode": {
+            "$ref": "#/components/schemas/LifecycleMode",
+            "default": "PRE_AWARD"
+          },
+          "patrol_results": {
+            "items": {
+              "$ref": "#/components/schemas/PatrolResult"
+            },
+            "title": "Patrol Results",
+            "type": "array"
+          },
+          "recommendation": {
+            "title": "Recommendation",
+            "type": "string"
+          },
+          "upfront_capex_inr": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upfront Capex Inr"
+          },
+          "vendor_name": {
+            "title": "Vendor Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bid_id",
+          "vendor_name",
+          "patrol_results",
+          "recommendation"
+        ],
+        "title": "DocketScorecard",
+        "type": "object"
+      },
+      "DocumentMetadata": {
+        "additionalProperties": false,
+        "properties": {
+          "author": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author"
+          },
+          "creation_date": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Creation Date"
+          },
+          "creator_tool": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Creator Tool"
+          }
+        },
+        "title": "DocumentMetadata",
+        "type": "object"
+      },
+      "EquipmentSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "cooling_capacity_kw": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cooling Capacity Kw"
+          },
+          "embodied_carbon_factor": {
+            "anyOf": [
+              {
+                "maximum": 10000000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embodied Carbon Factor"
+          },
+          "equipment_type": {
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Equipment Type",
+            "type": "string"
+          },
+          "floor_load_kg": {
+            "anyOf": [
+              {
+                "maximum": 10000000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Floor Load Kg"
+          },
+          "height_m": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height M"
+          },
+          "length_m": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Length M"
+          },
+          "manufacturer": {
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Manufacturer",
+            "type": "string"
+          },
+          "material_type": {
+            "default": "steel",
+            "maxLength": 64,
+            "minLength": 2,
+            "title": "Material Type",
+            "type": "string"
+          },
+          "model_number": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Model Number",
+            "type": "string"
+          },
+          "power_draw_kw": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Power Draw Kw"
+          },
+          "water_evap_gpm": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Water Evap Gpm"
+          },
+          "width_m": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width M"
+          }
+        },
+        "required": [
+          "equipment_type",
+          "manufacturer",
+          "model_number"
+        ],
+        "title": "EquipmentSpec",
+        "type": "object"
+      },
+      "ExtractionIssue": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "maxLength": 64,
+            "minLength": 2,
+            "title": "Code",
+            "type": "string"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FactField"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "maxLength": 500,
+            "minLength": 2,
+            "title": "Message",
+            "type": "string"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExtractionProvider"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ExtractionIssue",
+        "type": "object"
+      },
+      "ExtractionProvider": {
+        "enum": [
+          "deterministic",
+          "ollama",
+          "gemini"
+        ],
+        "title": "ExtractionProvider",
+        "type": "string"
+      },
+      "ExtractionReport": {
+        "additionalProperties": false,
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/FactCandidate"
+            },
+            "maxItems": 100,
+            "title": "Candidates",
+            "type": "array"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/ExtractionIssue"
+            },
+            "maxItems": 100,
+            "title": "Issues",
+            "type": "array"
+          },
+          "providers_attempted": {
+            "items": {
+              "$ref": "#/components/schemas/ExtractionProvider"
+            },
+            "maxItems": 10,
+            "title": "Providers Attempted",
+            "type": "array"
+          },
+          "remote_disclosures": {
+            "items": {
+              "$ref": "#/components/schemas/RemoteDisclosure"
+            },
+            "maxItems": 10,
+            "title": "Remote Disclosures",
+            "type": "array"
+          },
+          "schema_version": {
+            "default": "1.0",
+            "pattern": "^\\d+\\.\\d+$",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "selected": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/FactCandidate"
+            },
+            "title": "Selected",
+            "type": "object"
+          }
+        },
+        "title": "ExtractionReport",
+        "type": "object"
+      },
+      "FactCandidate": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted": {
+            "default": false,
+            "title": "Accepted",
+            "type": "boolean"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "maxItems": 4,
+                "minItems": 4,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox"
+          },
+          "extractor": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Extractor",
+            "type": "string"
+          },
+          "field": {
+            "$ref": "#/components/schemas/FactField"
+          },
+          "latency_ms": {
+            "default": 0,
+            "maximum": 3600000.0,
+            "minimum": 0.0,
+            "title": "Latency Ms",
+            "type": "number"
+          },
+          "model": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "normalized_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "title": "Normalized Value"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/ExtractionProvider"
+          },
+          "raw_value": {
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Raw Value",
+            "type": "string"
+          },
+          "schema_version": {
+            "default": "1.0",
+            "pattern": "^\\d+\\.\\d+$",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "source_excerpt": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Source Excerpt",
+            "type": "string"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "validation_signals": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Validation Signals",
+            "type": "array"
+          }
+        },
+        "required": [
+          "field",
+          "raw_value",
+          "normalized_value",
+          "source_excerpt",
+          "extractor",
+          "provider",
+          "model"
+        ],
+        "title": "FactCandidate",
+        "type": "object"
+      },
+      "FactField": {
+        "enum": [
+          "vendor_name",
+          "equipment.model_number",
+          "bid_amount_inr",
+          "promised_delivery_weeks",
+          "has_osha_cert",
+          "equipment.power_draw_kw",
+          "equipment.cooling_capacity_kw",
+          "equipment.width_m",
+          "equipment.embodied_carbon_factor"
+        ],
+        "title": "FactField",
+        "type": "string"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "LifecycleMode": {
+        "enum": [
+          "PRE_AWARD",
+          "POST_AWARD"
+        ],
+        "title": "LifecycleMode",
+        "type": "string"
+      },
+      "OfficerDecision": {
+        "description": "Officer decision is independent of procurement lifecycle.",
+        "enum": [
+          "UNDECIDED",
+          "AWARDED",
+          "REJECTED",
+          "RFI_PENDING"
+        ],
+        "title": "OfficerDecision",
+        "type": "string"
+      },
+      "OfficerDecisionRequest": {
+        "additionalProperties": false,
+        "description": "Request to change the officer decision on a bid.\nRequires expected_version for optimistic concurrency.",
+        "properties": {
+          "decision": {
+            "$ref": "#/components/schemas/OfficerDecision"
+          },
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "reason": {
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision",
+          "expected_version",
+          "reason"
+        ],
+        "title": "OfficerDecisionRequest",
+        "type": "object"
+      },
+      "PatrolResult": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
+          },
+          "patrol_name": {
+            "title": "Patrol Name",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "risk_score": {
+            "anyOf": [
+              {
+                "maximum": 10.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Score"
+          },
+          "rule_broken": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Broken"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "patrol_name",
+          "status",
+          "reason"
+        ],
+        "title": "PatrolResult",
+        "type": "object"
+      },
+      "RFIApprovalRequest": {
+        "additionalProperties": false,
+        "description": "Approve a persisted RFI draft. Approval is a separate action from generation.",
+        "properties": {
+          "edited_text": {
+            "maxLength": 20000,
+            "minLength": 20,
+            "title": "Edited Text",
+            "type": "string"
+          },
+          "note": {
+            "default": "Approved for dispatch",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "edited_text"
+        ],
+        "title": "RFIApprovalRequest",
+        "type": "object"
+      },
+      "RFIDraft": {
+        "additionalProperties": false,
+        "description": "A persisted RFI draft with protected facts.",
+        "properties": {
+          "bid_id": {
+            "title": "Bid Id",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "human_reviewed": {
+            "default": false,
+            "title": "Human Reviewed",
+            "type": "boolean"
+          },
+          "protected_facts": {
+            "additionalProperties": true,
+            "title": "Protected Facts",
+            "type": "object"
+          },
+          "rfi_id": {
+            "title": "Rfi Id",
+            "type": "string"
+          },
+          "rfi_text": {
+            "title": "Rfi Text",
+            "type": "string"
+          },
+          "status": {
+            "default": "DRAFT",
+            "title": "Status",
+            "type": "string"
+          },
+          "vendor_name": {
+            "title": "Vendor Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rfi_id",
+          "bid_id",
+          "vendor_name",
+          "rfi_text",
+          "protected_facts",
+          "created_at"
+        ],
+        "title": "RFIDraft",
+        "type": "object"
+      },
+      "RFIDraftRequest": {
+        "properties": {
+          "bid_id": {
+            "title": "Bid Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bid_id"
+        ],
+        "title": "RFIDraftRequest",
+        "type": "object"
+      },
+      "RemoteDisclosure": {
+        "additionalProperties": false,
+        "properties": {
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FactField"
+            },
+            "maxItems": 30,
+            "title": "Fields",
+            "type": "array"
+          },
+          "model": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "project_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Project Id",
+            "type": "string"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/ExtractionProvider"
+          },
+          "timestamp": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "provider",
+          "model",
+          "timestamp"
+        ],
+        "title": "RemoteDisclosure",
+        "type": "object"
+      },
+      "ReviewerActionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "pattern": "^(REVIEWED_DO_NOT_SELECT|REVIEWED_READY_FOR_DECISION)$",
+            "title": "Action",
+            "type": "string"
+          },
+          "note": {
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "note"
+        ],
+        "title": "ReviewerActionRequest",
+        "type": "object"
+      },
+      "SimulationRequest": {
+        "additionalProperties": false,
+        "description": "Scenario inputs only; no compliance outcome can be supplied by a client.",
+        "properties": {
+          "base_capex_inr": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 10000000000000.0,
+            "title": "Base Capex Inr",
+            "type": "number"
+          },
+          "delay_days": {
+            "default": 0,
+            "maximum": 365.0,
+            "minimum": 0.0,
+            "title": "Delay Days",
+            "type": "integer"
+          },
+          "discount_percent": {
+            "default": 0,
+            "maximum": 50.0,
+            "minimum": 0.0,
+            "title": "Discount Percent",
+            "type": "number"
+          },
+          "lifecycle_mode": {
+            "$ref": "#/components/schemas/LifecycleMode",
+            "default": "PRE_AWARD"
+          },
+          "opex_carbon_5yr_inr": {
+            "default": 27600000,
+            "maximum": 10000000000000.0,
+            "minimum": 0.0,
+            "title": "Opex Carbon 5Yr Inr",
+            "type": "number"
+          }
+        },
+        "required": [
+          "base_capex_inr"
+        ],
+        "title": "SimulationRequest",
+        "type": "object"
+      },
+      "SimulationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "adjusted_capex_inr": {
+            "title": "Adjusted Capex Inr",
+            "type": "number"
+          },
+          "calculated_tco2_inr": {
+            "title": "Calculated Tco2 Inr",
+            "type": "number"
+          },
+          "delay_penalty_inr": {
+            "title": "Delay Penalty Inr",
+            "type": "number"
+          },
+          "lifecycle_mode": {
+            "$ref": "#/components/schemas/LifecycleMode"
+          },
+          "recommendation": {
+            "title": "Recommendation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "adjusted_capex_inr",
+          "delay_penalty_inr",
+          "calculated_tco2_inr",
+          "recommendation",
+          "lifecycle_mode"
+        ],
+        "title": "SimulationResponse",
+        "type": "object"
+      },
+      "SiteConstraintRecord": {
+        "additionalProperties": false,
+        "description": "A versioned site constraint snapshot.",
+        "properties": {
+          "actor": {
+            "default": "SYSTEM",
+            "title": "Actor",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_current": {
+            "default": true,
+            "title": "Is Current",
+            "type": "boolean"
+          },
+          "max_door_width_m": {
+            "title": "Max Door Width M",
+            "type": "number"
+          },
+          "max_embodied_carbon_kg": {
+            "title": "Max Embodied Carbon Kg",
+            "type": "number"
+          },
+          "max_substation_kw": {
+            "title": "Max Substation Kw",
+            "type": "number"
+          },
+          "project_id": {
+            "default": "PRJ-AMBER-01",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "reason": {
+            "default": "Initial baseline",
+            "title": "Reason",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "max_substation_kw",
+          "max_door_width_m",
+          "max_embodied_carbon_kg",
+          "created_at"
+        ],
+        "title": "SiteConstraintRecord",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VendorBidExtract": {
+        "additionalProperties": false,
+        "properties": {
+          "bank_account": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Account"
+          },
+          "bid_amount_inr": {
+            "anyOf": [
+              {
+                "maximum": 10000000000000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bid Amount Inr"
+          },
+          "document_metadata": {
+            "$ref": "#/components/schemas/DocumentMetadata"
+          },
+          "equipment": {
+            "$ref": "#/components/schemas/EquipmentSpec"
+          },
+          "extracted_clauses": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Extracted Clauses",
+            "type": "array"
+          },
+          "extraction_report": {
+            "$ref": "#/components/schemas/ExtractionReport"
+          },
+          "has_osha_cert": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Osha Cert"
+          },
+          "lifecycle_mode": {
+            "$ref": "#/components/schemas/LifecycleMode",
+            "default": "PRE_AWARD"
+          },
+          "pdf_fingerprint": {
+            "anyOf": [
+              {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdf Fingerprint"
+          },
+          "promised_delivery_weeks": {
+            "anyOf": [
+              {
+                "maximum": 520.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Promised Delivery Weeks"
+          },
+          "submission_ip": {
+            "anyOf": [
+              {
+                "maxLength": 45,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submission Ip"
+          },
+          "vendor_id": {
+            "maxLength": 128,
+            "minLength": 3,
+            "title": "Vendor Id",
+            "type": "string"
+          },
+          "vendor_name": {
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Vendor Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "vendor_id",
+          "vendor_name",
+          "equipment"
+        ],
+        "title": "VendorBidExtract",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Deterministic procurement evidence and scenario modeling.",
+    "title": "PO-LICE API",
+    "version": "2.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "read_root__get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Read Root  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Read Root",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/activity": {
+      "get": {
+        "operationId": "list_activity_api_v1_activity_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "bid_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Bid Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityEvent"
+                  },
+                  "title": "Response List Activity Api V1 Activity Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Activity",
+        "tags": [
+          "activity"
+        ]
+      }
+    },
+    "/api/v1/agent/rfi-draft": {
+      "post": {
+        "description": "Generate and persist a deterministic RFI draft from patrol findings.\n\nThe draft is always created with status=DRAFT and human_reviewed=False.\nApproval is a separate action via PATCH /api/v1/rfis/{rfi_id}/approve.",
+        "operationId": "generate_rfi_draft_api_v1_agent_rfi_draft_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RFIDraftRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RFIDraft"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generate Rfi Draft",
+        "tags": [
+          "agent"
+        ]
+      }
+    },
+    "/api/v1/audit/logs": {
+      "get": {
+        "operationId": "list_audit_logs_api_v1_audit_logs_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response List Audit Logs Api V1 Audit Logs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Audit Logs",
+        "tags": [
+          "audit"
+        ]
+      }
+    },
+    "/api/v1/bids": {
+      "get": {
+        "description": "Returns all bids as an array. Pagination is not implemented yet to\npreserve backward compatibility with the current frontend contract.",
+        "operationId": "list_bids_api_v1_bids_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BidRecord"
+                  },
+                  "title": "Response List Bids Api V1 Bids Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Bids",
+        "tags": [
+          "bids"
+        ]
+      }
+    },
+    "/api/v1/bids/simulate": {
+      "post": {
+        "description": "Recalculate the Dynamic Docket from bounded, deterministic inputs.",
+        "operationId": "simulate_bid_api_v1_bids_simulate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Simulate Bid",
+        "tags": [
+          "bids"
+        ]
+      }
+    },
+    "/api/v1/bids/upload": {
+      "post": {
+        "description": "Validate and analyse one PDF. Source text is extracted; patrols make the decision.",
+        "operationId": "upload_and_audit_bid_api_v1_bids_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_and_audit_bid_api_v1_bids_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BidRecord"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload And Audit Bid",
+        "tags": [
+          "bids"
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}": {
+      "delete": {
+        "operationId": "delete_bid_api_v1_bids__bid_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bid_id",
+            "required": true,
+            "schema": {
+              "title": "Bid Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Bid",
+        "tags": [
+          "bids"
+        ]
+      },
+      "get": {
+        "operationId": "get_bid_api_v1_bids__bid_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bid_id",
+            "required": true,
+            "schema": {
+              "title": "Bid Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BidRecord"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Bid",
+        "tags": [
+          "bids"
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/actions": {
+      "post": {
+        "operationId": "record_reviewer_action_api_v1_bids__bid_id__actions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bid_id",
+            "required": true,
+            "schema": {
+              "title": "Bid Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewerActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityEvent"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Reviewer Action",
+        "tags": [
+          "bids"
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/source": {
+      "get": {
+        "operationId": "download_source_api_v1_bids__bid_id__source_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bid_id",
+            "required": true,
+            "schema": {
+              "title": "Bid Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Download Source",
+        "tags": [
+          "bids"
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/status": {
+      "patch": {
+        "description": "Update the officer decision on a bid with optimistic concurrency.\n\nThe frontend sends 'lifecycle_mode' in the body for backward compatibility,\nbut this endpoint maps it to the OfficerDecision concept.\nReturns HTTP 409 if expected_version is stale.",
+        "operationId": "update_officer_decision_api_v1_bids__bid_id__status_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bid_id",
+            "required": true,
+            "schema": {
+              "title": "Bid Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfficerDecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BidRecord"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Officer Decision",
+        "tags": [
+          "bids"
+        ]
+      }
+    },
+    "/api/v1/readiness": {
+      "get": {
+        "description": "Disclose whether SQLite/demo or PostgreSQL is active.",
+        "operationId": "readiness_check_api_v1_readiness_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Readiness Check Api V1 Readiness Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Readiness Check",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/rfis": {
+      "get": {
+        "operationId": "list_rfis_api_v1_rfis_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "bid_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Bid Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RFIDraft"
+                  },
+                  "title": "Response List Rfis Api V1 Rfis Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Rfis",
+        "tags": [
+          "agent"
+        ]
+      }
+    },
+    "/api/v1/rfis/{rfi_id}/approve": {
+      "patch": {
+        "description": "Approve a persisted RFI draft. This is a separate action from generation.",
+        "operationId": "approve_rfi_api_v1_rfis__rfi_id__approve_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rfi_id",
+            "required": true,
+            "schema": {
+              "title": "Rfi Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RFIApprovalRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RFIDraft"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Approve Rfi",
+        "tags": [
+          "agent"
+        ]
+      }
+    },
+    "/api/v1/site-constraints": {
+      "get": {
+        "operationId": "get_site_constraints_api_v1_site_constraints_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConstraintRecord"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Site Constraints",
+        "tags": [
+          "constraints"
+        ]
+      },
+      "put": {
+        "description": "Create a new constraint version with optimistic concurrency.\n\nReturns HTTP 409 if expected_version is stale.",
+        "operationId": "update_site_constraints_api_v1_site_constraints_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConstraintUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Update Site Constraints Api V1 Site Constraints Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Site Constraints",
+        "tags": [
+          "constraints"
+        ]
+      }
+    },
+    "/api/v1/suppliers": {
+      "get": {
+        "description": "Returns static supplier data. Coordinates and risk scores are from\nthe seed dataset and do not have verified provenance.",
+        "operationId": "list_suppliers_api_v1_suppliers_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response List Suppliers Api V1 Suppliers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Suppliers",
+        "tags": [
+          "suppliers"
+        ]
+      }
+    }
+  }
+}
