@@ -62,6 +62,10 @@ class FactCandidate(StrictModel):
     source_excerpt: str = Field(min_length=1, max_length=1_000)
     page: Optional[int] = Field(default=None, ge=1, le=100_000)
     bbox: Optional[tuple[float, float, float, float]] = None
+    page_width: Optional[float] = Field(default=None, gt=0)
+    page_height: Optional[float] = Field(default=None, gt=0)
+    page_rotation: Optional[int] = Field(default=None, ge=0, le=359)
+    coordinate_system: Optional[str] = Field(default=None, max_length=64)
     extractor: str = Field(min_length=1, max_length=64)
     provider: ExtractionProvider
     model: str = Field(min_length=1, max_length=160)
@@ -79,7 +83,32 @@ class FactCandidate(StrictModel):
             x0, y0, x1, y1 = self.bbox
             if x1 < x0 or y1 < y0:
                 raise ValueError("bbox must use [x0, y0, x1, y1] ordering")
+            if not all(
+                value is not None
+                for value in (
+                    self.page,
+                    self.page_width,
+                    self.page_height,
+                    self.page_rotation,
+                    self.coordinate_system,
+                )
+            ):
+                raise ValueError("bbox requires page dimensions, rotation, and coordinate system")
         return self
+
+
+class DimensionAnnotation(StrictModel):
+    field: FactField
+    normalized_value: float
+    unit: str = Field(min_length=1, max_length=32)
+    source_excerpt: str = Field(min_length=1, max_length=1_000)
+    page: int = Field(ge=1, le=100_000)
+    bbox: tuple[float, float, float, float]
+    page_width: float = Field(gt=0)
+    page_height: float = Field(gt=0)
+    page_rotation: int = Field(ge=0, le=359)
+    coordinate_system: str = "PDF_POINTS_TOP_LEFT"
+    interpretation_status: str = "DETECTED_TEXT_ANNOTATION"
 
 
 class ProviderExtractionResponse(StrictModel):
@@ -106,6 +135,7 @@ class ExtractionReport(StrictModel):
     selected: Dict[str, FactCandidate] = Field(default_factory=dict)
     candidates: List[FactCandidate] = Field(default_factory=list, max_length=100)
     issues: List[ExtractionIssue] = Field(default_factory=list, max_length=100)
+    dimension_annotations: List[DimensionAnnotation] = Field(default_factory=list, max_length=100)
     providers_attempted: List[ExtractionProvider] = Field(default_factory=list, max_length=10)
     remote_disclosures: List[RemoteDisclosure] = Field(default_factory=list, max_length=10)
 
@@ -128,7 +158,24 @@ class EquipmentSpec(StrictModel):
 class DocumentMetadata(StrictModel):
     author: Optional[str] = Field(default=None, max_length=256)
     creation_date: Optional[str] = Field(default=None, max_length=64)
+    modification_date: Optional[str] = Field(default=None, max_length=64)
     creator_tool: Optional[str] = Field(default=None, max_length=256)
+    producer: Optional[str] = Field(default=None, max_length=256)
+    is_encrypted: bool = False
+    parser_warnings: List[str] = Field(default_factory=list, max_length=20)
+    review_signals: List[str] = Field(default_factory=list, max_length=20)
+
+
+class SourceDocumentProvenance(StrictModel):
+    project_id: str = Field(min_length=1, max_length=128)
+    storage_reference: str = Field(min_length=1, max_length=512)
+    sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    original_filename: str = Field(min_length=1, max_length=512)
+    media_type: str = Field(min_length=1, max_length=128)
+    byte_length: int = Field(ge=0)
+    uploader_identity: str = Field(min_length=1, max_length=128)
+    ingestion_time: str = Field(min_length=1, max_length=64)
+    integrity_signals: List[str] = Field(default_factory=list, max_length=20)
 
 
 class VendorBidExtract(StrictModel):
@@ -177,6 +224,7 @@ class BidRecord(StrictModel):
     filename: str
     submitted_at: str
     source: VendorBidExtract
+    source_document: SourceDocumentProvenance
     scorecard: DocketScorecard
     officer_decision: OfficerDecision = OfficerDecision.UNDECIDED
     version: int = 1

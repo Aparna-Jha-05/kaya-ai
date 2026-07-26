@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import sqlite3
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -73,6 +74,51 @@ class TestBidRepository(unittest.TestCase):
         self.assertTrue(deleted)
         self.assertIsNone(self.repo.get_bid(saved.id))
         self.assertFalse(source_path.exists())
+
+    def test_source_provenance_is_immutable_and_idempotency_is_project_scoped(self):
+        source, scorecard = self._sample_bid()
+        contents = b"%PDF-1.4 immutable source bytes"
+        first = self.repo.save_bid(
+            "first.pdf",
+            contents,
+            source,
+            scorecard,
+            project_id="PROJECT-A",
+            uploader_identity="OFFICER-A",
+            idempotency_key="retry-1",
+        )
+        replay = self.repo.save_bid(
+            "ignored.pdf",
+            b"%PDF-1.4 different retry bytes",
+            source,
+            scorecard,
+            project_id="PROJECT-A",
+            uploader_identity="OFFICER-A",
+            idempotency_key="retry-1",
+        )
+        self.assertEqual(replay.id, first.id)
+        self.assertEqual(self.repo.source_path(first.id).read_bytes(), contents)
+        self.assertEqual(first.source_document.byte_length, len(contents))
+        self.assertEqual(first.source_document.project_id, "PROJECT-A")
+        self.assertEqual(first.source_document.sha256, first.source.pdf_fingerprint)
+
+        other_project = self.repo.save_bid(
+            "other.pdf",
+            contents,
+            source,
+            scorecard,
+            project_id="PROJECT-B",
+            uploader_identity="OFFICER-A",
+            idempotency_key="retry-1",
+        )
+        self.assertNotEqual(other_project.id, first.id)
+
+        with self.assertRaises(sqlite3.IntegrityError):
+            with self.repo._connect() as connection:
+                connection.execute(
+                    "UPDATE bids SET filename = ? WHERE id = ?",
+                    ("altered.pdf", first.id),
+                )
 
     def test_officer_decision_persistence_and_concurrency(self):
         source, scorecard = self._sample_bid()

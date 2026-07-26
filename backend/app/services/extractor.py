@@ -12,14 +12,17 @@ import fitz
 
 from app.models.schemas import (
     CANONICAL_FACT_UNITS,
+    DimensionAnnotation,
     DocumentMetadata,
     EquipmentSpec,
     ExtractionProvider,
     ExtractionReport,
+    ExtractionIssue,
     FactCandidate,
     FactField,
     VendorBidExtract,
 )
+from app.services.integrity import BidIntegrityService
 from app.services.model_extraction import ExtractionCascade, normalize_fact_value
 
 
@@ -64,32 +67,32 @@ class PDFExtractorService:
         project_id: str | None = None,
     ) -> VendorBidExtract:
         raw_pdf = Path(pdf_path).read_bytes()
+        resolved_project = project_id or os.getenv("PO_LICE_PROJECT_ID", "PRJ-AMBER-01")
         try:
             document = fitz.open(pdf_path)
             try:
                 pages = [(page.number + 1, page.get_text(), page) for page in document]
                 text = "\n".join(page_text for _, page_text, _ in pages)
-                metadata = document.metadata or {}
+                if not text.strip():
+                    raise ValueError("PDF has no extractable text")
                 extracted = PDFExtractorService.parse_bid_text(
                     text,
                     submission_ip=submission_ip,
                     pdf_fingerprint=hashlib.sha256(raw_pdf).hexdigest(),
-                    document_metadata=DocumentMetadata(
-                        author=metadata.get("author") or None,
-                        creation_date=metadata.get("creationDate") or None,
-                        creator_tool=metadata.get("creator") or metadata.get("producer") or None,
+                    document_metadata=DocumentMetadata.model_validate(
+                        BidIntegrityService.inspect_pdf_metadata(raw_pdf, Path(pdf_path).name)
                     ),
                 )
-                located_report = PDFExtractorService._locate_candidates(extracted.extraction_report, pages)
-                extracted = extracted.model_copy(update={"extraction_report": located_report})
+                enriched = ExtractionCascade().enrich(text, extracted, resolved_project)
+                located_report = PDFExtractorService._locate_candidates(
+                    enriched.extraction_report,
+                    pages,
+                )
+                return enriched.model_copy(update={"extraction_report": located_report})
             finally:
                 document.close()
         except fitz.FileDataError as error:
             raise ValueError("Invalid or corrupted PDF") from error
-        if not text.strip():
-            raise ValueError("PDF has no extractable text")
-        resolved_project = project_id or os.getenv("PO_LICE_PROJECT_ID", "demo")
-        return ExtractionCascade().enrich(text, extracted, resolved_project)
 
     @staticmethod
     def _clauses(text: str) -> list[str]:
@@ -139,10 +142,18 @@ class PDFExtractorService:
         for candidate in report.candidates:
             page_number: int | None = None
             bbox: tuple[float, float, float, float] | None = None
+            page_width: float | None = None
+            page_height: float | None = None
+            page_rotation: int | None = None
+            coordinate_system: str | None = None
             for number, page_text, page in page_list:
                 if " ".join(candidate.source_excerpt.casefold().split()) not in " ".join(page_text.casefold().split()):
                     continue
                 page_number = number
+                page_width = float(page.rect.width)
+                page_height = float(page.rect.height)
+                page_rotation = int(page.rotation)
+                coordinate_system = "PYMUPDF_PAGE_SPACE_TOP_LEFT_POINTS"
                 rectangles = page.search_for(candidate.source_excerpt)
                 if rectangles:
                     rectangle = rectangles[0]
@@ -154,6 +165,10 @@ class PDFExtractorService:
                         **candidate.model_dump(),
                         "page": page_number,
                         "bbox": bbox,
+                        "page_width": page_width,
+                        "page_height": page_height,
+                        "page_rotation": page_rotation,
+                        "coordinate_system": coordinate_system,
                         "validation_signals": [
                             *candidate.validation_signals,
                             *(["PAGE_LOCATED"] if page_number else []),
@@ -163,7 +178,59 @@ class PDFExtractorService:
                 )
             )
         selected = {candidate.field.value: candidate for candidate in located if candidate.accepted}
-        return report.model_copy(update={"candidates": located, "selected": selected})
+        width = selected.get(FactField.WIDTH_M.value)
+        annotations: list[DimensionAnnotation] = []
+        issues = list(report.issues)
+        for candidate in selected.values():
+            if not candidate.bbox:
+                issues.append(
+                    ExtractionIssue(
+                        code="EVIDENCE_REGION_UNAVAILABLE",
+                        message="The supporting excerpt was retained but could not be mapped to a PDF rectangle.",
+                        field=candidate.field,
+                        provider=candidate.provider,
+                    )
+                )
+        if (
+            width
+            and width.bbox
+            and width.page
+            and width.page_width
+            and width.page_height
+            and width.page_rotation is not None
+            and width.coordinate_system
+        ):
+            annotations.append(
+                DimensionAnnotation(
+                    field=FactField.WIDTH_M,
+                    normalized_value=float(width.normalized_value),
+                    unit=width.unit or "m",
+                    source_excerpt=width.source_excerpt,
+                    page=width.page,
+                    bbox=width.bbox,
+                    page_width=width.page_width,
+                    page_height=width.page_height,
+                    page_rotation=width.page_rotation,
+                    coordinate_system=width.coordinate_system,
+                )
+            )
+        else:
+            issues.append(
+                ExtractionIssue(
+                    code="DIMENSION_ANNOTATION_UNAVAILABLE",
+                    message="No reliably located textual width annotation was detected; drawing geometry requires review.",
+                    field=FactField.WIDTH_M,
+                    provider=width.provider if width else None,
+                )
+            )
+        return report.model_copy(
+            update={
+                "candidates": located,
+                "selected": selected,
+                "dimension_annotations": annotations,
+                "issues": issues,
+            }
+        )
 
     @classmethod
     def parse_bid_text(

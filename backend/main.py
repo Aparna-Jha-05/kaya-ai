@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List
@@ -35,6 +36,8 @@ MAX_PDF_BYTES = 15 * 1024 * 1024
 PDF_MAGIC = b"%PDF-"
 allowed_origins = [origin.strip() for origin in os.getenv("PO_LICE_ALLOWED_ORIGINS", "http://localhost:3000").split(",") if origin.strip()]
 DEMO_MODE = settings.demo_mode
+PROJECT_ID = os.getenv("PO_LICE_PROJECT_ID", "PRJ-AMBER-01")
+DEMO_ACTOR = "DEMO_OFFICER"
 
 app = FastAPI(title="PO-LICE API", description="Deterministic procurement evidence and scenario modeling.", version="2.0.0")
 app.add_middleware(
@@ -42,7 +45,7 @@ app.add_middleware(
     allow_origins=allowed_origins,
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["Content-Type"],
+    allow_headers=["Content-Type", "Idempotency-Key"],
 )
 
 
@@ -83,11 +86,41 @@ def require_demo_persistence() -> None:
 async def upload_and_audit_bid(request: Request, file: UploadFile = File(...)) -> BidRecord:
     """Validate and analyse one PDF. Source text is extracted; patrols make the decision."""
     require_demo_persistence()
-    filename = file.filename or ""
+    idempotency_key = request.headers.get("Idempotency-Key")
+    if idempotency_key and not re.fullmatch(r"[A-Za-z0-9._:-]{1,128}", idempotency_key):
+        await file.close()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Idempotency-Key must contain 1-128 letters, numbers, dots, underscores, colons, or hyphens.",
+        )
+    if idempotency_key:
+        replay = bid_repository.get_bid_by_idempotency(
+            PROJECT_ID,
+            DEMO_ACTOR,
+            idempotency_key,
+        )
+        if replay:
+            await file.close()
+            return replay
+    filename = Path(file.filename or "").name
+    if len(filename) > 512:
+        await file.close()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="PDF filename exceeds 512 characters.",
+        )
     if Path(filename).suffix.lower() != ".pdf":
+        await file.close()
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Upload a PDF document.")
+    if file.content_type not in (None, "", "application/pdf", "application/octet-stream"):
+        await file.close()
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Upload a PDF document.",
+        )
     declared_size = file.size
     if declared_size is not None and declared_size > MAX_PDF_BYTES:
+        await file.close()
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="PDF exceeds the 15 MB upload limit.")
 
     contents = await file.read(MAX_PDF_BYTES + 1)
@@ -103,9 +136,42 @@ async def upload_and_audit_bid(request: Request, file: UploadFile = File(...)) -
             temporary_file.write(contents)
             temp_path = temporary_file.name
         submission_ip = request.client.host if request.client else None
-        extracted_bid = PDFExtractorService.extract_from_pdf_path(temp_path, submission_ip=submission_ip)
+        extracted_bid = PDFExtractorService.extract_from_pdf_path(
+            temp_path,
+            submission_ip=submission_ip,
+            project_id=PROJECT_ID,
+        )
+        integrity_signals = [
+            *extracted_bid.document_metadata.parser_warnings,
+            *extracted_bid.document_metadata.review_signals,
+        ]
+        duplicate = bid_repository.find_by_fingerprint(
+            PROJECT_ID,
+            extracted_bid.pdf_fingerprint or "",
+        )
+        if duplicate:
+            integrity_signals.append(f"DUPLICATE_BYTES:{duplicate.id}")
+            metadata = extracted_bid.document_metadata.model_copy(
+                update={
+                    "review_signals": [
+                        *extracted_bid.document_metadata.review_signals,
+                        "DUPLICATE_BYTES",
+                    ]
+                }
+            )
+            extracted_bid = extracted_bid.model_copy(update={"document_metadata": metadata})
         scorecard = PatrolEngineService.run_all_patrols(extracted_bid)
-        record = bid_repository.save_bid(filename, contents, extracted_bid, scorecard)
+        record = bid_repository.save_bid(
+            filename,
+            contents,
+            extracted_bid,
+            scorecard,
+            project_id=PROJECT_ID,
+            uploader_identity=DEMO_ACTOR,
+            media_type="application/pdf",
+            idempotency_key=idempotency_key,
+            integrity_signals=integrity_signals,
+        )
         bid_integrity_matrix.record(extracted_bid)
         return record
     except (ValueError, RuntimeError) as error:

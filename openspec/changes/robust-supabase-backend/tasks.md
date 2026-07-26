@@ -22,17 +22,17 @@
 
 ## 3. Source Ingestion and Document Integrity
 
-- [ ] 3.1 Persist immutable source-document provenance and local file references in SQLite
+- [x] 3.1 Persist immutable source-document provenance and local file references in SQLite
 - [x] 3.2 Create `backend/app/services/integrity.py` for SHA-256 exact-byte duplicate detection
-- [ ] 3.3 Record metadata and parser anomalies as review signals without assigning fraud
-- [ ] 3.4 Implement project-scoped idempotency behavior for retried uploads
+- [x] 3.3 Record metadata and parser anomalies as review signals without assigning fraud
+- [x] 3.4 Implement project-scoped idempotency behavior for retried uploads
 
 ## 4. Evidence Region Extraction
 
-- [ ] 4.1 Update `backend/app/services/extractor.py` to retain raw excerpts, page numbers, coordinate systems, and `[x0, y0, x1, y1]` evidence rectangles
+- [x] 4.1 Update `backend/app/services/extractor.py` to retain raw excerpts, page numbers, coordinate systems, and `[x0, y0, x1, y1]` evidence rectangles
 - [x] 4.2 Normalize supported units while preserving original values and units
 - [x] 4.3 Report deterministic extraction-quality signals separately from model confidence
-- [ ] 4.4 Return detected dimension annotations for the frontend and flag unsupported drawings instead of claiming full CAD parsing
+- [x] 4.4 Return detected dimension annotations for the frontend and flag unsupported drawings instead of claiming full CAD parsing
 
 ## 5. Deterministic Patrol Engine
 

@@ -7,13 +7,63 @@ export type BidRecord = {
   submitted_at: string;
   officer_decision: "UNDECIDED" | "AWARDED" | "REJECTED" | "RFI_PENDING";
   version: number;
+  source_document: {
+    project_id: string;
+    storage_reference: string;
+    sha256: string;
+    original_filename: string;
+    media_type: string;
+    byte_length: number;
+    uploader_identity: string;
+    ingestion_time: string;
+    integrity_signals: string[];
+  };
   source: {
     vendor_name: string;
     bid_amount_inr: number | null;
     promised_delivery_weeks: number | null;
     has_osha_cert: boolean | null;
     extracted_clauses: string[];
-    document_metadata: { author: string | null; creation_date: string | null; creator_tool: string | null };
+    document_metadata: {
+      author: string | null;
+      creation_date: string | null;
+      modification_date: string | null;
+      creator_tool: string | null;
+      producer: string | null;
+      is_encrypted: boolean;
+      parser_warnings: string[];
+      review_signals: string[];
+    };
+    extraction_report: {
+      candidates: Array<{
+        field: string;
+        raw_value: string;
+        normalized_value: string | number | boolean;
+        unit: string | null;
+        source_excerpt: string;
+        page: number | null;
+        bbox: [number, number, number, number] | null;
+        page_width: number | null;
+        page_height: number | null;
+        page_rotation: number | null;
+        coordinate_system: string | null;
+        accepted: boolean;
+      }>;
+      dimension_annotations: Array<{
+        field: string;
+        normalized_value: number;
+        unit: string;
+        source_excerpt: string;
+        page: number;
+        bbox: [number, number, number, number];
+        page_width: number;
+        page_height: number;
+        page_rotation: number;
+        coordinate_system: string;
+        interpretation_status: string;
+      }>;
+      issues: Array<{ code: string; message: string; field: string | null }>;
+    };
     equipment: {
       equipment_type: string;
       manufacturer: string;
@@ -70,10 +120,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const procurementApi = {
-  upload(file: File) {
+  upload(file: File, idempotencyKey = globalThis.crypto.randomUUID()) {
     const body = new FormData();
     body.append("file", file);
-    return request<BidRecord>("/api/v1/bids/upload", { method: "POST", body });
+    return request<BidRecord>("/api/v1/bids/upload", {
+      method: "POST",
+      headers: { "Idempotency-Key": idempotencyKey },
+      body,
+    });
   },
   list: () => request<BidRecord[]>("/api/v1/bids"),
   get: (id: string) => request<BidRecord>(`/api/v1/bids/${id}`),

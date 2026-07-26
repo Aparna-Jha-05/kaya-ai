@@ -5,6 +5,7 @@ upload-to-review lifecycle without pretending that a remote database exists.
 Supabase/PostgreSQL integration is planned but not wired in this iteration.
 """
 
+import hashlib
 import json
 import os
 import sqlite3
@@ -20,6 +21,7 @@ from app.models.schemas import (
     OfficerDecision,
     RFIDraft,
     SiteConstraintRecord,
+    SourceDocumentProvenance,
     VendorBidExtract,
 )
 
@@ -59,6 +61,14 @@ class BidRepository:
                   source_json TEXT NOT NULL,
                   scorecard_json TEXT NOT NULL,
                   stored_file TEXT NOT NULL,
+                  project_id TEXT NOT NULL DEFAULT 'PRJ-AMBER-01',
+                  media_type TEXT NOT NULL DEFAULT 'application/pdf',
+                  byte_length INTEGER NOT NULL DEFAULT 0,
+                  sha256 TEXT NOT NULL DEFAULT '',
+                  uploader_identity TEXT NOT NULL DEFAULT 'DEMO_OFFICER',
+                  ingested_at TEXT NOT NULL DEFAULT '',
+                  idempotency_key TEXT,
+                  integrity_signals_json TEXT NOT NULL DEFAULT '[]',
                   officer_decision TEXT NOT NULL DEFAULT 'UNDECIDED',
                   version INTEGER NOT NULL DEFAULT 1
                 );
@@ -100,12 +110,43 @@ class BidRepository:
                   UNIQUE (project_id, version)
                 );
             """)
-            # Migrate existing bids table if officer_decision/version columns are missing
-            try:
-                connection.execute("SELECT officer_decision FROM bids LIMIT 0")
-            except sqlite3.OperationalError:
-                connection.execute("ALTER TABLE bids ADD COLUMN officer_decision TEXT NOT NULL DEFAULT 'UNDECIDED'")
-                connection.execute("ALTER TABLE bids ADD COLUMN version INTEGER NOT NULL DEFAULT 1")
+            columns = {
+                "officer_decision": "TEXT NOT NULL DEFAULT 'UNDECIDED'",
+                "version": "INTEGER NOT NULL DEFAULT 1",
+                "project_id": "TEXT NOT NULL DEFAULT 'PRJ-AMBER-01'",
+                "media_type": "TEXT NOT NULL DEFAULT 'application/pdf'",
+                "byte_length": "INTEGER NOT NULL DEFAULT 0",
+                "sha256": "TEXT NOT NULL DEFAULT ''",
+                "uploader_identity": "TEXT NOT NULL DEFAULT 'DEMO_OFFICER'",
+                "ingested_at": "TEXT NOT NULL DEFAULT ''",
+                "idempotency_key": "TEXT",
+                "integrity_signals_json": "TEXT NOT NULL DEFAULT '[]'",
+            }
+            existing_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(bids)").fetchall()
+            }
+            for name, definition in columns.items():
+                if name not in existing_columns:
+                    connection.execute(f"ALTER TABLE bids ADD COLUMN {name} {definition}")
+
+            connection.execute(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_bids_project_idempotency
+                ON bids(project_id, uploader_identity, idempotency_key)
+                WHERE idempotency_key IS NOT NULL
+                """
+            )
+            connection.executescript(
+                """
+                CREATE TRIGGER IF NOT EXISTS immutable_bid_source
+                BEFORE UPDATE OF filename, submitted_at, stored_file, project_id,
+                    media_type, byte_length, sha256, uploader_identity, ingested_at
+                ON bids
+                BEGIN
+                  SELECT RAISE(ABORT, 'source document provenance is immutable');
+                END;
+                """
+            )
 
             # Seed default constraints if none exist
             row = connection.execute(
@@ -124,13 +165,32 @@ class BidRepository:
 
     # ── Bid CRUD ─────────────────────────────────────────────────────────
 
-    @staticmethod
-    def _record(row: sqlite3.Row) -> BidRecord:
+    def _record(self, row: sqlite3.Row) -> BidRecord:
+        source = VendorBidExtract.model_validate_json(row["source_json"])
+        sha256 = row["sha256"] or source.pdf_fingerprint
+        if not sha256:
+            source_file = self.uploads_path / row["stored_file"]
+            if source_file.is_file():
+                sha256 = hashlib.sha256(source_file.read_bytes()).hexdigest()
+            else:
+                raise RuntimeError(f"Source provenance unavailable for bid {row['id']}")
+        ingestion_time = row["ingested_at"] or row["submitted_at"]
         return BidRecord(
             id=row["id"],
             filename=row["filename"],
             submitted_at=row["submitted_at"],
-            source=VendorBidExtract.model_validate_json(row["source_json"]),
+            source=source,
+            source_document=SourceDocumentProvenance(
+                project_id=row["project_id"],
+                storage_reference=f"uploads/{row['stored_file']}",
+                sha256=sha256,
+                original_filename=row["filename"],
+                media_type=row["media_type"],
+                byte_length=row["byte_length"],
+                uploader_identity=row["uploader_identity"],
+                ingestion_time=ingestion_time,
+                integrity_signals=json.loads(row["integrity_signals_json"]),
+            ),
             scorecard=DocketScorecard.model_validate_json(row["scorecard_json"]),
             officer_decision=OfficerDecision(row["officer_decision"]),
             version=row["version"],
@@ -142,21 +202,60 @@ class BidRepository:
         contents: bytes,
         source: VendorBidExtract,
         scorecard: DocketScorecard,
+        *,
+        project_id: str = "PRJ-AMBER-01",
+        uploader_identity: str = "DEMO_OFFICER",
+        media_type: str = "application/pdf",
+        idempotency_key: str | None = None,
+        integrity_signals: list[str] | None = None,
     ) -> BidRecord:
+        if idempotency_key:
+            replay = self.get_bid_by_idempotency(
+                project_id,
+                uploader_identity,
+                idempotency_key,
+            )
+            if replay:
+                return replay
         record_id = str(uuid4())
         submitted_at = datetime.now(timezone.utc).isoformat()
         stored_file = f"{record_id}.pdf"
+        document_sha256 = hashlib.sha256(contents).hexdigest()
+        if source.pdf_fingerprint and source.pdf_fingerprint != document_sha256:
+            raise ValueError("Source fingerprint does not match the uploaded bytes")
+        persisted_source = source.model_copy(update={"pdf_fingerprint": document_sha256})
         persisted_scorecard = scorecard.model_copy(update={"bid_id": record_id})
         source_path = self.uploads_path / stored_file
-        source_path.write_bytes(contents)
         try:
             with self._lock, self._connect() as connection:
+                if idempotency_key:
+                    replay = connection.execute(
+                        """
+                        SELECT * FROM bids
+                        WHERE project_id = ? AND uploader_identity = ? AND idempotency_key = ?
+                        """,
+                        (project_id, uploader_identity, idempotency_key),
+                    ).fetchone()
+                    if replay:
+                        return self._record(replay)
+                source_path.write_bytes(contents)
                 connection.execute(
-                    "INSERT INTO bids (id, filename, submitted_at, source_json, scorecard_json, stored_file, officer_decision, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    """
+                    INSERT INTO bids (
+                        id, filename, submitted_at, source_json, scorecard_json,
+                        stored_file, project_id, media_type, byte_length, sha256,
+                        uploader_identity, ingested_at, idempotency_key,
+                        integrity_signals_json, officer_decision, version
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
                     (
                         record_id, filename, submitted_at,
-                        source.model_dump_json(), persisted_scorecard.model_dump_json(),
-                        stored_file, OfficerDecision.UNDECIDED.value, 1,
+                        persisted_source.model_dump_json(), persisted_scorecard.model_dump_json(),
+                        stored_file, project_id, media_type, len(contents),
+                        document_sha256, uploader_identity, submitted_at,
+                        idempotency_key, json.dumps(integrity_signals or []),
+                        OfficerDecision.UNDECIDED.value, 1,
                     ),
                 )
                 for result in persisted_scorecard.patrol_results:
@@ -165,14 +264,66 @@ class BidRepository:
                         result.patrol_name, result.status,
                         result.rule_broken or "No exception rule", result.reason,
                     )
+        except sqlite3.IntegrityError:
+            source_path.unlink(missing_ok=True)
+            if idempotency_key:
+                replay = self.get_bid_by_idempotency(
+                    project_id,
+                    uploader_identity,
+                    idempotency_key,
+                )
+                if replay:
+                    return replay
+            raise
         except Exception:
             source_path.unlink(missing_ok=True)
             raise
         return BidRecord(
             id=record_id, filename=filename, submitted_at=submitted_at,
-            source=source, scorecard=persisted_scorecard,
+            source=persisted_source,
+            source_document=SourceDocumentProvenance(
+                project_id=project_id,
+                storage_reference=f"uploads/{stored_file}",
+                sha256=document_sha256,
+                original_filename=filename,
+                media_type=media_type,
+                byte_length=len(contents),
+                uploader_identity=uploader_identity,
+                ingestion_time=submitted_at,
+                integrity_signals=integrity_signals or [],
+            ),
+            scorecard=persisted_scorecard,
             officer_decision=OfficerDecision.UNDECIDED, version=1,
         )
+
+    def get_bid_by_idempotency(
+        self,
+        project_id: str,
+        uploader_identity: str,
+        idempotency_key: str,
+    ) -> BidRecord | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM bids
+                WHERE project_id = ? AND uploader_identity = ? AND idempotency_key = ?
+                """,
+                (project_id, uploader_identity, idempotency_key),
+            ).fetchone()
+        return self._record(row) if row else None
+
+    def find_by_fingerprint(self, project_id: str, sha256: str) -> BidRecord | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM bids
+                WHERE project_id = ? AND sha256 = ?
+                ORDER BY submitted_at, id
+                LIMIT 1
+                """,
+                (project_id, sha256),
+            ).fetchone()
+        return self._record(row) if row else None
 
     def list_bids(self) -> list[BidRecord]:
         with self._connect() as connection:

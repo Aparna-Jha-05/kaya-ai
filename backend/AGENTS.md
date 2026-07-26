@@ -29,7 +29,8 @@ Current entry points:
 - `backend/app/services/patrols.py`: deterministic patrol and TCO logic.
 - `backend/app/services/integrity.py`: prototype-only in-memory correlations.
 - `backend/app/services/repository.py`: local SQLite/source-PDF persistence,
-  optimistic officer decisions, versioned constraints, and persisted RFI drafts.
+  immutable source provenance, project-scoped upload idempotency, optimistic
+  officer decisions, versioned constraints, and persisted RFI drafts.
 
 The SQLite prototype slice described by
 `openspec/changes/robust-supabase-backend/` is partially implemented.
