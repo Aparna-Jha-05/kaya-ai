@@ -6,7 +6,7 @@
 
 ## 1. Versioned Database Foundation
 
-- [x] 1.1 Add only `asyncpg`, `pgvector`, and `pydantic-settings` to `backend/requirements.txt`
+- [ ] 1.1 Add only `asyncpg`, `pgvector`, and `pydantic-settings` to `backend/requirements.txt`
 - [x] 1.2 Add an ordered initial migration for `projects`, versioned `site_constraints`, `bids`, `extracted_facts`, `patrol_results`, `vendor_docs`, `rfis`, and append-only `audit_logs`
 - [ ] 1.3 Add database constraints and indexes for project isolation, idempotency keys, document hashes, assessment versions, and the pinned embedding dimension
 - [ ] 1.4 Add database enforcement preventing application roles from updating or deleting audit events
