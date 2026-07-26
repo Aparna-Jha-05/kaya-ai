@@ -219,6 +219,14 @@ class DocketScorecard(StrictModel):
     compliance_drift_report: Optional[Dict[str, Any]] = None
 
 
+class AssessmentVersion(StrictModel):
+    version: int = Field(ge=1)
+    constraint_version: int = Field(ge=1)
+    scorecard: DocketScorecard
+    created_at: str = Field(min_length=1, max_length=64)
+    trigger: str = Field(min_length=1, max_length=128)
+
+
 class BidRecord(StrictModel):
     id: str
     filename: str
@@ -226,6 +234,8 @@ class BidRecord(StrictModel):
     source: VendorBidExtract
     source_document: SourceDocumentProvenance
     scorecard: DocketScorecard
+    assessment_version: int = Field(default=1, ge=1)
+    assessment_history: List[AssessmentVersion] = Field(default_factory=list)
     officer_decision: OfficerDecision = OfficerDecision.UNDECIDED
     version: int = 1
 

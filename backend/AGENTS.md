@@ -30,7 +30,8 @@ Current entry points:
 - `backend/app/services/integrity.py`: prototype-only in-memory correlations.
 - `backend/app/services/repository.py`: local SQLite/source-PDF persistence,
   immutable source provenance, project-scoped upload idempotency, optimistic
-  officer decisions, versioned constraints, and persisted RFI drafts.
+  officer decisions, versioned constraints and assessments, and persisted RFI
+  drafts.
 
 The SQLite prototype slice described by
 `openspec/changes/robust-supabase-backend/` is partially implemented.

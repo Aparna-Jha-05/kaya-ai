@@ -195,11 +195,22 @@ class ApiContractTests(unittest.TestCase):
         self.assertTrue(approved.json()["human_reviewed"])
 
     def test_constraint_update_requires_current_version(self):
+        bid = self._saved_bid()
+        decided = self.client.patch(
+            f"/api/v1/bids/{bid.id}/status",
+            json={
+                "decision": "AWARDED",
+                "expected_version": 1,
+                "reason": "Approved before constraint revision",
+            },
+        )
+        self.assertEqual(decided.status_code, 200)
+
         updated = self.client.put(
             "/api/v1/site-constraints",
             json={
                 "expected_version": 1,
-                "max_substation_kw": 1_500,
+                "max_substation_kw": 900,
                 "max_door_width_m": 2.1,
                 "max_embodied_carbon_kg": 400,
                 "reason": "Verified demo constraint update",
@@ -207,6 +218,28 @@ class ApiContractTests(unittest.TestCase):
         )
         self.assertEqual(updated.status_code, 200)
         self.assertEqual(updated.json()["new_version"], 2)
+        self.assertEqual(updated.json()["reassessed_bid_count"], 1)
+
+        reassessed = self.client.get(f"/api/v1/bids/{bid.id}")
+        self.assertEqual(reassessed.status_code, 200)
+        record = reassessed.json()
+        self.assertEqual(record["officer_decision"], "AWARDED")
+        self.assertEqual(record["version"], 2)
+        self.assertEqual(record["assessment_version"], 2)
+        self.assertEqual(
+            [item["constraint_version"] for item in record["assessment_history"]],
+            [2, 1],
+        )
+        self.assertEqual(
+            record["assessment_history"][0]["scorecard"]["patrol_results"][0]["status"],
+            "FAIL",
+        )
+        self.assertEqual(
+            record["assessment_history"][1]["scorecard"]["patrol_results"][0]["status"],
+            "FLAG",
+        )
+        events = self.client.get(f"/api/v1/activity?bid_id={bid.id}").json()
+        self.assertIn("ASSESSMENT_CHANGED", [event["action"] for event in events])
 
         stale = self.client.put(
             "/api/v1/site-constraints",

@@ -26,7 +26,7 @@ from app.models.schemas import (
 )
 from app.services.extractor import PDFExtractorService
 from app.services.integrity import bid_integrity_matrix
-from app.services.patrols import PatrolEngineService
+from app.services.patrols import ConstraintGraph, PatrolEngineService
 from app.services.repository import InvalidTransitionError, StaleVersionError, bid_repository
 from app.services.rfi import RFIService
 from app.db.supabase import check_db_readiness, settings
@@ -326,6 +326,25 @@ def update_site_constraints(payload: ConstraintUpdateRequest) -> Dict[str, Any]:
     """
     require_demo_persistence()
     try:
+        current = bid_repository.get_current_constraints(PROJECT_ID)
+        if not current:
+            raise KeyError(PROJECT_ID)
+        if current.version != payload.expected_version:
+            raise StaleVersionError(
+                f"Expected version {payload.expected_version}, current is {current.version}"
+            )
+        next_version = payload.expected_version + 1
+        graph = ConstraintGraph(
+            substation_limit_kw=payload.max_substation_kw,
+            door_limit_m=payload.max_door_width_m,
+            carbon_cap_kgco2e=payload.max_embodied_carbon_kg,
+            constraint_source=f"v{next_version} by DEMO_ADMIN",
+            constraint_version=next_version,
+        )
+        reassessments = {
+            bid.id: PatrolEngineService.run_all_patrols(bid.source, graph=graph)
+            for bid in bid_repository.list_project_bids(PROJECT_ID)
+        }
         record = bid_repository.update_constraints(
             expected_version=payload.expected_version,
             max_substation_kw=payload.max_substation_kw,
@@ -333,11 +352,14 @@ def update_site_constraints(payload: ConstraintUpdateRequest) -> Dict[str, Any]:
             max_embodied_carbon_kg=payload.max_embodied_carbon_kg,
             actor="DEMO_ADMIN",
             reason=payload.reason,
+            project_id=PROJECT_ID,
+            reassessments=reassessments,
         )
         return {
             "status": "UPDATED",
             "project_id": record.project_id,
             "new_version": record.version,
+            "reassessed_bid_count": len(reassessments),
             "constraints": {
                 "max_substation_kw": record.max_substation_kw,
                 "max_door_width_m": record.max_door_width_m,

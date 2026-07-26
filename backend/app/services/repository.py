@@ -16,6 +16,7 @@ from uuid import uuid4
 
 from app.models.schemas import (
     ActivityEvent,
+    AssessmentVersion,
     BidRecord,
     DocketScorecard,
     OfficerDecision,
@@ -109,6 +110,18 @@ class BidRepository:
                   created_at TEXT NOT NULL,
                   UNIQUE (project_id, version)
                 );
+
+                CREATE TABLE IF NOT EXISTS bid_assessments (
+                  id TEXT PRIMARY KEY,
+                  bid_id TEXT NOT NULL,
+                  version INTEGER NOT NULL,
+                  constraint_version INTEGER NOT NULL,
+                  scorecard_json TEXT NOT NULL,
+                  created_at TEXT NOT NULL,
+                  trigger TEXT NOT NULL,
+                  UNIQUE (bid_id, version),
+                  FOREIGN KEY (bid_id) REFERENCES bids(id)
+                );
             """)
             columns = {
                 "officer_decision": "TEXT NOT NULL DEFAULT 'UNDECIDED'",
@@ -162,8 +175,60 @@ class BidRepository:
                         datetime.now(timezone.utc).isoformat(),
                     ),
                 )
+            for bid in connection.execute(
+                """
+                SELECT id, submitted_at, scorecard_json
+                FROM bids
+                WHERE NOT EXISTS (
+                  SELECT 1 FROM bid_assessments WHERE bid_assessments.bid_id = bids.id
+                )
+                """
+            ).fetchall():
+                scorecard = DocketScorecard.model_validate_json(bid["scorecard_json"])
+                connection.execute(
+                    "INSERT INTO bid_assessments VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        str(uuid4()),
+                        bid["id"],
+                        1,
+                        self._constraint_version(scorecard),
+                        bid["scorecard_json"],
+                        bid["submitted_at"],
+                        "INITIAL_UPLOAD",
+                    ),
+                )
 
     # ── Bid CRUD ─────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _constraint_version(scorecard: DocketScorecard) -> int:
+        for result in scorecard.patrol_results:
+            version = (result.evidence or {}).get("constraint_version")
+            if isinstance(version, int) and version >= 1:
+                return version
+        return 1
+
+    def assessment_history(self, bid_id: str) -> list[AssessmentVersion]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT version, constraint_version, scorecard_json, created_at, trigger
+                FROM bid_assessments
+                WHERE bid_id = ?
+                ORDER BY version DESC
+                """,
+                (bid_id,),
+            ).fetchall()
+        return [
+            AssessmentVersion(
+                version=row["version"],
+                constraint_version=row["constraint_version"],
+                scorecard=DocketScorecard.model_validate_json(row["scorecard_json"]),
+                created_at=row["created_at"],
+                trigger=row["trigger"],
+            )
+            for row in rows
+        ]
 
     def _record(self, row: sqlite3.Row) -> BidRecord:
         source = VendorBidExtract.model_validate_json(row["source_json"])
@@ -175,6 +240,7 @@ class BidRepository:
             else:
                 raise RuntimeError(f"Source provenance unavailable for bid {row['id']}")
         ingestion_time = row["ingested_at"] or row["submitted_at"]
+        history = self.assessment_history(row["id"])
         return BidRecord(
             id=row["id"],
             filename=row["filename"],
@@ -192,6 +258,8 @@ class BidRepository:
                 integrity_signals=json.loads(row["integrity_signals_json"]),
             ),
             scorecard=DocketScorecard.model_validate_json(row["scorecard_json"]),
+            assessment_version=history[0].version if history else 1,
+            assessment_history=history,
             officer_decision=OfficerDecision(row["officer_decision"]),
             version=row["version"],
         )
@@ -258,6 +326,18 @@ class BidRepository:
                         OfficerDecision.UNDECIDED.value, 1,
                     ),
                 )
+                connection.execute(
+                    "INSERT INTO bid_assessments VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        str(uuid4()),
+                        record_id,
+                        1,
+                        self._constraint_version(persisted_scorecard),
+                        persisted_scorecard.model_dump_json(),
+                        submitted_at,
+                        "INITIAL_UPLOAD",
+                    ),
+                )
                 for result in persisted_scorecard.patrol_results:
                     self._append(
                         connection, record_id,
@@ -293,6 +373,16 @@ class BidRepository:
                 integrity_signals=integrity_signals or [],
             ),
             scorecard=persisted_scorecard,
+            assessment_version=1,
+            assessment_history=[
+                AssessmentVersion(
+                    version=1,
+                    constraint_version=self._constraint_version(persisted_scorecard),
+                    scorecard=persisted_scorecard,
+                    created_at=submitted_at,
+                    trigger="INITIAL_UPLOAD",
+                )
+            ],
             officer_decision=OfficerDecision.UNDECIDED, version=1,
         )
 
@@ -330,6 +420,18 @@ class BidRepository:
             rows = connection.execute("SELECT * FROM bids ORDER BY submitted_at DESC").fetchall()
         return [self._record(row) for row in rows]
 
+    def list_project_bids(self, project_id: str) -> list[BidRecord]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT * FROM bids
+                WHERE project_id = ?
+                ORDER BY submitted_at DESC, id
+                """,
+                (project_id,),
+            ).fetchall()
+        return [self._record(row) for row in rows]
+
     def get_bid(self, record_id: str) -> BidRecord | None:
         with self._connect() as connection:
             row = connection.execute("SELECT * FROM bids WHERE id = ?", (record_id,)).fetchone()
@@ -348,6 +450,7 @@ class BidRepository:
                 return False
             connection.execute("DELETE FROM rfis WHERE bid_id = ?", (record_id,))
             connection.execute("DELETE FROM activity WHERE bid_id = ?", (record_id,))
+            connection.execute("DELETE FROM bid_assessments WHERE bid_id = ?", (record_id,))
             connection.execute("DELETE FROM bids WHERE id = ?", (record_id,))
         source_path = self.uploads_path / row["stored_file"]
         if source_path.exists():
@@ -571,6 +674,7 @@ class BidRepository:
         actor: str,
         reason: str,
         project_id: str = "PRJ-AMBER-01",
+        reassessments: dict[str, DocketScorecard] | None = None,
     ) -> SiteConstraintRecord:
         """Create a new constraint version with optimistic concurrency.
 
@@ -605,6 +709,81 @@ class BidRepository:
                     actor, reason, created_at,
                 ),
             )
+            if reassessments is not None:
+                expected_bid_ids = {
+                    row["id"]
+                    for row in connection.execute(
+                        "SELECT id FROM bids WHERE project_id = ?",
+                        (project_id,),
+                    ).fetchall()
+                }
+                if set(reassessments) != expected_bid_ids:
+                    raise ValueError("Reassessments must cover every bid in the project")
+                for bid_id, scorecard in reassessments.items():
+                    if self._constraint_version(scorecard) != new_version:
+                        raise ValueError("Reassessment references the wrong constraint version")
+                    current_bid = connection.execute(
+                        "SELECT scorecard_json FROM bids WHERE id = ?",
+                        (bid_id,),
+                    ).fetchone()
+                    old_scorecard = DocketScorecard.model_validate_json(
+                        current_bid["scorecard_json"]
+                    )
+                    latest = connection.execute(
+                        "SELECT COALESCE(MAX(version), 0) AS version FROM bid_assessments WHERE bid_id = ?",
+                        (bid_id,),
+                    ).fetchone()
+                    assessment_version = latest["version"] + 1
+                    persisted_scorecard = scorecard.model_copy(update={"bid_id": bid_id})
+                    connection.execute(
+                        "UPDATE bids SET scorecard_json = ? WHERE id = ?",
+                        (persisted_scorecard.model_dump_json(), bid_id),
+                    )
+                    connection.execute(
+                        "INSERT INTO bid_assessments VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            str(uuid4()),
+                            bid_id,
+                            assessment_version,
+                            new_version,
+                            persisted_scorecard.model_dump_json(),
+                            created_at,
+                            "SITE_CONSTRAINT_UPDATE",
+                        ),
+                    )
+                    self._append(
+                        connection,
+                        bid_id,
+                        "PATROL_REASSESSMENT",
+                        "ASSESSMENT_RECALCULATED",
+                        f"SITE_CONSTRAINT_VERSION_{new_version}",
+                        f"{actor}: {reason}",
+                    )
+                    old_outcomes = [
+                        (result.patrol_name, result.status)
+                        for result in old_scorecard.patrol_results
+                    ]
+                    new_outcomes = [
+                        (result.patrol_name, result.status)
+                        for result in persisted_scorecard.patrol_results
+                    ]
+                    if (
+                        old_scorecard.recommendation != persisted_scorecard.recommendation
+                        or old_outcomes != new_outcomes
+                    ):
+                        self._append(
+                            connection,
+                            bid_id,
+                            "PATROL_REASSESSMENT",
+                            "ASSESSMENT_CHANGED",
+                            f"SITE_CONSTRAINT_VERSION_{new_version}",
+                            (
+                                f"Automated assessment changed from "
+                                f"{old_scorecard.recommendation} to "
+                                f"{persisted_scorecard.recommendation}; "
+                                "officer decision preserved."
+                            ),
+                        )
         return SiteConstraintRecord(
             id=new_id, project_id=project_id, version=new_version,
             is_current=True,
