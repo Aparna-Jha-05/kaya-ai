@@ -4,6 +4,7 @@ import ActiveBidsTable from "@/components/precinct/ActiveBidsTable";
 import CaseFilesPanel from "@/components/precinct/CaseFilesPanel";
 import SummaryRow from "@/components/precinct/SummaryRow";
 import Link from "next/link";
+import { FilePlus2 } from "lucide-react";
 
 export default function ReviewQueuePage() {
   return (
@@ -17,6 +18,7 @@ export default function ReviewQueuePage() {
           </p>
         </div>
         <Link href="/bids/new" className="inline-flex items-center justify-center gap-2 rounded-lg bg-cyan/15 px-4 py-2 text-sm font-semibold text-cyan transition-colors hover:bg-cyan/25">
+          <FilePlus2 className="h-4 w-4" />
           Upload bid
         </Link>
       </div>

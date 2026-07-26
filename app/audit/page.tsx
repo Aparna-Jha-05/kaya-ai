@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, Lock, ShieldCheck } from "lucide-react";
+import { Download } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
 import { procurementApi, type ActivityEvent, type BidRecord } from "@/lib/api";
 import { activityActionLabel, displayCheckName } from "@/lib/recordUtils";
@@ -66,9 +66,7 @@ export default function AuditPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="page-eyebrow">System audit</p>
-          <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold tracking-tight text-text">
-            <Lock className="h-5 w-5 text-cyan" /> Activity log
-          </h1>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-text">Activity log</h1>
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-text/50">Timestamped compliance checks, reviewer actions, and bid scorecard summary.</p>
         </div>
         <button type="button" onClick={() => exportCsv(events)} disabled={evState !== "ready" || events.length === 0} className="inline-flex items-center justify-center gap-2 rounded-lg bg-cyan/15 px-4 py-2 text-sm font-semibold text-cyan transition-colors hover:bg-cyan/25 disabled:cursor-not-allowed disabled:opacity-40">
@@ -81,7 +79,6 @@ export default function AuditPage() {
         <CardHeader
           title={recState === "ready" ? `${scorecards.length} bid scorecard${scorecards.length === 1 ? "" : "s"}` : "Compliance scorecard"}
           caption="Per-bid summary of all four patrol results and 5-year TCO²."
-          right={<ShieldCheck className="h-4 w-4 text-cyan" />}
         />
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
