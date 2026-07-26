@@ -8,13 +8,9 @@ Generation and approval are separate actions:
 - Approval is handled by the repository's approve_rfi() method
 """
 
-import json
-import logging
 from typing import Dict, Any
 
-from app.models.schemas import DocketScorecard, RFIDraft
-
-logger = logging.getLogger(__name__)
+from app.models.schemas import DocketScorecard
 
 
 class RFIService:
@@ -26,7 +22,7 @@ class RFIService:
 
         for result in docket.patrol_results:
             if result.status in ("FAIL", "FLAG"):
-                breaches.append(f"- [{result.patrol_name}] {result.reason}")
+                breaches.append(f"- [{result.patrol_name}] {result.status}: {result.reason}")
                 if result.evidence:
                     for key, val in result.evidence.items():
                         if val is not None:
@@ -40,6 +36,8 @@ class RFIService:
 DOCUMENT REF: RFI-{docket.bid_id}
 VENDOR: {docket.vendor_name}
 LIFECYCLE STATUS: {docket.lifecycle_mode.value if hasattr(docket.lifecycle_mode, 'value') else docket.lifecycle_mode}
+RECOMMENDATION: {docket.recommendation}
+CAPEX INR: {docket.upfront_capex_inr if docket.upfront_capex_inr is not None else "UNAVAILABLE"}
 REVIEW STATUS: REQUIRES_HUMAN_REVIEW
 
 REASON FOR NOTICE:
@@ -69,6 +67,7 @@ NOTE: This draft requires human officer review and signature before official dis
             "patrol_statuses": {
                 result.patrol_name: result.status
                 for result in docket.patrol_results
+                if result.status in ("FAIL", "FLAG")
             },
         }
 
@@ -95,11 +94,43 @@ NOTE: This draft requires human officer review and signature before official dis
         Returns a list of violation messages. Empty list means the edit is safe.
         """
         violations = []
-        # The vendor name and bid_id must appear in the text
+        lines = edited_text.splitlines()
+
+        def require_exact_line(prefix: str, expected: str, message: str) -> None:
+            if [line for line in lines if line.startswith(prefix)] != [expected]:
+                violations.append(message)
+
         vendor = protected_facts.get("vendor_name", "")
-        if vendor and vendor not in edited_text:
-            violations.append(f"Protected vendor name '{vendor}' was removed or altered.")
+        if vendor:
+            require_exact_line(
+                "VENDOR:",
+                f"VENDOR: {vendor}",
+                f"Protected vendor name '{vendor}' was removed or altered.",
+            )
         bid_id = protected_facts.get("bid_id", "")
-        if bid_id and bid_id not in edited_text:
-            violations.append(f"Protected bid reference '{bid_id}' was removed or altered.")
+        if bid_id:
+            require_exact_line(
+                "DOCUMENT REF:",
+                f"DOCUMENT REF: RFI-{bid_id}",
+                f"Protected bid reference '{bid_id}' was removed or altered.",
+            )
+        recommendation = protected_facts.get("recommendation", "")
+        if recommendation:
+            require_exact_line(
+                "RECOMMENDATION:",
+                f"RECOMMENDATION: {recommendation}",
+                "Protected recommendation was removed or altered.",
+            )
+        capex = protected_facts.get("capex_inr")
+        expected_capex = capex if capex is not None else "UNAVAILABLE"
+        require_exact_line(
+            "CAPEX INR:",
+            f"CAPEX INR: {expected_capex}",
+            "Protected capex was removed or altered.",
+        )
+        for patrol_name, status in protected_facts.get("patrol_statuses", {}).items():
+            prefix = f"- [{patrol_name}] "
+            matching_lines = [line for line in lines if line.startswith(prefix)]
+            if len(matching_lines) != 1 or not matching_lines[0].startswith(f"{prefix}{status}:"):
+                violations.append(f"Protected status for {patrol_name} was removed or altered.")
         return violations

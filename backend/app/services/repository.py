@@ -28,6 +28,10 @@ class StaleVersionError(Exception):
     """Raised when an expected_version does not match the current version."""
 
 
+class InvalidTransitionError(Exception):
+    """Raised when an officer decision transition is not allowed."""
+
+
 class BidRepository:
     def __init__(self) -> None:
         root = Path(os.getenv("PO_LICE_DATA_DIR", Path(__file__).resolve().parents[2] / "data"))
@@ -142,25 +146,31 @@ class BidRepository:
         record_id = str(uuid4())
         submitted_at = datetime.now(timezone.utc).isoformat()
         stored_file = f"{record_id}.pdf"
-        (self.uploads_path / stored_file).write_bytes(contents)
-        with self._lock, self._connect() as connection:
-            connection.execute(
-                "INSERT INTO bids (id, filename, submitted_at, source_json, scorecard_json, stored_file, officer_decision, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (
-                    record_id, filename, submitted_at,
-                    source.model_dump_json(), scorecard.model_dump_json(),
-                    stored_file, OfficerDecision.UNDECIDED.value, 1,
-                ),
-            )
-            for result in scorecard.patrol_results:
-                self._append(
-                    connection, record_id,
-                    result.patrol_name, result.status,
-                    result.rule_broken or "No exception rule", result.reason,
+        persisted_scorecard = scorecard.model_copy(update={"bid_id": record_id})
+        source_path = self.uploads_path / stored_file
+        source_path.write_bytes(contents)
+        try:
+            with self._lock, self._connect() as connection:
+                connection.execute(
+                    "INSERT INTO bids (id, filename, submitted_at, source_json, scorecard_json, stored_file, officer_decision, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        record_id, filename, submitted_at,
+                        source.model_dump_json(), persisted_scorecard.model_dump_json(),
+                        stored_file, OfficerDecision.UNDECIDED.value, 1,
+                    ),
                 )
+                for result in persisted_scorecard.patrol_results:
+                    self._append(
+                        connection, record_id,
+                        result.patrol_name, result.status,
+                        result.rule_broken or "No exception rule", result.reason,
+                    )
+        except Exception:
+            source_path.unlink(missing_ok=True)
+            raise
         return BidRecord(
             id=record_id, filename=filename, submitted_at=submitted_at,
-            source=source, scorecard=scorecard,
+            source=source, scorecard=persisted_scorecard,
             officer_decision=OfficerDecision.UNDECIDED, version=1,
         )
 
@@ -215,6 +225,25 @@ class BidRepository:
             if row["version"] != expected_version:
                 raise StaleVersionError(
                     f"Expected version {expected_version}, current is {row['version']}"
+                )
+            current_decision = OfficerDecision(row["officer_decision"])
+            allowed_transitions = {
+                OfficerDecision.UNDECIDED: {
+                    OfficerDecision.AWARDED,
+                    OfficerDecision.REJECTED,
+                    OfficerDecision.RFI_PENDING,
+                },
+                OfficerDecision.RFI_PENDING: {
+                    OfficerDecision.UNDECIDED,
+                    OfficerDecision.AWARDED,
+                    OfficerDecision.REJECTED,
+                },
+                OfficerDecision.AWARDED: set(),
+                OfficerDecision.REJECTED: set(),
+            }
+            if decision not in allowed_transitions[current_decision]:
+                raise InvalidTransitionError(
+                    f"Cannot change officer decision from {current_decision.value} to {decision.value}"
                 )
             new_version = expected_version + 1
             connection.execute(
@@ -321,7 +350,7 @@ class BidRepository:
             created_at=row["created_at"],
         )
 
-    def approve_rfi(self, rfi_id: str, actor: str, note: str) -> RFIDraft:
+    def approve_rfi(self, rfi_id: str, edited_text: str, actor: str, note: str) -> RFIDraft:
         """Approve an RFI draft. This is a separate action from generation.
 
         Raises KeyError if rfi_id does not exist.
@@ -334,8 +363,8 @@ class BidRepository:
             if row["status"] != "DRAFT":
                 raise ValueError(f"RFI {rfi_id} is not in DRAFT status (current: {row['status']})")
             connection.execute(
-                "UPDATE rfis SET status = 'APPROVED', human_reviewed = 1 WHERE id = ?",
-                (rfi_id,),
+                "UPDATE rfis SET status = 'APPROVED', human_reviewed = 1, rfi_text = ? WHERE id = ?",
+                (edited_text, rfi_id),
             )
             self._append(
                 connection, row["bid_id"],

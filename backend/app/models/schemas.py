@@ -193,7 +193,7 @@ class ActivityEvent(StrictModel):
 
 
 class ReviewerActionRequest(StrictModel):
-    action: str = Field(pattern="^(RFI_DRAFT_APPROVED|REVIEWED_DO_NOT_SELECT|REVIEWED_READY_FOR_DECISION)$")
+    action: str = Field(pattern="^(REVIEWED_DO_NOT_SELECT|REVIEWED_READY_FOR_DECISION)$")
     note: str = Field(min_length=3, max_length=2_000)
 
 
@@ -204,7 +204,6 @@ class OfficerDecisionRequest(StrictModel):
     Requires expected_version for optimistic concurrency."""
     decision: OfficerDecision
     expected_version: int = Field(ge=1)
-    actor: str = Field(default="OFFICER", min_length=2, max_length=64)
     reason: str = Field(min_length=3, max_length=2_000)
 
 
@@ -224,7 +223,7 @@ class RFIDraft(StrictModel):
 
 class RFIApprovalRequest(StrictModel):
     """Approve a persisted RFI draft. Approval is a separate action from generation."""
-    actor: str = Field(default="OFFICER", min_length=2, max_length=64)
+    edited_text: str = Field(min_length=20, max_length=20_000)
     note: str = Field(default="Approved for dispatch", min_length=3, max_length=2_000)
 
 
@@ -250,7 +249,6 @@ class ConstraintUpdateRequest(StrictModel):
     max_substation_kw: float = Field(gt=0)
     max_door_width_m: float = Field(gt=0)
     max_embodied_carbon_kg: float = Field(gt=0)
-    actor: str = Field(default="OFFICER_ADMIN", min_length=2, max_length=64)
     reason: str = Field(default="Updated site operational requirements", min_length=3, max_length=2_000)
 
 

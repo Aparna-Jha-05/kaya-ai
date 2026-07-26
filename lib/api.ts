@@ -1,5 +1,5 @@
 export type CheckStatus = "PASS" | "FAIL" | "FLAG";
-export type ReviewAction = "RFI_DRAFT_APPROVED" | "REVIEWED_DO_NOT_SELECT" | "REVIEWED_READY_FOR_DECISION";
+export type ReviewAction = "REVIEWED_DO_NOT_SELECT" | "REVIEWED_READY_FOR_DECISION";
 
 export type BidRecord = {
   id: string;

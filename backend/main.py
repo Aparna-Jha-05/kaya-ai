@@ -4,9 +4,9 @@ import logging
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status, Query
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
@@ -15,7 +15,6 @@ from app.models.schemas import (
     ActivityEvent,
     BidRecord,
     ConstraintUpdateRequest,
-    OfficerDecision,
     OfficerDecisionRequest,
     RFIApprovalRequest,
     RFIDraft,
@@ -25,16 +24,17 @@ from app.models.schemas import (
     SimulationResponse,
 )
 from app.services.extractor import PDFExtractorService
+from app.services.integrity import bid_integrity_matrix
 from app.services.patrols import PatrolEngineService
-from app.services.repository import BidRepository, StaleVersionError, bid_repository
+from app.services.repository import InvalidTransitionError, StaleVersionError, bid_repository
 from app.services.rfi import RFIService
-from app.db.supabase import check_db_readiness
+from app.db.supabase import check_db_readiness, settings
 
 logger = logging.getLogger(__name__)
 MAX_PDF_BYTES = 15 * 1024 * 1024
 PDF_MAGIC = b"%PDF-"
 allowed_origins = [origin.strip() for origin in os.getenv("PO_LICE_ALLOWED_ORIGINS", "http://localhost:3000").split(",") if origin.strip()]
-DEMO_MODE = os.getenv("DEMO_MODE", "true").lower() in {"1", "true", "yes"}
+DEMO_MODE = settings.demo_mode
 
 app = FastAPI(title="PO-LICE API", description="Deterministic procurement evidence and scenario modeling.", version="2.0.0")
 app.add_middleware(
@@ -58,9 +58,9 @@ async def readiness_check() -> Dict[str, Any]:
     """Disclose whether SQLite/demo or PostgreSQL is active."""
     pg_status = await check_db_readiness()
     return {
-        "status": "healthy",
+        "status": "healthy" if DEMO_MODE else "unhealthy",
         "demo_mode": DEMO_MODE,
-        "persistence": "sqlite" if DEMO_MODE else "postgresql",
+        "persistence": "sqlite" if DEMO_MODE else "unavailable",
         "postgresql": pg_status,
     }
 
@@ -71,9 +71,18 @@ class RFIDraftRequest(BaseModel):
     bid_id: str
 
 
+def require_demo_persistence() -> None:
+    if not DEMO_MODE:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Persistent PostgreSQL mode is not implemented. Enable DEMO_MODE for the SQLite prototype.",
+        )
+
+
 @app.post("/api/v1/bids/upload", response_model=BidRecord, tags=["bids"])
 async def upload_and_audit_bid(request: Request, file: UploadFile = File(...)) -> BidRecord:
     """Validate and analyse one PDF. Source text is extracted; patrols make the decision."""
+    require_demo_persistence()
     filename = file.filename or ""
     if Path(filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Upload a PDF document.")
@@ -96,7 +105,9 @@ async def upload_and_audit_bid(request: Request, file: UploadFile = File(...)) -
         submission_ip = request.client.host if request.client else None
         extracted_bid = PDFExtractorService.extract_from_pdf_path(temp_path, submission_ip=submission_ip)
         scorecard = PatrolEngineService.run_all_patrols(extracted_bid)
-        return bid_repository.save_bid(filename, contents, extracted_bid, scorecard)
+        record = bid_repository.save_bid(filename, contents, extracted_bid, scorecard)
+        bid_integrity_matrix.record(extracted_bid)
+        return record
     except (ValueError, RuntimeError) as error:
         logger.info("Bid extraction rejected: %s", error)
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="The PDF could not be read as a procurement bid. Review the document and try again.") from error
@@ -133,6 +144,7 @@ def download_source(bid_id: str) -> FileResponse:
 
 @app.delete("/api/v1/bids/{bid_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["bids"])
 def delete_bid(bid_id: str) -> None:
+    require_demo_persistence()
     if not bid_repository.remove_bid(bid_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found.")
 
@@ -147,17 +159,20 @@ def update_officer_decision(bid_id: str, request: OfficerDecisionRequest) -> Bid
     but this endpoint maps it to the OfficerDecision concept.
     Returns HTTP 409 if expected_version is stale.
     """
+    require_demo_persistence()
     try:
         return bid_repository.update_officer_decision(
             bid_id=bid_id,
             decision=request.decision,
             expected_version=request.expected_version,
-            actor=request.actor,
+            actor="DEMO_OFFICER",
             reason=request.reason,
         )
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found.")
     except StaleVersionError as error:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error))
+    except InvalidTransitionError as error:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error))
 
 
@@ -165,6 +180,7 @@ def update_officer_decision(bid_id: str, request: OfficerDecisionRequest) -> Bid
 
 @app.post("/api/v1/bids/{bid_id}/actions", response_model=ActivityEvent, tags=["bids"])
 def record_reviewer_action(bid_id: str, request: ReviewerActionRequest) -> ActivityEvent:
+    require_demo_persistence()
     event = bid_repository.add_action(bid_id, request.action, request.note)
     if not event:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found.")
@@ -185,6 +201,7 @@ def generate_rfi_draft(payload: RFIDraftRequest) -> RFIDraft:
     The draft is always created with status=DRAFT and human_reviewed=False.
     Approval is a separate action via PATCH /api/v1/rfis/{rfi_id}/approve.
     """
+    require_demo_persistence()
     record = bid_repository.get_bid(payload.bid_id)
     if not record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found.")
@@ -200,8 +217,20 @@ def generate_rfi_draft(payload: RFIDraftRequest) -> RFIDraft:
 @app.patch("/api/v1/rfis/{rfi_id}/approve", response_model=RFIDraft, tags=["agent"])
 def approve_rfi(rfi_id: str, request: RFIApprovalRequest) -> RFIDraft:
     """Approve a persisted RFI draft. This is a separate action from generation."""
+    require_demo_persistence()
     try:
-        return bid_repository.approve_rfi(rfi_id, request.actor, request.note)
+        draft = bid_repository.get_rfi(rfi_id)
+        if not draft:
+            raise KeyError(rfi_id)
+        violations = RFIService.validate_edited_text(request.edited_text, draft.protected_facts)
+        if violations:
+            raise ValueError("; ".join(violations))
+        return bid_repository.approve_rfi(
+            rfi_id,
+            edited_text=request.edited_text,
+            actor="DEMO_OFFICER",
+            note=request.note,
+        )
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="RFI not found.")
     except ValueError as error:
@@ -229,13 +258,14 @@ def update_site_constraints(payload: ConstraintUpdateRequest) -> Dict[str, Any]:
 
     Returns HTTP 409 if expected_version is stale.
     """
+    require_demo_persistence()
     try:
         record = bid_repository.update_constraints(
             expected_version=payload.expected_version,
             max_substation_kw=payload.max_substation_kw,
             max_door_width_m=payload.max_door_width_m,
             max_embodied_carbon_kg=payload.max_embodied_carbon_kg,
-            actor=payload.actor,
+            actor="DEMO_ADMIN",
             reason=payload.reason,
         )
         return {

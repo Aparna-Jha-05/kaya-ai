@@ -4,15 +4,16 @@ import os
 import shutil
 import tempfile
 import unittest
-from uuid import uuid4
+from unittest.mock import patch
 
 from app.models.schemas import (
     EquipmentSpec,
     OfficerDecision,
     VendorBidExtract,
 )
+from app.services.integrity import BidIntegrityService
 from app.services.patrols import PatrolEngineService
-from app.services.repository import BidRepository, StaleVersionError
+from app.services.repository import BidRepository, InvalidTransitionError, StaleVersionError
 from app.services.rfi import RFIService
 
 
@@ -48,10 +49,11 @@ class TestBidRepository(unittest.TestCase):
     def test_bid_save_get_list_delete(self):
         source, scorecard = self._sample_bid()
         content = b"%PDF-1.4 Mock PDF Content for Acme"
-        
+
         saved = self.repo.save_bid("acme_bid.pdf", content, source, scorecard)
         self.assertIsNotNone(saved.id)
         self.assertEqual(saved.filename, "acme_bid.pdf")
+        self.assertEqual(saved.scorecard.bid_id, saved.id)
         self.assertEqual(saved.officer_decision, OfficerDecision.UNDECIDED)
         self.assertEqual(saved.version, 1)
 
@@ -75,7 +77,7 @@ class TestBidRepository(unittest.TestCase):
     def test_officer_decision_persistence_and_concurrency(self):
         source, scorecard = self._sample_bid()
         saved = self.repo.save_bid("test.pdf", b"%PDF-1.4 Data", source, scorecard)
-        
+
         # Successful update from version 1 -> 2
         updated = self.repo.update_officer_decision(
             bid_id=saved.id,
@@ -95,6 +97,15 @@ class TestBidRepository(unittest.TestCase):
                 expected_version=1,  # Stale!
                 actor="OFFICER_JANE",
                 reason="Stale update attempt",
+            )
+
+        with self.assertRaises(InvalidTransitionError):
+            self.repo.update_officer_decision(
+                bid_id=saved.id,
+                decision=OfficerDecision.REJECTED,
+                expected_version=2,
+                actor="OFFICER_JANE",
+                reason="Awarded decisions are final in the prototype",
             )
 
         # Activity log event recorded for decision change
@@ -126,6 +137,7 @@ class TestBidRepository(unittest.TestCase):
         # Separate approval action
         approved = self.repo.approve_rfi(
             rfi_id=draft.rfi_id,
+            edited_text=draft.rfi_text,
             actor="OFFICER_SARAH",
             note="Approved for vendor delivery",
         )
@@ -134,7 +146,24 @@ class TestBidRepository(unittest.TestCase):
 
         # Re-approving raises ValueError (not in DRAFT status)
         with self.assertRaises(ValueError):
-            self.repo.approve_rfi(draft.rfi_id, "OFFICER_SARAH", "Double approve")
+            self.repo.approve_rfi(
+                draft.rfi_id,
+                edited_text=draft.rfi_text,
+                actor="OFFICER_SARAH",
+                note="Double approve",
+            )
+
+        violations = RFIService.validate_edited_text(
+            draft.rfi_text.replace("Acme Chiller Corp", "Different Vendor"),
+            draft.protected_facts,
+        )
+        self.assertTrue(violations)
+        self.assertTrue(
+            RFIService.validate_edited_text(
+                f"{draft.rfi_text}\nRECOMMENDATION: REJECT",
+                draft.protected_facts,
+            )
+        )
 
     def test_constraint_versioning_and_concurrency(self):
         initial = self.repo.get_current_constraints("PRJ-AMBER-01")
@@ -167,6 +196,31 @@ class TestBidRepository(unittest.TestCase):
                 actor="ADMIN_BOB",
                 reason="Stale update",
             )
+
+    def test_failed_bid_transaction_removes_source_file(self):
+        source, scorecard = self._sample_bid()
+        with patch.object(self.repo, "_append", side_effect=RuntimeError("audit write failed")):
+            with self.assertRaises(RuntimeError):
+                self.repo.save_bid("failed.pdf", b"%PDF-1.4 Data", source, scorecard)
+
+        self.assertEqual(self.repo.list_bids(), [])
+        self.assertEqual(list(self.repo.uploads_path.iterdir()), [])
+
+    def test_exact_byte_fingerprint_correlation(self):
+        service = BidIntegrityService()
+        fingerprint = service.compute_sha256(b"%PDF-1.4 exact bytes")
+        different_fingerprint = service.compute_sha256(b"%PDF-1.4 exact bytes ")
+        self.assertNotEqual(fingerprint, different_fingerprint)
+
+        source, _ = self._sample_bid()
+        first = source.model_copy(update={"vendor_id": "VENDOR-FIRST", "pdf_fingerprint": fingerprint})
+        second = source.model_copy(update={"vendor_id": "VENDOR-SECOND", "pdf_fingerprint": fingerprint})
+        service.record(first)
+
+        self.assertEqual(
+            service.correlations(second)["pdf_fingerprint"],
+            ["VENDOR-FIRST"],
+        )
 
 
 if __name__ == "__main__":

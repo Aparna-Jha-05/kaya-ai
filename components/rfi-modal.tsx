@@ -18,30 +18,18 @@ export default function RFIModal({
   onClose,
   vendorName = "CoolTech Global Solutions",
   bidId,
-  findings = [],
   onHandoffSuccess,
 }: RFIModalProps) {
-  const draft = `Subject: Request for information — bid clarification
-
-Dear ${vendorName},
-
-Please address the following recorded review findings:
-${findings.length ? findings.map((finding) => `- ${finding}`).join("\n") : "- Please provide the information needed to complete the bid review."}
-
-Please submit the supporting information and, where applicable, a compliant revised specification.
-
-Regards,
-Procurement Review Team`;
-  const [emailBody, setEmailBody] = useState<string>(draft);
-
-  const [isSent, setIsSent] = useState<boolean>(false);
+  const [emailBody, setEmailBody] = useState("");
+  const [rfiId, setRfiId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isSent, setIsSent] = useState(false);
   const [error, setError] = useState<string>("");
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
     closeRef.current?.focus();
-    setEmailBody(draft);
     document.body.classList.add("scroll-locked");
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !isSent) onClose();
@@ -51,13 +39,39 @@ Procurement Review Team`;
       window.removeEventListener("keydown", onKeyDown);
       document.body.classList.remove("scroll-locked");
     };
-  }, [draft, isOpen, isSent, onClose]);
+  }, [isOpen, isSent, onClose]);
+
+  useEffect(() => {
+    if (!isOpen || !bidId) return;
+    let active = true;
+    setLoading(true);
+    setIsSent(false);
+    setError("");
+    setRfiId("");
+    setEmailBody("");
+    procurementApi.rfiDraft(bidId)
+      .then((draft) => {
+        if (!active) return;
+        setRfiId(draft.rfi_id);
+        setEmailBody(draft.rfi_text);
+      })
+      .catch((reason) => {
+        if (active) setError(reason instanceof Error ? reason.message : "Could not generate the RFI draft.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [bidId, isOpen]);
 
   const handleHandoff = async () => {
     setError("");
     setIsSent(true);
     try {
-      if (bidId) await procurementApi.action(bidId, "RFI_DRAFT_APPROVED", emailBody);
+      if (!rfiId) throw new Error("Generate the RFI draft before approving it.");
+      await procurementApi.approveRfi(rfiId, emailBody);
       if (onHandoffSuccess) onHandoffSuccess("Draft approval recorded.");
       onClose();
     } catch (reason) {
@@ -91,13 +105,15 @@ Procurement Review Team`;
         </div>
 
         <p className="mb-3 text-xs text-text/60">
-          This editable draft is built from recorded findings. Review and edit it before recording approval.
+          This server-generated draft is built from recorded findings for {vendorName}. Review it before recording approval.
         </p>
 
         <textarea
           aria-label="Editable RFI email draft"
           value={emailBody}
           onChange={(e) => setEmailBody(e.target.value)}
+          disabled={loading || !rfiId}
+          placeholder={loading ? "Generating the evidence-bound draft…" : "RFI draft unavailable."}
           className="h-56 w-full resize-none rounded-lg border border-line bg-inset p-3 font-mono text-xs leading-relaxed text-text outline-none focus:border-cyan"
         />
 
@@ -108,10 +124,10 @@ Procurement Review Team`;
 
           <button
             onClick={() => void handleHandoff()}
-            disabled={isSent}
+            disabled={loading || isSent || !rfiId}
             className="flex items-center gap-2 rounded-lg bg-cyan px-5 py-2.5 text-xs font-bold text-on-accent shadow-lg transition-all hover:bg-cyan/90 hover:shadow-[0_8px_24px_rgb(var(--color-cyan)_/_0.2)]"
           >
-            {isSent ? "Recording…" : "Record RFI approval"}
+            {loading ? "Generating…" : isSent ? "Recording…" : "Record RFI approval"}
           </button>
         </div>
         {error && <p role="alert" className="mt-3 text-xs text-rose">{error}</p>}

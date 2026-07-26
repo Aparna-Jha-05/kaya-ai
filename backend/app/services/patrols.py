@@ -20,30 +20,21 @@ class ConstraintGraph:
 
 
 class PatrolEngineService:
-    # Default graph used when no persisted constraints are available.
-    _default_graph = ConstraintGraph()
-
     @classmethod
     def load_constraints_from_repository(cls) -> ConstraintGraph:
-        """Load the current constraints from the repository.
+        """Load the current persisted constraints or fail visibly."""
+        from app.services.repository import bid_repository
 
-        Falls back to the default ConstraintGraph if the repository
-        does not have persisted constraints.
-        """
-        try:
-            from app.services.repository import bid_repository
-            record = bid_repository.get_current_constraints()
-            if record:
-                return ConstraintGraph(
-                    substation_limit_kw=record.max_substation_kw,
-                    door_limit_m=record.max_door_width_m,
-                    carbon_cap_kgco2e=record.max_embodied_carbon_kg,
-                    constraint_source=f"v{record.version} by {record.actor}",
-                    constraint_version=record.version,
-                )
-        except Exception:
-            pass
-        return cls._default_graph
+        record = bid_repository.get_current_constraints()
+        if not record:
+            raise RuntimeError("Site constraints are unavailable.")
+        return ConstraintGraph(
+            substation_limit_kw=record.max_substation_kw,
+            door_limit_m=record.max_door_width_m,
+            carbon_cap_kgco2e=record.max_embodied_carbon_kg,
+            constraint_source=f"v{record.version} by {record.actor}",
+            constraint_version=record.version,
+        )
 
     @staticmethod
     def _warranty_years(clauses: list[str]) -> int | None:
@@ -112,7 +103,6 @@ class PatrolEngineService:
             rule_broken="DYNAMIC_REVALIDATION_TRIGGER" if post_award else "INSUFFICIENT_EVIDENCE" if delay_days is None else None,
             evidence={"delay_days": delay_days, "delay_penalty_inr": simulation.delay_penalty_inr if simulation else None, "calculated_tco2_inr": simulation.calculated_tco2_inr if simulation else None, "lifecycle_mode": bid.lifecycle_mode.value}))
 
-        bid_integrity_matrix.record(bid)
         failed = any(result.status == "FAIL" for result in results)
         has_review = any(result.status == "FLAG" for result in results)
         return DocketScorecard(bid_id=f"BID-{bid.vendor_id}", vendor_name=bid.vendor_name, upfront_capex_inr=bid.bid_amount_inr, patrol_results=results, calculated_tco2_inr=simulation.calculated_tco2_inr if simulation else None, recommendation="REJECT" if failed else "REVIEW_REQUIRED" if has_review else "RECOMMENDED", lifecycle_mode=bid.lifecycle_mode, compliance_drift_report={"triggered": True, "required_action": "Re-run all patrols and obtain human approval before the amendment is accepted."} if post_award else None)

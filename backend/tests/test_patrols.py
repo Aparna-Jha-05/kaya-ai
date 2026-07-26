@@ -35,7 +35,7 @@ class TestPatrolEngineBoundaries(unittest.TestCase):
         )
         scorecard = PatrolEngineService.run_all_patrols(bid, graph=self.graph)
         building_patrol = next(p for p in scorecard.patrol_results if p.patrol_name == "BUILDING_PATROL")
-        
+
         self.assertEqual(building_patrol.status, "FLAG")
         self.assertEqual(building_patrol.rule_broken, "INSUFFICIENT_EVIDENCE")
         self.assertIn("power draw", building_patrol.reason.lower())
@@ -59,7 +59,7 @@ class TestPatrolEngineBoundaries(unittest.TestCase):
             ),
         )
         scorecard = PatrolEngineService.run_all_patrols(bid, graph=self.graph)
-        
+
         for patrol in scorecard.patrol_results:
             self.assertEqual(patrol.status, "PASS", f"{patrol.patrol_name} failed: {patrol.reason}")
         self.assertEqual(scorecard.recommendation, "RECOMMENDED")
@@ -82,10 +82,10 @@ class TestPatrolEngineBoundaries(unittest.TestCase):
             ),
         )
         scorecard = PatrolEngineService.run_all_patrols(bid, graph=self.graph)
-        
+
         building = next(p for p in scorecard.patrol_results if p.patrol_name == "BUILDING_PATROL")
         green = next(p for p in scorecard.patrol_results if p.patrol_name == "GREEN_PATROL")
-        
+
         self.assertEqual(building.status, "FAIL")
         self.assertEqual(green.status, "FAIL")
         self.assertEqual(scorecard.recommendation, "REJECT")

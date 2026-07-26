@@ -60,7 +60,11 @@ async def seed_database():
             await conn.execute("""
                 INSERT INTO vendor_docs (project_id, vendor_name, doc_title, dispute_count, risk_score, content_text, is_synthetic)
                 VALUES ($1, $2, $3, $4, $5, $6, $7)
-                ON CONFLICT DO NOTHING;
+                ON CONFLICT (project_id, vendor_name, doc_title) DO UPDATE SET
+                    dispute_count = EXCLUDED.dispute_count,
+                    risk_score = EXCLUDED.risk_score,
+                    content_text = EXCLUDED.content_text,
+                    is_synthetic = TRUE;
             """, *vdoc)
 
         print("✓ Idempotently seeded synthetic vendor docs")
@@ -68,7 +72,15 @@ async def seed_database():
         # 4. Seed Audit Event
         await conn.execute("""
             INSERT INTO audit_logs (project_id, actor, action, target_id, details)
-            VALUES ('PRJ-AMBER-01', 'SYSTEM_SEEDER', 'DATABASE_INITIALIZED', 'PRJ-AMBER-01', '{"status": "SUCCESS", "is_synthetic": true}'::jsonb);
+            SELECT 'PRJ-AMBER-01', 'SYSTEM_SEEDER', 'DATABASE_INITIALIZED', 'PRJ-AMBER-01',
+                   '{"status": "SUCCESS", "is_synthetic": true}'::jsonb
+            WHERE NOT EXISTS (
+                SELECT 1 FROM audit_logs
+                WHERE project_id = 'PRJ-AMBER-01'
+                  AND actor = 'SYSTEM_SEEDER'
+                  AND action = 'DATABASE_INITIALIZED'
+                  AND target_id = 'PRJ-AMBER-01'
+            );
         """)
         print("✓ Seeded audit log event")
 

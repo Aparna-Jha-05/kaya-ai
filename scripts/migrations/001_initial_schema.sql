@@ -47,7 +47,9 @@ CREATE TABLE IF NOT EXISTS bids (
     pdf_url TEXT,
     pdf_fingerprint VARCHAR(64) NOT NULL,
     lifecycle_mode VARCHAR(32) NOT NULL DEFAULT 'PRE_AWARD'
-        CHECK (lifecycle_mode IN ('PRE_AWARD', 'AWARDED', 'REJECTED', 'RFI_PENDING')),
+        CHECK (lifecycle_mode IN ('PRE_AWARD', 'POST_AWARD')),
+    officer_decision VARCHAR(32) NOT NULL DEFAULT 'UNDECIDED'
+        CHECK (officer_decision IN ('UNDECIDED', 'AWARDED', 'REJECTED', 'RFI_PENDING')),
     version INT NOT NULL DEFAULT 1,
     is_synthetic BOOLEAN NOT NULL DEFAULT FALSE,
     extracted_json JSONB NOT NULL,
@@ -102,7 +104,8 @@ CREATE TABLE IF NOT EXISTS vendor_docs (
     content_text TEXT NOT NULL,
     embedding vector(1536),
     is_synthetic BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unq_vendor_doc UNIQUE (project_id, vendor_name, doc_title)
 );
 
 CREATE INDEX IF NOT EXISTS idx_vendor_docs_project ON vendor_docs(project_id);
@@ -112,7 +115,7 @@ CREATE INDEX IF NOT EXISTS idx_vendor_docs_vector ON vendor_docs USING ivfflat (
 CREATE TABLE IF NOT EXISTS rfis (
     id VARCHAR(64) PRIMARY KEY,
     bid_id VARCHAR(64) NOT NULL REFERENCES bids(id) ON DELETE CASCADE,
-    status VARCHAR(32) NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'SENT', 'RESOLVED')),
+    status VARCHAR(32) NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'APPROVED', 'SENT', 'RESOLVED')),
     rfi_content TEXT NOT NULL,
     human_reviewed BOOLEAN NOT NULL DEFAULT FALSE,
     is_synthetic BOOLEAN NOT NULL DEFAULT FALSE,

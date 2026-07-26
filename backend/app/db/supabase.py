@@ -3,33 +3,54 @@ Async PostgreSQL Service Layer for Supabase
 Provides connection pooling, health readiness checks, and parameterized query execution.
 """
 
-import os
 import logging
-import asyncio
-from typing import AsyncGenerator, Any, Optional
-import asyncpg
-from pydantic_settings import BaseSettings
+from typing import Any
+
+from pydantic import AliasChoices, Field, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+try:
+    import asyncpg
+except ModuleNotFoundError:  # SQLite demo mode does not require the PostgreSQL driver.
+    asyncpg = None
 
 logger = logging.getLogger(__name__)
 
 class DatabaseSettings(BaseSettings):
-    supabase_database_url: str = os.getenv("SUPABASE_DATABASE_URL", os.getenv("DATABASE_URL", ""))
-    demo_mode: bool = os.getenv("DEMO_MODE", "true").lower() == "true"
-    db_pool_min_size: int = 2
-    db_pool_max_size: int = 10
-    db_request_timeout_seconds: float = 10.0
+    model_config = SettingsConfigDict(env_prefix="", extra="ignore", populate_by_name=True)
 
-    class Config:
-        env_prefix = ""
+    supabase_database_url: str = Field(
+        default="",
+        validation_alias=AliasChoices("SUPABASE_DATABASE_URL", "DATABASE_URL"),
+    )
+    demo_mode: bool = True
+    db_pool_min_size: int = Field(default=2, ge=1, le=20)
+    db_pool_max_size: int = Field(default=10, ge=1, le=50)
+    db_request_timeout_seconds: float = Field(default=10.0, gt=0, le=60)
+
+    @model_validator(mode="after")
+    def validate_database_mode(self) -> "DatabaseSettings":
+        if self.db_pool_min_size > self.db_pool_max_size:
+            raise ValueError("DB_POOL_MIN_SIZE cannot exceed DB_POOL_MAX_SIZE")
+        if self.supabase_database_url and not self.supabase_database_url.startswith(
+            ("postgresql://", "postgres://")
+        ):
+            raise ValueError("SUPABASE_DATABASE_URL must use a PostgreSQL URL")
+        return self
 
 settings = DatabaseSettings()
 
-_pool: Optional[asyncpg.Pool] = None
+_pool: Any = None
 
-async def get_db_pool() -> Optional[asyncpg.Pool]:
+async def get_db_pool() -> Any:
     global _pool
     if _pool is not None:
         return _pool
+
+    if asyncpg is None:
+        if not settings.demo_mode:
+            raise RuntimeError("asyncpg is required when DEMO_MODE is false")
+        return None
 
     url = settings.supabase_database_url
     if not url:
@@ -64,7 +85,14 @@ async def close_db_pool():
 
 async def check_db_readiness() -> dict[str, Any]:
     """Check database health status."""
-    pool = await get_db_pool()
+    try:
+        pool = await get_db_pool()
+    except RuntimeError:
+        return {
+            "status": "unhealthy",
+            "demo_mode": settings.demo_mode,
+            "connected": False,
+        }
     if pool is None:
         return {
             "status": "degraded" if settings.demo_mode else "unhealthy",
