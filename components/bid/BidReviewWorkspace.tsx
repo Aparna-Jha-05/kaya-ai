@@ -136,7 +136,7 @@ function EvidenceTab({ bid }: { bid: Bid }) {
           {integrity.status === "FLAG" && <span className="rounded border border-violet/40 bg-violet/10 px-2 py-1 font-mono text-violet">Bid Integrity: {integrity.metadata.length - 1} correlation signals</span>}
         </div>
       </Card>
-      <ConfidenceHeatmap key={bid.id} bid={bid} />
+      <ConfidenceHeatmap key={bid.id} vendorName={bid.vendor} />
       {bid.id === "B" && <CADVisualizer initialWidthM={2.1} doorLimitM={1.9} />}
     </div>
   );
