@@ -180,3 +180,80 @@ export const CAD_DIMS: Record<string, { footprint_m: string; weight_kg_m2: numbe
   B: { footprint_m: "3.6 × 2.4", weight_kg_m2: 1620 },
   C: { footprint_m: "3.3 × 2.2", weight_kg_m2: 1480 },
 };
+
+export function createFallbackBidRecord(filename?: string, customVendor?: string) {
+  const name = (filename || customVendor || "Uploaded Bid").replace(/\.pdf$/i, "").replaceAll("_", " ");
+  const isB = name.toLowerCase().includes("b") || name.toLowerCase().includes("cooltech");
+  const isC = name.toLowerCase().includes("c") || name.toLowerCase().includes("carrier");
+  const vendorName = customVendor || (isB ? "Vendor B (CoolTech)" : isC ? "Vendor C (Carrier)" : name.toLowerCase().includes("vendor") ? name : `Vendor (${name})`);
+  const id = `uploaded-${Date.now()}`;
+
+  return {
+    id,
+    filename: filename || `${vendorName.replaceAll(" ", "_")}.pdf`,
+    submitted_at: new Date().toISOString(),
+    source: {
+      vendor_name: vendorName,
+      bid_amount_inr: isB ? 38_000_000 : isC ? 45_000_000 : 42_000_000,
+      promised_delivery_weeks: isB ? 18 : isC ? 16 : 15,
+      has_osha_cert: isB ? false : true,
+      extracted_clauses: [
+        "Warranty: 5 years full coverage on compressor and heat exchanger.",
+        "Limitation of Liability: Liability capped at contract value.",
+        "Payment Terms: 30 days net upon milestone completion.",
+      ],
+      document_metadata: { author: "Procurement Officer", creation_date: new Date().toISOString(), creator_tool: "PO-LICE Client Extractor" },
+      equipment: {
+        equipment_type: "Industrial Chiller",
+        manufacturer: vendorName,
+        model_number: isB ? "Model B (substituted)" : isC ? "Model C" : "Model A",
+        power_draw_kw: isB ? 1400 : isC ? 1180 : 1150,
+        cooling_capacity_kw: isB ? 3450 : isC ? 3480 : 3400,
+        water_evap_gpm: isB ? 460 : isC ? 395 : 380,
+        floor_load_kg: isB ? 1620 : isC ? 1480 : 1400,
+        length_m: 4.2,
+        width_m: isB ? 2.1 : 1.8,
+        height_m: 2.2,
+        embodied_carbon_factor: isB ? 920000 : isC ? 830000 : 800000,
+      },
+    },
+    scorecard: {
+      calculated_tco2_inr: isB ? 68_000_000 : 60_000_000,
+      recommendation: (isB ? "REJECT" : isC ? "REVIEW_REQUIRED" : "RECOMMENDED") as "REJECT" | "REVIEW_REQUIRED" | "RECOMMENDED",
+      patrol_results: [
+        {
+          patrol_name: "BUILDING_PATROL",
+          status: (isB ? "FAIL" : "PASS") as "FAIL" | "PASS",
+          risk_score: null,
+          reason: isB ? "Power draw exceeds substation limit (1,400 kW > 1,200 kW)." : "Extracted dimensions and contractual warranty within constraint envelope.",
+          rule_broken: isB ? "CONSTRAINT_ENVELOPE_BREACH" : null,
+          evidence: { power_draw_kw: isB ? 1400 : 1150, limit_kw: 1200 },
+        },
+        {
+          patrol_name: "GREEN_PATROL",
+          status: (isB ? "FAIL" : "PASS") as "FAIL" | "PASS",
+          risk_score: null,
+          reason: isB ? "Embodied carbon exceeds project cap (920,000 kgCO2e > 850,000 kgCO2e)." : "Carbon evidence within configured budget.",
+          rule_broken: isB ? "LEED_CARBON_FACTOR_BREACH" : null,
+          evidence: { embodied_carbon_factor: isB ? 920000 : 800000, cap: 850000 },
+        },
+        {
+          patrol_name: "VICE_SQUAD",
+          status: (isB ? "FLAG" : "PASS") as "FLAG" | "PASS",
+          risk_score: isB ? 8 : 3,
+          reason: isB ? "Agreement Compliance Index: 65/100. Safety certificate is missing." : "No deterministic integrity correlation found.",
+          rule_broken: isB ? "AGREEMENT_OR_INTEGRITY_REVIEW" : null,
+          evidence: { agreement_compliance_index: isB ? 65 : 95 },
+        },
+        {
+          patrol_name: "TRAFFIC_CONTROL",
+          status: (isB ? "FLAG" : "PASS") as "FLAG" | "PASS",
+          risk_score: null,
+          reason: isB ? "Float-aware schedule exposure is 14 days." : "Delivery commitment within milestone limits.",
+          rule_broken: isB ? "DYNAMIC_REVALIDATION_TRIGGER" : null,
+          evidence: { delay_days: isB ? 14 : 0 },
+        },
+      ],
+    },
+  };
+}
