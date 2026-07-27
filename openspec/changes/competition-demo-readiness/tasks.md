@@ -1,7 +1,7 @@
 ## 1. Freeze the competition target
 
-- [x] 1.1 Record the final public Vercel frontend URL, Render backend URL, intended Git revision, and deployment access settings in the demo runbook.
-- [x] 1.2 Configure `NEXT_PUBLIC_PO_LICE_API_URL` and the exact `PO_LICE_ALLOWED_ORIGINS` value, then verify that neither public endpoint requires a platform login.
+- [ ] 1.1 Record the final public Vercel frontend URL, Render backend URL, intended Git revision, and deployment access settings in the demo runbook.
+- [ ] 1.2 Configure `NEXT_PUBLIC_PO_LICE_API_URL` and the exact `PO_LICE_ALLOWED_ORIGINS` value, then verify that neither public endpoint requires a platform login.
 - [x] 1.3 Document the demo storage lifecycle and the safe bootstrap/reseed procedure used after a restart or deployment.
 
 ## 2. Build the deterministic narrative fixtures

@@ -7,7 +7,7 @@ services:
     branch: main
     autoDeployTrigger: checksPass
     buildCommand: python -m pip install -r backend/requirements.txt
-    startCommand: PYTHONPATH=backend python3 scripts/seed_demo_data.py && PYTHONPATH=backend uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: PYTHONPATH=backend uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /
     buildFilter:
       paths:

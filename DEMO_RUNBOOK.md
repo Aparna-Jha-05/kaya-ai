@@ -1,6 +1,6 @@
 # PO-LICE Competition Operator Runbook & Demo Script
 
-> **Project**: PO-LICE (Purchase Order Liability, Intelligence & Compliance Engine)  
+> **Project**: PO-LICE (Purchase Order Liability, Intelligence & Compliance Engine)
 > **Track**: Track 3: Procurement — Kaya AI IIT India Hackathon 2026
 
 ---
@@ -80,7 +80,7 @@ If the backend instance is cold (asleep on free-tier Render hosting):
 ⏱️ 2:30 - 3:00 | LIVE UPLOAD & AUDIT TRAIL
   1. Navigate to "Upload bid" and upload `scripts/fixtures/DemoUpload_SyntheticBid.pdf`.
   2. Show deterministic parsing extracting Acme HVAC specs and running patrols in < 1 second.
-  3. Open `/audit` page to show the immutable Activity Log containing every timestamped check and reviewer action.
+  3. Open `/audit` page to show the recorded activity trail containing every timestamped check and reviewer action.
 ```
 
 ---
