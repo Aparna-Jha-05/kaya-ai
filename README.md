@@ -333,3 +333,23 @@ python3 scripts/export_openapi.py
 4. Open a pull request to `main`; do not force-merge conflicts.
 5. Let CI validate the frontend, backend, OpenAPI snapshot, PostgreSQL foundation, extraction baseline, and all active OpenSpecs.
 6. Merge only after review and green checks.
+
+---
+
+## Future Enhancements & AI Roadmap
+
+To build upon PO-LICE's deterministic compliance engine, the following advanced AI and enterprise capabilities are planned:
+
+### 1. Interactive Conversational Procurement AI ("Jarvis for Officers")
+- **Conversational Bid Q&A**: A natural language AI assistant allowing procurement officers to chat directly with submitted PDFs, engineering spec sheets, and vendor proposals (e.g., *"Which vendor offers the highest IPLV efficiency rating under 4 Crores?"*).
+- **Interactive Negotiation Assistant**: AI-driven negotiation copilot that generates customized, multi-clause clarification drafts and RFI letters based on identified compliance gaps.
+
+### 2. Multimodal VLM CAD & 3D BIM Spatial Inspection
+- **Visual Blueprint Parsing**: Direct integration with multimodal Vision-Language Models (VLMs) to visually inspect 3D DWG/BIM floor plans, verify equipment footprint boundaries, and measure physical door clearance corridors against building blueprints.
+
+### 3. Autonomous Vendor RAG & Intelligence Graph
+- **Historical Vendor RAG**: Vector-search RAG pipeline indexed over past supplier delivery records, warranty claim histories, and market pricing benchmarks to compute real-time vendor risk scores and breach probabilities.
+
+### 4. Enterprise ERP & Supabase Cloud Integration
+- **2-Way ERP Sync**: Native connectors for SAP S/4HANA, Oracle Procurement Cloud, and Workday to automatically place compliance holds on payment releases whenever hard engineering or carbon limits fail.
+- **Production Supabase + pgvector**: Migration from local demo-mode storage to Supabase PostgreSQL with `pgvector` for enterprise embedding search and Row-Level Security (RLS).
