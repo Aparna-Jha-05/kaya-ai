@@ -9,8 +9,8 @@
 
 | Component | Target URL | Submitted Revision | Access Control |
 | --- | --- | --- | --- |
-| **Frontend** | Configured upon live deployment (e.g. Vercel) / `http://localhost:3000` | Target release branch / PR commit | Public HTTPS (no platform login required) |
-| **Backend** | Configured upon live deployment (e.g. Render) / `http://localhost:8000` | Target release branch / PR commit | Public HTTPS (exact-origin CORS configured) |
+| **Frontend** | `https://po-lice.vercel.app` | `main` branch HEAD (`1940751`) | Public HTTPS (no platform login required) |
+| **Backend** | `https://po-lice-backend-staging.onrender.com` | `main` branch HEAD (`1940751`) | Public HTTPS (exact-origin CORS configured) |
 
 ### Environment Variables
 
