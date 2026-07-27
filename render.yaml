@@ -18,7 +18,7 @@ services:
       - key: PO_LICE_ALLOWED_ORIGINS
         sync: false
       - key: PO_LICE_PROJECT_ID
-        value: demo
+        value: PRJ-POLICE-01
       - key: OLLAMA_ENABLED
         value: "false"
       - key: REMOTE_EXTRACTION_ENABLED

@@ -16,7 +16,7 @@
 
 #### Backend (`Render` / local):
 - `PO_LICE_ALLOWED_ORIGINS`: Origin URL of frontend (e.g. `http://localhost:3000` or deployed Vercel domain)
-- `PO_LICE_PROJECT_ID`: `PRJ-AMBER-01`
+- `PO_LICE_PROJECT_ID`: `PRJ-POLICE-01`
 - `OLLAMA_ENABLED`: `false` (guaranteed deterministic path)
 - `REMOTE_EXTRACTION_ENABLED`: `false` (or `true` with `GEMINI_API_KEY` for optional enhancement)
 - `PO_LICE_DATA_DIR`: Data persistence directory (defaults to `backend/data/`)

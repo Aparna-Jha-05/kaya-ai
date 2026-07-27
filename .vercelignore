@@ -1,0 +1,12 @@
+.agent
+.claude
+.codegraph
+.codex
+.opencode
+backend
+data
+docs
+venv
+.venv
+*.sqlite3
+*.log

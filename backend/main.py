@@ -36,7 +36,7 @@ MAX_PDF_BYTES = 15 * 1024 * 1024
 PDF_MAGIC = b"%PDF-"
 allowed_origins = [origin.strip() for origin in os.getenv("PO_LICE_ALLOWED_ORIGINS", "http://localhost:3000").split(",") if origin.strip()]
 DEMO_MODE = settings.demo_mode
-PROJECT_ID = os.getenv("PO_LICE_PROJECT_ID", "PRJ-AMBER-01")
+PROJECT_ID = os.getenv("PO_LICE_PROJECT_ID", "PRJ-POLICE-01")
 DEMO_ACTOR = "DEMO_OFFICER"
 
 app = FastAPI(title="PO-LICE API", description="Deterministic procurement evidence and scenario modeling.", version="2.0.0")

@@ -133,13 +133,13 @@ class TestModelIndependentWorkflow(unittest.TestCase):
             ollama_model="mistral",
             deadline_seconds=5.0,
             remote_enabled=True,
-            remote_project_ids=frozenset({"PRJ-AMBER-01"}),
+            remote_project_ids=frozenset({"PRJ-POLICE-01"}),
             gemini_api_key="mock-key",
             gemini_model="gemini-test",
         )
 
         cascade = ExtractionCascade(settings, gemini=FailingGeminiExtractor())
-        enriched = cascade.enrich(incomplete_text, parsed_bid, "PRJ-AMBER-01")
+        enriched = cascade.enrich(incomplete_text, parsed_bid, "PRJ-POLICE-01")
 
         # Missing field (width) remains None
         self.assertIsNone(enriched.equipment.width_m)

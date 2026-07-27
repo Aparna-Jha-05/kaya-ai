@@ -647,12 +647,16 @@ class BidRepository:
 
     # ── Site Constraints ─────────────────────────────────────────────────
 
-    def get_current_constraints(self, project_id: str = "PRJ-AMBER-01") -> SiteConstraintRecord | None:
+    def get_current_constraints(self, project_id: str = "PRJ-POLICE-01") -> SiteConstraintRecord | None:
         with self._connect() as connection:
             row = connection.execute(
                 "SELECT * FROM site_constraints WHERE project_id = ? AND is_current = 1",
                 (project_id,),
             ).fetchone()
+            if not row:
+                row = connection.execute(
+                    "SELECT * FROM site_constraints WHERE is_current = 1 ORDER BY version DESC LIMIT 1"
+                ).fetchone()
         if not row:
             return None
         return SiteConstraintRecord(
@@ -673,7 +677,7 @@ class BidRepository:
         max_embodied_carbon_kg: float,
         actor: str,
         reason: str,
-        project_id: str = "PRJ-AMBER-01",
+        project_id: str = "PRJ-POLICE-01",
         reassessments: dict[str, DocketScorecard] | None = None,
     ) -> SiteConstraintRecord:
         """Create a new constraint version with optimistic concurrency.
@@ -686,6 +690,10 @@ class BidRepository:
                 "SELECT * FROM site_constraints WHERE project_id = ? AND is_current = 1",
                 (project_id,),
             ).fetchone()
+            if not current:
+                current = connection.execute(
+                    "SELECT * FROM site_constraints WHERE is_current = 1 ORDER BY version DESC LIMIT 1"
+                ).fetchone()
             if not current:
                 raise KeyError(f"No constraints found for project {project_id}")
             if current["version"] != expected_version:

@@ -50,7 +50,7 @@ class ApiContractTests(unittest.TestCase):
             ),
         )
         scorecard = PatrolEngineService.run_all_patrols(source, graph=ConstraintGraph())
-        return api.bid_repository.save_bid("api.pdf", b"%PDF-1.4 API", source, scorecard)
+        return api.bid_repository.save_bid("api.pdf", b"%PDF-1.4 API", source, scorecard, project_id=api.PROJECT_ID)
 
     @staticmethod
     def _pdf_bid(include_width: bool = True) -> bytes:
