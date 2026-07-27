@@ -84,45 +84,79 @@ live pgvector retrieval, full CAD/BIM model parsing, or automatic email dispatch
 
 ---
 
-## Architecture
+---
+
+## 🏛️ System Architecture
+
+> [!IMPORTANT]
+> **The Non-Negotiable Architecture Rule**:
+> *"LLMs extract and explain. Deterministic SQL and stored math validate."*
+> Generative models may extract candidate facts from unstructured PDF text, but they can **never** set engineering thresholds, calculate compliance outcomes, or modify a `PASS`, `FAIL`, `FLAG`, or officer decision.
+
+### High-Level Architectural Flow
 
 ```mermaid
-flowchart LR
-    U["Procurement officer"] --> F["Next.js 14 dashboard"]
-    F --> C["Typed client: lib/api.ts"]
-    C --> A["FastAPI /api/v1"]
+flowchart TB
+    subgraph UI ["🖥️ Layer 1: Client & Presentation Layer"]
+        Officer["👤 Procurement Officer"]
+        NextJS["Next.js 14 Dashboard<br/>(React Server Components + Tailwind)"]
+        APIClient["Typed API Client<br/>(lib/api.ts)"]
+    end
 
-    A --> V["Upload validation<br/>PDF type, size, idempotency"]
-    V --> X["PyMuPDF + deterministic parser"]
-    X --> O{"Required facts missing?"}
-    O -->|Optional local| L["Ollama model"]
-    O -->|Optional authorized remote| G["Gemini API"]
-    O -->|No| S["Strict Pydantic facts"]
-    L --> S
-    G --> S
+    subgraph API ["⚡ Layer 2: API & Gateway Layer"]
+        FastAPI["FastAPI /api/v1<br/>(Pydantic v2 Contracts + CORS)"]
+        Validation["Upload Validation & SHA-256 Idempotency"]
+    end
 
-    S --> E["Evidence validation<br/>excerpt, unit, page, rectangle"]
-    E --> P["Deterministic patrol engine"]
-    P --> D["Versioned procurement docket"]
-    D --> Q["SQLite + local PDFs<br/>current demo runtime"]
-    D --> F
+    subgraph Extract ["🔍 Layer 3: Evidence Extraction Pipeline"]
+        PyMuPDF["PyMuPDF Extraction Engine<br/>(Text, Page Rectangles & Unit Normalization)"]
+        Cascade{"Missing Facts?"}
+        Ollama["Ollama Local VLM Adapter"]
+        Gemini["Gemini Authorized Remote API"]
+        EvidenceValidator["Evidence Validator<br/>(Source Excerpt + Bounding Box Geometry)"]
+    end
 
-    A -. "readiness only today" .-> PG["Supabase PostgreSQL pool"]
-    M["Versioned SQL migrations<br/>and synthetic seeder"] --> PG
+    subgraph Engine ["🛡️ Layer 4: Deterministic Compliance Core"]
+        direction LR
+        BuildingPatrol["⚡ Building Patrol<br/>(Max 1,200 kW Substation Limit)"]
+        GreenPatrol["🌿 Green Patrol<br/>(Max 450 kgCO2e Carbon Cap)"]
+        ViceSquad["📜 Vice Squad<br/>(OSHA 300 & Safety Certs)"]
+        TrafficPatrol["🚚 Traffic Control<br/>(1.9m Clearance & Float Penalty)"]
+    end
+
+    subgraph Storage ["💾 Layer 5: Versioned Persistence & Audit Trail"]
+        SQLite["SQLite + WAL Mode<br/>(Optimistic Version Locking expected_version)"]
+        AuditTrail["Recorded Activity Trail<br/>(Timestamped Officer & RFI Audit)"]
+        Postgres["PostgreSQL / pgvector<br/>(Enterprise Production Foundation)"]
+    end
+
+    Officer --> NextJS
+    NextJS --> APIClient
+    APIClient --> FastAPI
+    FastAPI --> Validation
+    Validation --> PyMuPDF
+    PyMuPDF --> Cascade
+    Cascade -->|Missing Fact| Ollama
+    Cascade -->|Missing Fact| Gemini
+    Cascade -->|Complete| EvidenceValidator
+    Ollama --> EvidenceValidator
+    Gemini --> EvidenceValidator
+    EvidenceValidator --> Engine
+    Engine --> BuildingPatrol & GreenPatrol & ViceSquad & TrafficPatrol
+    BuildingPatrol & GreenPatrol & ViceSquad & TrafficPatrol --> Storage
+    Storage --> SQLite & AuditTrail
+    SQLite -. "Production Foundation" .-> Postgres
 ```
 
-### Request flow
+### Layered Architecture Component Breakdown
 
-1. **Ingestion**: Uploaded PDF bytes generate a SHA-256 fingerprint and checked idempotency key. Source provenance is saved immutably.
-2. **Extraction**: PyMuPDF extracts text, normalizes units (kW, m, kgCO2e, weeks), and captures page bounding box geometry.
-3. **Optional Model Cascade**: Missing fields are requested from local Ollama or Gemini. Incompatible candidate values are rejected.
-4. **Patrol Engine**: Strict Pydantic facts run through 4 deterministic Python patrols:
-   - **Building Patrol**: Substation power draw limit (1,200 kW), equipment door clearance (1.9 m).
-   - **Green Patrol**: Embodied carbon cap (450 kgCO2e/ton).
-   - **Vice Squad**: Vendor integrity signals and safety certificate check (OSHA 300).
-   - **Traffic Control**: Delivery schedule exposure and float penalty.
-5. **Scorecard & Docket**: Decision recommendations (`RECOMMENDED`, `REVIEW_REQUIRED`, `REJECT`) are stored with versioned assessment history.
-6. **Human Review & Action**: Reviewers inspect cited evidence, review RFI drafts, adjust TCO scenario sliders, and record audited decisions with optimistic concurrency.
+| Architectural Layer | Core Technologies | Primary Responsibilities | Non-Negotiable Rules |
+| --- | --- | --- | --- |
+| **Layer 1: Client** | Next.js 14, React 18, Tailwind CSS, `lib/api.ts` | Executive Dashboard, Bid Portfolio comparison, dynamic TCO² scenario simulator, and audit trail views. | Fail-closed error states; no business or compliance calculation logic in client code. |
+| **Layer 2: API Gateway** | FastAPI, Pydantic v2, OpenAPI 3.1 | REST API surface, request validation, upload provenance tracking, and CORS exact-origin enforcement. | Strict JSON schema validation; immutable SHA-256 fingerprinting on uploads. |
+| **Layer 3: Extraction** | PyMuPDF (fitz), Ollama, Gemini API | PDF text parsing, unit normalization (`kW`, `m`, `kgCO2e`, `weeks`), and page bounding box extraction. | AI models may only fill missing facts if document text directly supports it; invalid candidates are rejected. |
+| **Layer 4: Patrol Engine** | Python 3.11 Rule Engine, `ConstraintGraph` | Evaluates 4 deterministic patrols: Building, Green, Vice Squad, and Traffic Control. | Pure deterministic Python execution; zero LLM involvement in verdicts (`PASS` / `FAIL` / `FLAG`). |
+| **Layer 5: Storage & Audit** | SQLite (WAL mode), PostgreSQL / pgvector | Versioned bid dockets, officer decisions with optimistic locking (`expected_version`), and RFI draft/approval states. | Reassessments preserve human officer decisions; missing evidence is always recorded as `FLAG`. |
 
 ---
 
