@@ -49,6 +49,17 @@ app.add_middleware(
 )
 
 
+@app.on_event("startup")
+def bootstrap_demo_fixtures() -> None:
+    if DEMO_MODE:
+        try:
+            from scripts.seed_demo_data import seed
+            seed(verbose=False)
+            logger.info("Idempotent demo fixtures bootstrapped successfully.")
+        except Exception as err:
+            logger.warning("Demo fixture bootstrap warning: %s", err)
+
+
 # ── System ───────────────────────────────────────────────────────────────
 
 @app.get("/", tags=["system"])
