@@ -1,0 +1,49 @@
+## 1. Freeze the competition target
+
+- [ ] 1.1 Record the final public Vercel frontend URL, Render backend URL, intended Git revision, and deployment access settings in the demo runbook.
+- [ ] 1.2 Configure `NEXT_PUBLIC_PO_LICE_API_URL` and the exact `PO_LICE_ALLOWED_ORIGINS` value, then verify that neither public endpoint requires a platform login.
+- [ ] 1.3 Document the demo storage lifecycle and the safe bootstrap/reseed procedure used after a restart or deployment.
+
+## 2. Build the deterministic narrative fixtures
+
+- [ ] 2.1 Extend the existing demo seed path with stable, visibly synthetic fixtures for RECOMMENDED, REVIEW_REQUIRED, and REJECT outcomes.
+- [ ] 2.2 Make the rejected fixture the lowest-price bid and give it a cited deterministic hard constraint failure.
+- [ ] 2.3 Add assertion-based tests proving fixture idempotency, unique stable identifiers, expected recommendations, decisive patrol statuses, and synthetic labels.
+- [ ] 2.4 Add one safe synthetic PDF fixture whose deterministic upload result is asserted and suitable for the live demo.
+
+## 3. Make judge-facing screens recoverable
+
+- [ ] 3.1 Add bounded error and retry states to the dashboard summary, active bids, case files, and bid portfolio consumers.
+- [ ] 3.2 Verify upload, bid detail, activity, comparison, and scenario views each distinguish loading, empty, API failure, and successful data without silent mock fallback.
+- [ ] 3.3 Add the smallest component-level or executable checks that prove a failed request exits loading and a retry can render current API data.
+
+## 4. Show evidence behind the decision
+
+- [ ] 4.1 Render the decisive patrol status, rule, measured value, constraint limit, source excerpt, and page in the bid review workspace.
+- [ ] 4.2 Render validated bounding-box or dimension annotation details when present and an explicit region-unavailable state otherwise.
+- [ ] 4.3 Add checks proving unsupported evidence remains FLAG and the UI never invents a value, page, or geometry.
+- [ ] 4.4 Audit UI wording so detected PDF text regions and dimension annotations are not described as full CAD or BIM interpretation.
+
+## 5. Prove the model-independent path
+
+- [ ] 5.1 Run an assertion-based known-PDF workflow with all remote extraction disabled and verify readiness, upload, deterministic patrols, RFI review, simulation, reviewer action, and activity.
+- [ ] 5.2 Add or update the optional Gemini failure check so timeout, quota, and invalid structured output fall back to deterministic evidence with unresolved facts flagged.
+- [ ] 5.3 Inspect the production frontend bundle, requests, logs, fixtures, and tracked files for provider keys, credentials, or private vendor content.
+
+## 6. Add the deployed acceptance gate
+
+- [ ] 6.1 Add one parameterized deployed acceptance command that checks public frontend reachability, backend readiness, exact-origin CORS, the three seeded outcomes, idempotent known-PDF upload, source retrieval, simulation, RFI approval, reviewer action, and activity retrieval.
+- [ ] 6.2 Make every acceptance check assertion-based, non-zero on failure, and safe for logs by excluding secrets and document contents.
+- [ ] 6.3 Run pull-request CI, the deployed acceptance command, and the concise manual visual checklist against the exact submitted revisions and record the results.
+
+## 7. Prepare the operator and submission material
+
+- [ ] 7.1 Add a timed demo script covering comparison, the cheapest hard failure, exact evidence, reviewed RFI, total-cost scenario, activity trail, and known-PDF upload.
+- [ ] 7.2 Document cold-start warm-up, retry, reseed, deterministic fallback, and deployment rollback steps.
+- [ ] 7.3 Audit README, architecture, slides, and narration to label implemented, optional, and planned capabilities accurately and to identify all demo data as synthetic.
+- [ ] 7.4 Capture a backup walkthrough of the approved workflow and record its accessible submission location without committing credentials or private media.
+
+## 8. Make the final decision
+
+- [ ] 8.1 Complete the go/no-go checklist for CI, deployed acceptance, visual behavior, fixture assertions, deterministic fallback, claim review, public access, and backup walkthrough.
+- [ ] 8.2 Mark the project demo-ready only if every gate has evidence; otherwise fix the failure or remove and disclose the unsupported demo claim.
