@@ -273,11 +273,15 @@ export default function BidPortfolio() {
                     return (
                       <tr
                         key={bid.id}
-                        onClick={() => setActiveId(bid.id)}
+                        onClick={() => {
+                          setActiveId(bid.id);
+                          setScenario(null);
+                        }}
                         onKeyDown={(event) => {
                           if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
                             setActiveId(bid.id);
+                            setScenario(null);
                           }
                         }}
                         role="button"
