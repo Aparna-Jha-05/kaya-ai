@@ -6,7 +6,7 @@ services:
     region: singapore
     branch: main
     autoDeployTrigger: checksPass
-    buildCommand: python -m pip install -r backend/requirements.txt
+    buildCommand: pip install -r backend/requirements.txt
     startCommand: PYTHONPATH=backend uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /
     buildFilter:
