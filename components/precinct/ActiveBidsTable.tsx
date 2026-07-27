@@ -1,21 +1,181 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, RefreshCw } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import { procurementApi, type BidRecord } from "@/lib/api";
-import { displayCheckName, inCrore, recommendationLabel } from "@/lib/recordUtils";
+import { displayCheckName, inCrore } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
 
-type Row = { id: string; vendor: string; model: string; cost: number | null; tco: number | null; rejected: boolean; checks: Array<{ name: string; status: "PASS" | "FAIL" | "FLAG"; risk: number | null }> };
-function fromRecord(record: BidRecord): Row { return { id: record.id, vendor: record.source.vendor_name, model: record.source.equipment.model_number, cost: record.source.bid_amount_inr, tco: record.scorecard.calculated_tco2_inr, rejected: record.scorecard.recommendation === "REJECT", checks: record.scorecard.patrol_results.map((item) => ({ name: displayCheckName(item.patrol_name), status: item.status, risk: item.risk_score })) }; }
+type Row = {
+  id: string;
+  vendor: string;
+  model: string;
+  cost: number | null;
+  tco: number | null;
+  rejected: boolean;
+  checks: Array<{ name: string; status: "PASS" | "FAIL" | "FLAG"; risk: number | null }>;
+};
+
+function fromRecord(record: BidRecord): Row {
+  return {
+    id: record.id,
+    vendor: record.source.vendor_name,
+    model: record.source.equipment.model_number,
+    cost: record.source.bid_amount_inr,
+    tco: record.scorecard.calculated_tco2_inr,
+    rejected: record.scorecard.recommendation === "REJECT",
+    checks: record.scorecard.patrol_results.map((item) => ({
+      name: displayCheckName(item.patrol_name),
+      status: item.status,
+      risk: item.risk_score,
+    })),
+  };
+}
+
 export default function ActiveBidsTable() {
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>([]);
-  const [source, setSource] = useState<"loading" | "live" | "empty">("loading");
-  useEffect(() => { let active = true; procurementApi.list().then((items) => { if (active) { setRows(items.map(fromRecord)); setSource(items.length > 0 ? "live" : "empty"); } }); return () => { active = false; }; }, []);
+  const [source, setSource] = useState<"loading" | "live" | "empty" | "error">("loading");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  const loadData = useCallback(() => {
+    setSource("loading");
+    setErrorMessage("");
+    procurementApi
+      .list()
+      .then((items) => {
+        setRows(items.map(fromRecord));
+        setSource(items.length > 0 ? "live" : "empty");
+      })
+      .catch((err) => {
+        setErrorMessage(err instanceof Error ? err.message : "Service connection failed");
+        setSource("error");
+      });
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
   const check = (row: Row, name: string) => row.checks.find((item) => item.name === name);
-  return <Card><CardHeader title="Submitted bids" caption={source === "empty" ? "No bids yet. Upload a bid PDF to start the compliance review." : "Engineering and carbon are hard checks. Vendor reliability and schedule impact inform review."} />{source === "loading" ? <p className="p-6 text-sm text-text/50">Loading submitted bids…</p> : <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-white/10 text-left table-header"><th className="px-4 py-2.5">Vendor</th><th className="px-4 py-2.5">Upfront cost</th><th className="px-4 py-2.5">Engineering</th><th className="px-4 py-2.5">Carbon</th><th className="px-4 py-2.5">Vendor reliability</th><th className="px-4 py-2.5">5-year cost</th><th className="px-4 py-2.5" /></tr></thead><tbody className="font-mono">{rows.length ? rows.map((row) => { const engineering = check(row, "Engineering")?.status ?? "FLAG"; const carbon = check(row, "Carbon")?.status ?? "FLAG"; const risk = check(row, "Vendor reliability")?.risk; return <tr key={row.id} onClick={() => router.push(`/bids/${row.id}`)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); router.push(`/bids/${row.id}`); } }} role="link" tabIndex={0} aria-label={`Review bid from ${row.vendor}`} className="group cursor-pointer border-b border-white/5 transition-colors hover:bg-white/[0.03]"><td className="px-4 py-3"><div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: row.rejected ? COLORS.rose : COLORS.cyan }} /><span className="font-sans font-medium text-text">{row.vendor}</span>{row.rejected && <span className="rounded bg-rose/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-rose">action needed</span>}</div><div className="ml-4 mt-0.5 text-[11px] text-text/35">{row.model}</div></td><td className="px-4 py-3 tabular-nums text-text/80">{inCrore(row.cost)}</td><td className="px-4 py-3"><PatrolBadge status={engineering} size="sm" /></td><td className="px-4 py-3"><PatrolBadge status={carbon} size="sm" /></td><td className="px-4 py-3"><span className="tabular-nums font-bold" style={{ color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan }}>{risk == null ? "—" : `${risk}/10`}</span></td><td className="px-4 py-3 tabular-nums text-text/80">{inCrore(row.tco)}</td><td className="px-4 py-3 text-right"><ChevronRight className="ml-auto h-4 w-4 text-text/20 transition-transform group-hover:translate-x-0.5 group-hover:text-text/60" /></td></tr>; }) : <tr><td colSpan={7} className="px-4 py-10 text-center text-text/40">No uploaded bids yet. Upload a bid to start review.</td></tr>}</tbody></table></div>}</Card>;
+
+  return (
+    <Card>
+      <CardHeader
+        title="Submitted bids"
+        caption={
+          source === "error"
+            ? "Service connection failed. Service may be starting up."
+            : source === "empty"
+            ? "No bids yet. Upload a bid PDF to start the compliance review."
+            : "Engineering and carbon are hard checks. Vendor reliability and schedule impact inform review."
+        }
+      />
+      {source === "loading" && (
+        <p className="p-6 text-sm text-text/50">Loading submitted bids…</p>
+      )}
+
+      {source === "error" && (
+        <div className="p-6 space-y-3">
+          <p className="text-sm text-rose">{errorMessage}</p>
+          <button
+            type="button"
+            onClick={loadData}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-3 py-1.5 text-xs font-semibold text-cyan hover:bg-cyan/25"
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> Retry loading bids
+          </button>
+        </div>
+      )}
+
+      {(source === "live" || source === "empty") && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/10 text-left table-header">
+                <th className="px-4 py-2.5">Vendor</th>
+                <th className="px-4 py-2.5">Upfront cost</th>
+                <th className="px-4 py-2.5">Engineering</th>
+                <th className="px-4 py-2.5">Carbon</th>
+                <th className="px-4 py-2.5">Vendor reliability</th>
+                <th className="px-4 py-2.5">5-year cost</th>
+                <th className="px-4 py-2.5" />
+              </tr>
+            </thead>
+            <tbody className="font-mono">
+              {rows.length ? (
+                rows.map((row) => {
+                  const engineering = check(row, "Engineering")?.status ?? "FLAG";
+                  const carbon = check(row, "Carbon")?.status ?? "FLAG";
+                  const risk = check(row, "Vendor reliability")?.risk;
+                  return (
+                    <tr
+                      key={row.id}
+                      onClick={() => router.push(`/bids/${row.id}`)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          router.push(`/bids/${row.id}`);
+                        }
+                      }}
+                      role="link"
+                      tabIndex={0}
+                      aria-label={`Review bid from ${row.vendor}`}
+                      className="group cursor-pointer border-b border-white/5 transition-colors hover:bg-white/[0.03]"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="h-2 w-2 rounded-full"
+                            style={{ backgroundColor: row.rejected ? COLORS.rose : COLORS.cyan }}
+                          />
+                          <span className="font-sans font-medium text-text">{row.vendor}</span>
+                          {row.rejected && (
+                            <span className="rounded bg-rose/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-rose">
+                              action needed
+                            </span>
+                          )}
+                        </div>
+                        <div className="ml-4 mt-0.5 text-[11px] text-text/35">{row.model}</div>
+                      </td>
+                      <td className="px-4 py-3 tabular-nums text-text/80">{inCrore(row.cost)}</td>
+                      <td className="px-4 py-3">
+                        <PatrolBadge status={engineering} size="sm" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <PatrolBadge status={carbon} size="sm" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className="tabular-nums font-bold"
+                          style={{
+                            color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan,
+                          }}
+                        >
+                          {risk == null ? "—" : `${risk}/10`}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 tabular-nums text-text/80">{inCrore(row.tco)}</td>
+                      <td className="px-4 py-3 text-right">
+                        <ChevronRight className="ml-auto h-4 w-4 text-text/20 transition-transform group-hover:translate-x-0.5 group-hover:text-text/60" />
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={7} className="px-4 py-10 text-center text-text/40">
+                    No uploaded bids yet. Upload a bid to start review.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Card>
+  );
 }

@@ -13,9 +13,9 @@ export default function CADVisualizer({
     <section className="rounded-xl border border-line bg-card p-5" aria-labelledby="clearance-heading">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-widest text-rose">CAD clearance check</p>
+          <p className="font-mono text-[11px] uppercase tracking-widest text-rose">Dimension Annotation Clearance Check</p>
           <h3 id="clearance-heading" className="mt-1 text-base font-semibold text-text">Equipment width exceeds the access limit</h3>
-          <p className="mt-1 text-xs text-text/55">Measured from the submitted drawing and compared with the recorded door clearance.</p>
+          <p className="mt-1 text-xs text-text/55">Extracted from detected PDF text regions or dimension annotations and compared with the recorded door clearance.</p>
         </div>
         <span className="shrink-0 rounded border border-rose/50 bg-rose/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-rose">Fail</span>
       </div>
@@ -30,7 +30,7 @@ export default function CADVisualizer({
           <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-inset px-1.5 py-0.5 font-mono text-[10px] text-text/55">Door clearance: {doorLimitM.toFixed(2)} m</span>
         </div>
         <div className="relative flex h-[130px] flex-col justify-between rounded border-2 border-rose bg-rose/10 p-2 shadow-[0_0_20px_rgba(244,63,94,0.2)]" style={{ width: `${widthPx}px` }}>
-          <span className="w-fit rounded bg-rose px-1.5 py-0.5 text-[10px] font-bold text-on-accent">Measured width: {initialWidthM.toFixed(2)} m</span>
+          <span className="w-fit rounded bg-rose px-1.5 py-0.5 text-[10px] font-bold text-on-accent">Extracted width: {initialWidthM.toFixed(2)} m</span>
           <span className="font-mono text-[10px] font-bold text-rose">Exceeds limit by {(initialWidthM - doorLimitM).toFixed(2)} m</span>
         </div>
       </div>
