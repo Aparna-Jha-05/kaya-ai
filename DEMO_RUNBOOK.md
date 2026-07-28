@@ -7,10 +7,10 @@
 
 ## 1. Submission Target & Deployment Metadata
 
-| Component | Target URL | Submitted Revision | Access Control |
+| Component | Target URL | Verified Source Revision | Access Control |
 | --- | --- | --- | --- |
-| **Frontend** | `https://po-lice.vercel.app` | `main` frontend revision (`f3267df`) | Public HTTPS (no platform login required) |
-| **Backend** | `https://po-lice-backend-staging.onrender.com` | `main` branch HEAD (`1940751`) | Public HTTPS (exact-origin CORS configured) |
+| **Frontend** | `https://po-lice.vercel.app` | `c7f7a2d` | Public HTTPS (no platform login required) |
+| **Backend** | `https://po-lice-backend-staging.onrender.com` | `1940751` (latest backend/Render source change) | Public HTTPS (exact-origin CORS configured) |
 
 ### Environment Variables
 
@@ -88,15 +88,23 @@ If the backend instance is cold (asleep on free-tier Render hosting):
 
 ## 4. Manual Visual Checklist
 
-- [ ] Dashboard Review Queue renders SummaryRow, ActiveBidsTable, and CaseFilesPanel without loading spinners.
-- [ ] ActiveBidsTable displays Trane (RECOMMENDED), Carrier (REVIEW_REQUIRED), CoolTech (REJECT with action needed).
-- [ ] Portfolio page allows filtering and selecting bids, rendering the TCO Comparison Bar Chart.
-- [ ] Bid Detail page displays vendor name, equipment model, recommendation badge, and tab strip.
-- [ ] Source tab displays extracted candidates, page numbers, and bounding-box / geometry status.
-- [ ] Checks tab allows clicking "Inspect evidence & geometry" to open the drawer.
-- [ ] RFI Modal opens, shows factual breach text, and allows human approval.
+- [x] Dashboard Review Queue renders SummaryRow, ActiveBidsTable, and CaseFilesPanel without loading spinners.
+- [x] ActiveBidsTable displays Trane (RECOMMENDED), Carrier (REVIEW_REQUIRED), CoolTech (REJECT with action needed).
+- [x] Portfolio page allows filtering and selecting bids, rendering the TCO Comparison Bar Chart.
+- [x] Bid Detail page displays vendor name, equipment model, recommendation badge, and tab strip.
+- [x] Source tab displays extracted candidates, page numbers, and bounding-box / geometry status.
+- [x] Checks tab allows clicking "Inspect evidence & geometry" to open the drawer.
+- [x] RFI Modal opens, shows factual breach text, and allows human approval.
 - [ ] TCO Slider dynamically updates calculated 5-year cost without page refresh.
-- [ ] Audit log page displays recorded activity events and allows CSV export.
+- [x] Audit log page displays recorded activity events and allows CSV export.
+
+### Verification Evidence — 2026-07-28
+
+- Main CI passed for frontend revision `c7f7a2d`: <https://github.com/Aparna-Jha-05/kaya-ai/actions/runs/30329660670>
+- Public deployed acceptance passed 11/11 checks against the Vercel and Render URLs above.
+- The acceptance-only upload was removed successfully; the live dataset returned to the three narrative fixtures.
+- Browser verification found no console errors and confirmed the truthful architecture copy, neutral TCO card, evidence drawer, readable integrity evidence, RFI modal, and activity export control.
+- The operator must still move the TCO slider in a normal browser and confirm the visible recalculation before checking the final visual item.
 
 ---
 
