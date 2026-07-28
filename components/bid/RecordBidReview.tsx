@@ -24,10 +24,17 @@ function toneColor(tone: ReturnType<typeof recommendationTone>) {
   return tone === "rose" ? COLORS.rose : tone === "amber" ? COLORS.amber : COLORS.cyan;
 }
 
+function formatEvidenceValue(value: unknown) {
+  if (value && typeof value === "object") {
+    return Object.keys(value).length ? JSON.stringify(value) : "No matched correlations";
+  }
+  return String(value);
+}
+
 function evidenceText(evidence: Record<string, unknown> | null) {
   return evidence
     ? Object.entries(evidence)
-        .map(([key, value]) => `${key.replaceAll("_", " ")}: ${String(value)}`)
+        .map(([key, value]) => `${key.replaceAll("_", " ")}: ${formatEvidenceValue(value)}`)
         .join(" · ")
     : "No structured evidence returned.";
 }
@@ -395,11 +402,7 @@ function ViceSquadCard({ record }: { record: BidRecord }) {
               <div key={k} className="rounded border border-white/10 bg-inset px-3 py-2">
                 <dt className="font-mono text-[9px] uppercase tracking-wide text-text/40">{k.replaceAll("_", " ")}</dt>
                 <dd className="mt-1 font-mono text-xs text-text/75">
-                  {typeof v === "object"
-                    ? Array.isArray(v) && v.length === 0
-                      ? "No matched correlations"
-                      : JSON.stringify(v)
-                    : String(v)}
+                  {formatEvidenceValue(v)}
                 </dd>
               </div>
             ))}
