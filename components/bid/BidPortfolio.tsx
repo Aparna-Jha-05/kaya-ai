@@ -78,10 +78,13 @@ export default function BidPortfolio() {
     procurementApi
       .list()
       .then((items) => {
+        const comparisonDefaults = [...items]
+          .sort((a, b) => a.submitted_at.localeCompare(b.submitted_at))
+          .slice(0, 3);
         setRecords(items);
         setSourceState("live");
-        setSelectedIds(items.slice(0, 3).map((item) => item.id));
-        setActiveId(items[0]?.id ?? "");
+        setSelectedIds(comparisonDefaults.map((item) => item.id));
+        setActiveId(comparisonDefaults[0]?.id ?? "");
       })
       .catch((err) => {
         setErrorMessage(err instanceof Error ? err.message : "Could not retrieve bids");
@@ -159,7 +162,7 @@ export default function BidPortfolio() {
         <CardHeader
           title="Comparison setup"
           caption="Filter bids, then select up to three to compare."
-          right={<span className="font-mono text-xs text-cyan">{selected.length} shown · {selectedIds.length}/3 selected</span>}
+          right={<span className="font-mono text-xs text-cyan">{filtered.length} available · {selectedIds.length}/3 selected</span>}
         />
         <div className="space-y-4 p-4">
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_190px_210px_auto]">
