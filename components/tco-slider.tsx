@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { procurementApi, type SimulationResponse } from "@/lib/api";
-import { recommendationLabel } from "@/lib/recordUtils";
 
 interface TCOSliderProps {
   baseCapexCr: number;
@@ -40,24 +39,11 @@ export default function TCOSlider({ baseCapexCr, onTCOChange }: TCOSliderProps) 
     };
   }, [baseCapexCr, delayDays, discountPercent, onTCOChange]);
 
-  const rejected = result?.recommendation === "REJECT";
-
   return (
     <div className="rounded-xl border border-line bg-card p-5">
-      <div className="mb-3 flex items-center justify-between">
-        <div>
-          <p className="page-eyebrow">Cost scenario</p>
-          <h3 className="text-base font-bold">5-year risk-adjusted cost (TCO²)</h3>
-        </div>
-        {result && (
-          <span
-            className={`rounded border px-2.5 py-1 text-xs font-bold uppercase tracking-wider ${
-              rejected ? "border-rose bg-rose/15 text-rose" : "border-cyan bg-cyan/15 text-cyan"
-            }`}
-          >
-            {recommendationLabel(result.recommendation)}
-          </span>
-        )}
+      <div className="mb-3">
+        <p className="page-eyebrow">Cost scenario</p>
+        <h3 className="text-base font-bold">5-year risk-adjusted cost (TCO²)</h3>
       </div>
       <p className="mb-4 text-xs text-text/60">
         Adjust bounded commercial assumptions. The calculation service returns the result; it does not approve a purchase order.

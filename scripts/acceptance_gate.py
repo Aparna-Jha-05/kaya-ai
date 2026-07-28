@@ -33,7 +33,7 @@ def _lower_headers(headers: dict) -> dict[str, str]:
 def http_get(url: str, headers: dict | None = None) -> tuple[int, dict | str, dict[str, str]]:
     req = urllib.request.Request(url, headers=headers or {})
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=45) as resp:
             status = resp.status
             resp_headers = _lower_headers(dict(resp.headers))
             body_bytes = resp.read()
@@ -49,6 +49,15 @@ def http_get(url: str, headers: dict | None = None) -> tuple[int, dict | str, di
         except Exception:
             data = body_bytes.decode("utf-8", errors="replace")
         return err.code, data, _lower_headers(dict(err.headers))
+
+
+def http_delete(url: str) -> int:
+    req = urllib.request.Request(url, method="DELETE")
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return resp.status
+    except urllib.error.HTTPError as err:
+        return err.code
 
 
 def http_post_json(url: str, payload: dict, headers: dict | None = None) -> tuple[int, dict | str, dict[str, str]]:
@@ -286,6 +295,16 @@ def run_acceptance_gate(backend_url: str, frontend_url: str) -> bool:
         assert status == 200, f"Activity log returned {status}"
         assert isinstance(data, list) and len(data) >= 1, "Activity log empty or invalid"
     check("Activity log retrieval", test_activity)
+
+    # 11. Remove acceptance-only data so the judge-facing narrative stays clean
+    def test_cleanup():
+        assert uploaded_bid_id, "No uploaded bid ID"
+        status = http_delete(f"{backend_url}/api/v1/bids/{uploaded_bid_id}")
+        assert status == 204, f"Acceptance data cleanup returned {status}"
+        status, data, _ = http_get(f"{backend_url}/api/v1/bids")
+        assert status == 200 and isinstance(data, list), "Could not verify acceptance data cleanup"
+        assert all(bid.get("id") != uploaded_bid_id for bid in data if isinstance(bid, dict)), "Acceptance bid still appears after cleanup"
+    check("Acceptance-only data cleanup", test_cleanup)
 
     print()
     print("-" * 60)

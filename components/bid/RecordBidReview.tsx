@@ -201,7 +201,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
     ["Power draw", e.power_draw_kw == null ? "Not provided" : `${e.power_draw_kw} kW`],
     ["Cooling capacity", e.cooling_capacity_kw == null ? "Not provided" : `${e.cooling_capacity_kw} kW`],
     ["Width", e.width_m == null ? "Not provided" : `${e.width_m} m`],
-    ["Embodied carbon", e.embodied_carbon_factor == null ? "Not provided" : `${e.embodied_carbon_factor} kgCO₂e`],
+    ["Embodied carbon", e.embodied_carbon_factor == null ? "Not provided" : `${e.embodied_carbon_factor} kgCO₂e/ton`],
     ["Safety certificate", record.source.has_osha_cert == null ? "Not provided" : record.source.has_osha_cert ? "Present" : "Missing"],
   ];
 
@@ -394,7 +394,13 @@ function ViceSquadCard({ record }: { record: BidRecord }) {
             {entries.map(([k, v]) => (
               <div key={k} className="rounded border border-white/10 bg-inset px-3 py-2">
                 <dt className="font-mono text-[9px] uppercase tracking-wide text-text/40">{k.replaceAll("_", " ")}</dt>
-                <dd className="mt-1 font-mono text-xs text-text/75">{String(v)}</dd>
+                <dd className="mt-1 font-mono text-xs text-text/75">
+                  {typeof v === "object"
+                    ? Array.isArray(v) && v.length === 0
+                      ? "No matched correlations"
+                      : JSON.stringify(v)
+                    : String(v)}
+                </dd>
               </div>
             ))}
           </dl>

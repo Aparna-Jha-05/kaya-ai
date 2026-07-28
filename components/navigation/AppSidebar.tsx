@@ -58,11 +58,11 @@ export default function AppSidebar() {
           <div className="space-y-1.5">
             <div className="flex items-start gap-2">
               <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet/70" />
-              <p className="text-[11px] leading-snug text-text/60"><span className="text-violet/90 font-medium">AI extracts</span> — multimodal LLM parses unstructured PDFs into typed JSON</p>
+              <p className="text-[11px] leading-snug text-text/60"><span className="text-violet/90 font-medium">Evidence extracts</span> — PyMuPDF parses PDF text and locations; optional LLM extraction fills supported gaps</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan/70" />
-              <p className="text-[11px] leading-snug text-text/60"><span className="text-cyan/90 font-medium">SQL validates</span> — deterministic inequalities enforce hard engineering limits</p>
+              <p className="text-[11px] leading-snug text-text/60"><span className="text-cyan/90 font-medium">Code validates</span> — deterministic rules enforce hard engineering limits</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber/70" />

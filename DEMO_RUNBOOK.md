@@ -9,7 +9,7 @@
 
 | Component | Target URL | Submitted Revision | Access Control |
 | --- | --- | --- | --- |
-| **Frontend** | `https://po-lice.vercel.app` | `main` branch HEAD (`1940751`) | Public HTTPS (no platform login required) |
+| **Frontend** | `https://po-lice.vercel.app` | `main` frontend revision (`f3267df`) | Public HTTPS (no platform login required) |
 | **Backend** | `https://po-lice-backend-staging.onrender.com` | `main` branch HEAD (`1940751`) | Public HTTPS (exact-origin CORS configured) |
 
 ### Environment Variables
@@ -36,7 +36,7 @@
 
 ### Cold-Start Warm-Up & Bootstrap Procedure
 If the backend instance is cold (asleep on free-tier Render hosting):
-1. **Warm Up**: Ping `GET /api/v1/readiness` (wait 15–30 seconds if spinning up from cold).
+1. **Warm Up**: Ping `GET /api/v1/readiness` (allow up to 45 seconds if spinning up from cold).
 2. **Verify Fixtures**: Startup automatically populates fixtures. To manually trigger reseed if needed:
    ```bash
    PYTHONPATH=backend python3 scripts/seed_demo_data.py
@@ -45,6 +45,7 @@ If the backend instance is cold (asleep on free-tier Render hosting):
    ```bash
    python3 scripts/acceptance_gate.py --backend <BACKEND_URL> --frontend <FRONTEND_URL>
    ```
+   The gate removes its acceptance-only upload and related activity after verification so the three narrative fixtures remain clean.
 
 ---
 
