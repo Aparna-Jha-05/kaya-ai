@@ -164,16 +164,16 @@ export default function AuditPage() {
                 </th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <Tooltip text="Vendor risk score (0-10) calculated from historical performance metrics.">
-                    <span>Vendor risk</span>
+                    <span>Reliability</span>
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <Tooltip text="Schedule impact estimation calculating late delivery risk in days.">
-                    <span>Schedule risk</span>
+                    <span>Schedule</span>
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO² (INR)</th>
-                <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Decision</th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -243,7 +243,7 @@ export default function AuditPage() {
               <tr className="border-b-2 border-line table-header text-left bg-surface/50">
                 <th className="px-4 py-3 font-bold">Timestamp</th>
                 <th className="px-4 py-3 font-bold">Bid</th>
-                <th className="px-4 py-3 font-bold">Compliance check</th>
+                <th className="px-4 py-3 font-bold">Patrol</th>
                 <th className="px-4 py-3 font-bold">Action</th>
                 <th className="px-4 py-3 font-bold">Rule</th>
                 <th className="px-4 py-3 font-bold">Evidence</th>

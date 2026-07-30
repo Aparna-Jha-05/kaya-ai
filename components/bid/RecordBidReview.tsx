@@ -103,7 +103,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
         <div className="space-y-5">
           <Card accent={color} className="p-5">
             <p className="font-mono text-[10px] uppercase tracking-wider" style={{ color }}>
-              Review state
+              Status
             </p>
             <h3 className="mt-1 text-lg font-semibold text-text">{nextStep}</h3>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-text/60">

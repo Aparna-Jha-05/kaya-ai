@@ -178,26 +178,26 @@ export default function BidPortfolio() {
               />
             </label>
             <label className="min-w-0 max-w-full block">
-              <span className="sr-only">Review state</span>
+              <span className="sr-only">Status filter</span>
               <select
                 value={stateFilter}
                 onChange={(event) => setStateFilter(event.target.value as StateFilter)}
                 className="h-10 w-full min-w-0 max-w-full rounded-xl border border-line bg-surface px-3.5 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs truncate"
               >
-                <option value="all">Any review state</option>
+                <option value="all">Any status</option>
                 <option value="RECOMMENDED">Ready for decision</option>
                 <option value="REVIEW_REQUIRED">Needs review</option>
                 <option value="REJECT">Do not select</option>
               </select>
             </label>
             <label className="min-w-0 max-w-full block">
-              <span className="sr-only">Compliance result</span>
+              <span className="sr-only">Patrol filter</span>
               <select
                 value={compliance}
                 onChange={(event) => setCompliance(event.target.value as ComplianceFilter)}
                 className="h-10 w-full min-w-0 max-w-full rounded-xl border border-line bg-surface px-3.5 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs truncate"
               >
-                <option value="all">Any compliance result</option>
+                <option value="all">Any patrol result</option>
                 <option value="eligible">Hard checks passed</option>
                 <option value="has-failure">Hard failure present</option>
               </select>
@@ -267,7 +267,7 @@ export default function BidPortfolio() {
                 </colgroup>
                 <thead className="sticky top-0 z-10 bg-surface">
                   <tr className="border-b-2 border-line table-header">
-                    <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Bid</th>
+                    <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
                     <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                       <Tooltip text="Hard limit check. Validates physical floor load capacity against equipment weight.">
@@ -290,13 +290,13 @@ export default function BidPortfolio() {
                       </Tooltip>
                     </th>
                     <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO² (INR)</th>
-                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Review state</th>
+                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {selected.map((bid) => {
                     const activeRow = bid.id === active?.id;
-                    const risk = check(bid, "Vendor reliability")?.risk;
+                    const risk = check(bid, "Reliability")?.risk;
                     const tone = recommendationTone(bid.recommendation);
                     const color = tone === "rose" ? COLORS.rose : tone === "amber" ? COLORS.amber : COLORS.cyan;
                     return (
@@ -349,7 +349,7 @@ export default function BidPortfolio() {
                         </td>
                         <td className="px-4 py-3 text-center">
                           <div className="flex justify-center">
-                            <PatrolBadge status={status(bid, "Schedule impact")} size="sm" />
+                            <PatrolBadge status={status(bid, "Schedule")} size="sm" />
                           </div>
                         </td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">{formatCroreValue(shownCost(bid))}</td>
@@ -420,7 +420,7 @@ function Inspector({ bid }: { bid: Comparable }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3 border-y border-line py-3.5 text-xs">
-        <Metric label="Review state" value={recommendationLabel(bid.recommendation)} />
+        <Metric label="Status" value={recommendationLabel(bid.recommendation)} />
         <Metric label="5-year TCO²" value={inCrore(bid.cost)} />
         <Metric label="Reliability" value={check(bid, "Reliability")?.risk == null ? "Not provided" : `${check(bid, "Reliability")?.risk}/10`} />
         <Metric label="Schedule" value={check(bid, "Schedule")?.status ?? "Review"} />
