@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Download, RefreshCw } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
+import PatrolBadge from "@/components/bid/PatrolBadge";
 import { procurementApi, type ActivityEvent, type BidRecord } from "@/lib/api";
 import { activityActionLabel, displayCheckName } from "@/lib/recordUtils";
 import { allScorecardsFromRecords, type ScorecardRow } from "@/lib/tco";
