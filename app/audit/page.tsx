@@ -137,7 +137,7 @@ export default function AuditPage() {
           caption="Per-bid summary of all four patrol results and 5-year TCO²."
         />
         <div className="overflow-x-auto overflow-y-auto max-h-[320px]">
-          <table className="w-full text-sm border-collapse table-fixed">
+          <table className="w-full min-w-[720px] text-sm border-collapse table-fixed">
             <colgroup>
               <col className="w-[20%]" />
               <col className="w-[12%]" />
@@ -230,7 +230,7 @@ export default function AuditPage() {
           caption={evState === "ready" ? "Export includes the server-recorded activity currently shown." : "Connect the activity service to view and export events."}
         />
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[700px] text-sm">
             <colgroup>
               <col className="w-[18%] min-w-[150px]" />
               <col className="w-[12%] min-w-[90px]" />

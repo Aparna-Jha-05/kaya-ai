@@ -254,7 +254,7 @@ export default function BidPortfolio() {
               }
             />
             <div className="overflow-x-auto overflow-y-auto max-h-[320px]">
-              <table className="w-full text-sm border-collapse table-fixed">
+              <table className="w-full min-w-[720px] text-sm border-collapse table-fixed">
                 <colgroup>
                   <col className="w-[20%]" />
                   <col className="w-[13%]" />

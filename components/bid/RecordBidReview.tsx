@@ -71,7 +71,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
               {equipment.equipment_type} · {equipment.model_number} · {record.filename}
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-4 text-right text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-left sm:text-right text-xs pt-1 sm:pt-0 border-t sm:border-t-0 border-line/40">
             <Metric label="Upfront cost" value={inCrore(source.bid_amount_inr)} />
             <Metric label="5-year TCO²" value={inCrore(record.scorecard.calculated_tco2_inr)} />
             <Metric label="Delivery" value={source.promised_delivery_weeks == null ? "Not provided" : `${source.promised_delivery_weeks} weeks`} />
@@ -241,7 +241,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
           }
         />
         <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse table-fixed">
+          <table className="w-full min-w-[480px] text-sm border-collapse table-fixed">
             <colgroup>
               <col className="w-[28%]" />
               <col className="w-[72%]" />
@@ -266,7 +266,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
             caption="Traceable source excerpts and page location details extracted from the PDF text layer."
           />
           <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono border-collapse table-fixed">
+            <table className="w-full min-w-[640px] text-xs font-mono border-collapse table-fixed">
               <colgroup>
                 <col className="w-[18%]" />
                 <col className="w-[18%]" />
@@ -317,7 +317,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
             caption="Parsed drawing text annotations — detected text only, not full CAD/BIM model geometry."
           />
           <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono border-collapse table-fixed">
+            <table className="w-full min-w-[640px] text-xs font-mono border-collapse table-fixed">
               <colgroup>
                 <col className="w-[22%]" />
                 <col className="w-[20%]" />
