@@ -40,14 +40,7 @@ export default function TCOSlider({ baseCapexCr, onTCOChange }: TCOSliderProps) 
   }, [baseCapexCr, delayDays, discountPercent, onTCOChange]);
 
   return (
-    <div className="rounded-xl border border-line bg-card p-5">
-      <div className="mb-3">
-        <p className="page-eyebrow">Cost scenario</p>
-        <h3 className="text-base font-bold">5-year risk-adjusted cost (TCO²)</h3>
-      </div>
-      <p className="mb-4 text-xs text-text/60">
-        Adjust bounded commercial assumptions. The calculation service returns the result; it does not approve a purchase order.
-      </p>
+    <div className="rounded-xl border border-line bg-surface p-4">
       <div className="mb-4 space-y-4 rounded-lg border border-line bg-inset p-4">
         <label className="block">
           <span className="mb-1 flex justify-between text-xs font-medium">

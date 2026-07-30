@@ -353,11 +353,10 @@ export default function BidPortfolio() {
 
             {active && active.upfront != null && (
               <div className="border-t border-line p-4">
-                <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-cyan">Cost scenario</p>
-                <p className="mt-1 text-xs text-text/60 font-medium">Adjust commercial assumptions; the bid service recalculates the result.</p>
-                <div className="mt-3">
-                  <TCOSlider key={active.id} baseCapexCr={(active.upfront ?? 0) / 10_000_000} onTCOChange={updateScenario} />
+                <div className="mb-3">
+                  <p className="ui-label text-cyan">Interactive cost scenario</p>
                 </div>
+                <TCOSlider key={active.id} baseCapexCr={(active.upfront ?? 0) / 10_000_000} onTCOChange={updateScenario} />
               </div>
             )}
 
