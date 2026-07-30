@@ -66,7 +66,11 @@ export default function ActiveBidsTable() {
   return (
     <Card>
       <CardHeader
-        title="Submitted bids"
+        title={
+          <Tooltip text="Engineering and carbon are hard checks. Vendor reliability and schedule impact inform review.">
+            <span>Submitted bids</span>
+          </Tooltip>
+        }
         caption={
           source === "error"
             ? "Service connection failed"

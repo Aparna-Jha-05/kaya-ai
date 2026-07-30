@@ -11,7 +11,7 @@ export default function Card({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-line border-b-2 bg-card shadow-xs transition-all duration-150 hover:border-cyan/40 max-w-full overflow-hidden ${className}`}
+      className={`rounded-2xl border border-line border-b-2 bg-card shadow-xs transition-all duration-150 hover:border-cyan/40 max-w-full relative overflow-visible ${className}`}
       style={accent ? { borderLeft: `3px solid ${accent}` } : undefined}
     >
       {children}
