@@ -127,6 +127,16 @@ export default function AuditPage() {
         />
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
+            <colgroup>
+              <col className="w-[20%] min-w-[150px]" />
+              <col className="w-[11%] whitespace-nowrap" />
+              <col className="w-[11%] whitespace-nowrap" />
+              <col className="w-[11%] whitespace-nowrap" />
+              <col className="w-[11%] whitespace-nowrap" />
+              <col className="w-[11%] whitespace-nowrap" />
+              <col className="w-[12%] whitespace-nowrap" />
+              <col className="w-[13%] whitespace-nowrap" />
+            </colgroup>
             <thead>
               <tr className="border-b border-white/10 table-header text-left">
                 <th className="px-4 py-2.5">Vendor</th>
@@ -194,6 +204,14 @@ export default function AuditPage() {
         />
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
+            <colgroup>
+              <col className="w-[18%] min-w-[150px]" />
+              <col className="w-[12%] min-w-[90px]" />
+              <col className="w-[18%] min-w-[130px]" />
+              <col className="w-[12%] min-w-[100px]" />
+              <col className="w-[15%] min-w-[110px]" />
+              <col className="w-[25%] min-w-[200px]" />
+            </colgroup>
             <thead>
               <tr className="border-b border-white/10 table-header text-left">
                 <th className="px-4 py-2.5">Timestamp</th>

@@ -116,7 +116,7 @@ export type RFIDraftResponse = {
   created_at: string;
 };
 
-const base = process.env.NEXT_PUBLIC_PO_LICE_API_URL ?? "http://localhost:8000";
+const base = process.env.NEXT_PUBLIC_PO_LICE_API_URL ?? "";
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${base}${path}`, init);
   if (!response.ok) {

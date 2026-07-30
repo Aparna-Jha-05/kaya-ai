@@ -255,6 +255,16 @@ export default function BidPortfolio() {
             />
             <div className="overflow-x-auto">
               <table className="w-full min-w-[880px] text-sm">
+                <colgroup>
+                  <col className="w-[22%] min-w-[160px]" />
+                  <col className="w-[11%] whitespace-nowrap" />
+                  <col className="w-[11%] whitespace-nowrap" />
+                  <col className="w-[11%] whitespace-nowrap" />
+                  <col className="w-[13%] whitespace-nowrap" />
+                  <col className="w-[12%] whitespace-nowrap" />
+                  <col className="w-[11%] whitespace-nowrap" />
+                  <col className="w-[9%] whitespace-nowrap" />
+                </colgroup>
                 <thead>
                   <tr className="border-b border-white/10 text-left text-[11px] uppercase tracking-wide text-text/40">
                     <th className="px-4 py-3 font-medium">Bid</th>

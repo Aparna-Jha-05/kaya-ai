@@ -242,6 +242,10 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
         />
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
+            <colgroup>
+              <col className="w-[28%] min-w-[150px]" />
+              <col className="w-[72%]" />
+            </colgroup>
             <tbody>
               {fields.map(([label, value]) => (
                 <tr key={label} className="border-b border-white/5">

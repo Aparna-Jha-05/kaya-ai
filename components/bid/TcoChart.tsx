@@ -1,4 +1,6 @@
 "use client";
+
+import { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -18,6 +20,25 @@ interface Row {
 }
 
 export default function TcoChart({ data }: { data: Row[] }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="rounded-lg border border-white/10 bg-inset p-4">
+        <div className="mb-3 text-xs font-medium text-text/60">
+          Upfront cost vs 5-year risk-adjusted cost (₹ Cr) — lower is better
+        </div>
+        <div className="flex h-[260px] items-center justify-center text-xs text-text/40">
+          Loading cost comparison…
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-lg border border-white/10 bg-inset p-4">
       <div className="mb-3 text-xs font-medium text-text/60">
