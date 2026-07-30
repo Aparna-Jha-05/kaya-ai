@@ -161,8 +161,7 @@ export default function BidPortfolio() {
       <Card>
         <CardHeader
           title="Comparison setup"
-          caption="Select up to three bids to compare"
-          right={<span className="font-mono text-xs text-cyan">{filtered.length} available · {selectedIds.length}/3 selected</span>}
+          right={<span className="font-mono text-xs font-extrabold text-cyan">{selectedIds.length}/3 selected</span>}
         />
         <div className="space-y-4 p-4.5 min-w-0 max-w-full overflow-hidden">
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_180px_190px_auto] min-w-0 max-w-full">
@@ -232,7 +231,6 @@ export default function BidPortfolio() {
                     className="accent-[#38BDF8]"
                   />
                   <span>{bid.vendor}</span>
-                  <span className="text-text/40">· {bid.model}</span>
                 </label>
               );
             })}
@@ -246,9 +244,8 @@ export default function BidPortfolio() {
           <Card>
             <CardHeader
               title="Bid comparison"
-              caption={`Showing ${selected.length} selected bid${selected.length === 1 ? "" : "s"}. Select a row to inspect it.`}
               right={
-                <span className="inline-flex items-center gap-1.5 text-xs text-text/50">
+                <span className="inline-flex items-center gap-1.5 text-xs text-text/50 font-medium">
                   <SlidersHorizontal className="h-3.5 w-3.5 text-blue" /> {label(compliance)}
                 </span>
               }

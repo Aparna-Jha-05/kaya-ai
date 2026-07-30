@@ -30,9 +30,11 @@ const PATROL_META: Record<string, { impact: string; action: string }> = {
   TRAFFIC_CONTROL:  { impact: "Schedule contingency needed",                  action: "Re-run check if post-award spec changes" },
 };
 
-function patrolColor(status: string, name: string): string {
-  if (status === "FAIL") return COLORS.rose;
-  if (name.toLowerCase().includes("vice")) return COLORS.violet;
+function patrolColor(name: string): string {
+  const lower = name.toLowerCase();
+  if (lower.includes("building") || lower.includes("engineering")) return COLORS.blue;
+  if (lower.includes("green") || lower.includes("carbon")) return COLORS.emerald;
+  if (lower.includes("vice") || lower.includes("reliability")) return COLORS.violet;
   return COLORS.amber;
 }
 
@@ -58,7 +60,7 @@ function buildGraph(record: BidRecord): { nodes: GNode[]; edges: GEdge[] } {
 
   fails.forEach((patrol, i) => {
     const y = i * rowH;
-    const color = patrolColor(patrol.status, patrol.patrol_name);
+    const color = patrolColor(patrol.patrol_name);
     const meta = PATROL_META[patrol.patrol_name] ?? { impact: "Compliance review required", action: "Reviewer action needed" };
     const evidenceDetails: GNode["details"] = patrol.evidence
       ? Object.entries(patrol.evidence).map(([k, v]) => ({ label: k.replaceAll("_", " "), value: String(v) }))

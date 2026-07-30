@@ -10,6 +10,7 @@ export const COLORS = {
   text: "rgb(var(--color-text))",
   muted: "rgb(var(--color-muted))",
   cyan: "rgb(var(--color-cyan))",
+  emerald: "rgb(var(--color-emerald))",
   violet: "rgb(var(--color-violet))",
   amber: "rgb(var(--color-amber))",
   blue: "rgb(var(--color-blue))",
@@ -20,14 +21,14 @@ export const PATROL_META = {
   building: {
     key: "building",
     name: "Engineering",
-    color: COLORS.cyan,
+    color: COLORS.blue,
     caption: "checks equipment against hard site limits",
     icon: "Building2",
   },
   green: {
     key: "green",
     name: "Carbon",
-    color: COLORS.amber,
+    color: COLORS.emerald,
     caption: "checks the bid against the project carbon budget",
     icon: "Leaf",
   },
@@ -41,7 +42,7 @@ export const PATROL_META = {
   traffic: {
     key: "traffic",
     name: "Schedule impact",
-    color: COLORS.blue,
+    color: COLORS.amber,
     caption: "estimates the effect of late delivery on the schedule",
     icon: "Truck",
   },
