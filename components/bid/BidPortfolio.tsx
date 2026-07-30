@@ -8,7 +8,7 @@ import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import TCOSlider from "@/components/tco-slider";
 import { procurementApi, type BidRecord, type CheckStatus } from "@/lib/api";
-import { displayCheckName, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
+import { displayCheckName, formatCroreValue, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
 
 const TcoChart = dynamic(() => import("@/components/bid/TcoChart"), {
@@ -161,27 +161,27 @@ export default function BidPortfolio() {
       <Card>
         <CardHeader
           title="Comparison setup"
-          caption="Filter bids, then select up to three to compare."
+          caption="Select up to three bids to compare"
           right={<span className="font-mono text-xs text-cyan">{filtered.length} available · {selectedIds.length}/3 selected</span>}
         />
-        <div className="space-y-4 p-4">
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_190px_210px_auto]">
-            <label className="relative block">
+        <div className="space-y-4 p-4.5 min-w-0 max-w-full overflow-hidden">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_180px_190px_auto] min-w-0 max-w-full">
+            <label className="relative min-w-0 max-w-full block">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text/40" />
               <span className="sr-only">Find a bid</span>
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Find vendor, model, or equipment"
-                className="h-10 w-full rounded-xl border border-line bg-surface pl-9 pr-3 text-sm font-medium text-text placeholder:text-text/40 focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs"
+                className="h-10 w-full min-w-0 max-w-full rounded-xl border border-line bg-surface pl-9 pr-3.5 text-sm font-medium text-text placeholder:text-text/40 focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs truncate"
               />
             </label>
-            <label>
+            <label className="min-w-0 max-w-full block">
               <span className="sr-only">Review state</span>
               <select
                 value={stateFilter}
                 onChange={(event) => setStateFilter(event.target.value as StateFilter)}
-                className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs"
+                className="h-10 w-full min-w-0 max-w-full rounded-xl border border-line bg-surface px-3.5 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs truncate"
               >
                 <option value="all">Any review state</option>
                 <option value="RECOMMENDED">Ready for decision</option>
@@ -189,12 +189,12 @@ export default function BidPortfolio() {
                 <option value="REJECT">Do not select</option>
               </select>
             </label>
-            <label>
+            <label className="min-w-0 max-w-full block">
               <span className="sr-only">Compliance result</span>
               <select
                 value={compliance}
                 onChange={(event) => setCompliance(event.target.value as ComplianceFilter)}
-                className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs"
+                className="h-10 w-full min-w-0 max-w-full rounded-xl border border-line bg-surface px-3.5 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs truncate"
               >
                 <option value="all">Any compliance result</option>
                 <option value="eligible">Hard checks passed</option>
@@ -205,7 +205,7 @@ export default function BidPortfolio() {
               type="button"
               onClick={reset}
               disabled={!resetNeeded}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-line px-3.5 text-xs font-bold text-text/70 hover:border-cyan/40 hover:text-text tactile-press disabled:cursor-not-allowed disabled:opacity-35 shadow-xs"
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-line px-3.5 text-xs font-bold text-text/70 hover:border-cyan/40 hover:text-text tactile-press disabled:cursor-not-allowed disabled:opacity-35 shadow-xs"
             >
               <X className="h-3.5 w-3.5" /> Clear filters
             </button>
@@ -254,27 +254,27 @@ export default function BidPortfolio() {
               }
             />
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[880px] text-sm">
+              <table className="w-full min-w-[880px] text-sm border-collapse">
                 <colgroup>
-                  <col className="w-[22%] min-w-[160px]" />
-                  <col className="w-[11%] whitespace-nowrap" />
-                  <col className="w-[11%] whitespace-nowrap" />
-                  <col className="w-[11%] whitespace-nowrap" />
-                  <col className="w-[13%] whitespace-nowrap" />
-                  <col className="w-[12%] whitespace-nowrap" />
-                  <col className="w-[11%] whitespace-nowrap" />
-                  <col className="w-[9%] whitespace-nowrap" />
+                  <col className="w-[20%] min-w-[150px]" />
+                  <col className="w-[13%] min-w-[110px]" />
+                  <col className="w-[11%] min-w-[95px]" />
+                  <col className="w-[11%] min-w-[95px]" />
+                  <col className="w-[12%] min-w-[105px]" />
+                  <col className="w-[11%] min-w-[95px]" />
+                  <col className="w-[12%] min-w-[110px]" />
+                  <col className="w-[10%] min-w-[100px]" />
                 </colgroup>
                 <thead>
-                  <tr className="border-b-2 border-line text-left table-header bg-surface/50">
-                    <th className="px-4 py-3 font-bold">Bid</th>
-                    <th className="px-4 py-3 font-bold">Upfront cost</th>
-                    <th className="px-4 py-3 font-bold">Engineering</th>
-                    <th className="px-4 py-3 font-bold">Carbon</th>
-                    <th className="px-4 py-3 font-bold">Vendor reliability</th>
-                    <th className="px-4 py-3 font-bold">Schedule impact</th>
-                    <th className="px-4 py-3 font-bold">5-year cost</th>
-                    <th className="px-4 py-3 font-bold">Review state</th>
+                  <tr className="border-b-2 border-line table-header bg-surface/50">
+                    <th className="px-4 py-3 text-left font-bold">Bid</th>
+                    <th className="px-4 py-3 text-right font-bold">Upfront (₹ Cr)</th>
+                    <th className="px-4 py-3 text-center font-bold">Engineering</th>
+                    <th className="px-4 py-3 text-center font-bold">Carbon</th>
+                    <th className="px-4 py-3 text-center font-bold">Vendor reliability</th>
+                    <th className="px-4 py-3 text-center font-bold">Schedule impact</th>
+                    <th className="px-4 py-3 text-right font-bold">5-yr TCO (₹ Cr)</th>
+                    <th className="px-4 py-3 text-center font-bold">Review state</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -302,37 +302,47 @@ export default function BidPortfolio() {
                         aria-label={`Inspect ${bid.vendor}`}
                         className={`cursor-pointer border-b border-line/40 transition-colors duration-150 ${activeRow ? "bg-cyan/10 font-medium" : "hover:bg-cyan/5 dark:hover:bg-cyan/10"}`}
                       >
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-text">{bid.vendor}</p>
-                          <p className="mt-0.5 text-xs text-text/40">{bid.model}</p>
+                        <td className="px-4 py-3 text-left">
+                          <p className="font-semibold text-text truncate">{bid.vendor}</p>
+                          <p className="mt-0.5 text-xs text-text/45 truncate">{bid.model}</p>
                         </td>
-                        <td className="px-4 py-3 font-mono text-text/80">{inCrore(bid.upfront)}</td>
-                        <td className="px-4 py-3">
-                          <PatrolBadge status={status(bid, "Engineering")} size="sm" />
+                        <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">{formatCroreValue(bid.upfront)}</td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex justify-center">
+                            <PatrolBadge status={status(bid, "Engineering")} size="sm" />
+                          </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <PatrolBadge status={status(bid, "Carbon")} size="sm" />
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex justify-center">
+                            <PatrolBadge status={status(bid, "Carbon")} size="sm" />
+                          </div>
                         </td>
-                        <td className="px-4 py-3 font-mono">
-                          <span
-                            className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-extrabold font-mono tabular-nums border shadow-xs"
-                            style={{
-                              color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan,
-                              backgroundColor: risk != null && risk > 6 ? `${COLORS.rose}1f` : `${COLORS.cyan}1f`,
-                              borderColor: risk != null && risk > 6 ? `${COLORS.rose}50` : `${COLORS.cyan}50`,
-                            }}
-                          >
-                            {risk == null ? "—" : `${risk}/10`}
-                          </span>
+                        <td className="px-4 py-3 text-center font-mono">
+                          <div className="flex justify-center">
+                            <span
+                              className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-extrabold font-mono tabular-nums border shadow-xs"
+                              style={{
+                                color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan,
+                                backgroundColor: risk != null && risk > 6 ? `${COLORS.rose}1f` : `${COLORS.cyan}1f`,
+                                borderColor: risk != null && risk > 6 ? `${COLORS.rose}50` : `${COLORS.cyan}50`,
+                              }}
+                            >
+                              {risk == null ? "—" : `${risk}/10`}
+                            </span>
+                          </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <PatrolBadge status={status(bid, "Schedule impact")} size="sm" />
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex justify-center">
+                            <PatrolBadge status={status(bid, "Schedule impact")} size="sm" />
+                          </div>
                         </td>
-                        <td className="px-4 py-3 font-mono font-semibold text-text/85">{inCrore(shownCost(bid))}</td>
-                        <td className="px-4 py-3">
-                          <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs" style={{ color, backgroundColor: `${color}20`, borderColor: `${color}50` }}>
-                            {recommendationLabel(bid.recommendation)}
-                          </span>
+                        <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">{formatCroreValue(shownCost(bid))}</td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex justify-center">
+                            <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs" style={{ color, backgroundColor: `${color}20`, borderColor: `${color}50` }}>
+                              {recommendationLabel(bid.recommendation)}
+                            </span>
+                          </div>
                         </td>
                       </tr>
                     );

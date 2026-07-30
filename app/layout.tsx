@@ -32,8 +32,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="flex h-screen flex-col lg:flex-row max-w-[1600px] mx-auto overflow-hidden">
           <TopHeader />
           <AppSidebar />
-          <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
-            <main className="flex-1 px-5 py-6 lg:px-8">{children}</main>
+          <div className="flex min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
+            <main className="flex-1 min-w-0 max-w-full px-4 py-6 sm:px-6 lg:px-8 overflow-x-hidden">{children}</main>
             <footer className="mx-auto max-w-[1400px] px-6 py-8 text-center text-[11px] text-text/30">
               PO-LICE presents cited evidence; authorised reviewers make decisions.
             </footer>

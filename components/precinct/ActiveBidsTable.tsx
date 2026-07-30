@@ -6,7 +6,7 @@ import { ChevronRight, RefreshCw } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import { procurementApi, type BidRecord } from "@/lib/api";
-import { displayCheckName, inCrore } from "@/lib/recordUtils";
+import { displayCheckName, formatCroreValue } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
 
 type Row = {
@@ -93,25 +93,25 @@ export default function ActiveBidsTable() {
 
       {(source === "live" || source === "empty") && (
         <div className="overflow-x-auto rounded-xl border border-line bg-card shadow-xs">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm border-collapse">
             <colgroup>
-              <col className="w-[28%] min-w-[180px]" />
-              <col className="w-[14%] whitespace-nowrap" />
-              <col className="w-[14%] whitespace-nowrap" />
-              <col className="w-[14%] whitespace-nowrap" />
-              <col className="w-[15%] whitespace-nowrap" />
-              <col className="w-[12%] whitespace-nowrap" />
-              <col className="w-[3%]" />
+              <col className="w-[26%] min-w-[190px]" />
+              <col className="w-[14%] min-w-[120px]" />
+              <col className="w-[12%] min-w-[100px]" />
+              <col className="w-[12%] min-w-[100px]" />
+              <col className="w-[14%] min-w-[110px]" />
+              <col className="w-[15%] min-w-[120px]" />
+              <col className="w-[7%] min-w-[40px]" />
             </colgroup>
             <thead>
-              <tr className="border-b-2 border-line text-left table-header bg-surface/50">
-                <th className="px-4 py-3">Vendor</th>
-                <th className="px-4 py-3">Upfront cost</th>
-                <th className="px-4 py-3">Engineering</th>
-                <th className="px-4 py-3">Carbon</th>
-                <th className="px-4 py-3">Vendor reliability</th>
-                <th className="px-4 py-3">5-year cost</th>
-                <th className="px-4 py-3" />
+              <tr className="border-b-2 border-line table-header bg-surface/50">
+                <th className="px-4 py-3 text-left">Vendor</th>
+                <th className="px-4 py-3 text-right">Upfront (₹ Cr)</th>
+                <th className="px-4 py-3 text-center">Engineering</th>
+                <th className="px-4 py-3 text-center">Carbon</th>
+                <th className="px-4 py-3 text-center">Vendor reliability</th>
+                <th className="px-4 py-3 text-right">5-yr TCO (₹ Cr)</th>
+                <th className="px-4 py-3 text-right" />
               </tr>
             </thead>
             <tbody className="font-mono">
@@ -135,41 +135,42 @@ export default function ActiveBidsTable() {
                       aria-label={`Review bid from ${row.vendor}`}
                       className="group cursor-pointer border-b border-line/40 transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10"
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-left">
                         <div className="flex items-center gap-2">
                           <span
-                            className="h-2 w-2 rounded-full"
+                            className="h-2 w-2 rounded-full shrink-0"
                             style={{ backgroundColor: row.rejected ? COLORS.rose : COLORS.cyan }}
                           />
-                          <span className="font-sans font-medium text-text">{row.vendor}</span>
-                          {row.rejected && (
-                            <span className="rounded-md bg-rose/15 px-2 py-0.5 text-[9px] font-extrabold uppercase text-rose border border-rose/30 shadow-xs">
-                              action needed
-                            </span>
-                          )}
+                          <span className="font-sans font-semibold text-text truncate">{row.vendor}</span>
                         </div>
-                        <div className="ml-4 mt-0.5 text-[11px] font-medium text-text/45">{row.model}</div>
+                        <div className="ml-4 mt-0.5 text-[11px] font-medium text-text/45 truncate">{row.model}</div>
                       </td>
-                      <td className="px-4 py-3 tabular-nums font-semibold text-text/85">{inCrore(row.cost)}</td>
-                      <td className="px-4 py-3">
-                        <PatrolBadge status={engineering} size="sm" />
+                      <td className="px-4 py-3 text-right tabular-nums font-semibold text-text">{formatCroreValue(row.cost)}</td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex justify-center">
+                          <PatrolBadge status={engineering} size="sm" />
+                        </div>
                       </td>
-                      <td className="px-4 py-3">
-                        <PatrolBadge status={carbon} size="sm" />
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex justify-center">
+                          <PatrolBadge status={carbon} size="sm" />
+                        </div>
                       </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-extrabold tabular-nums border shadow-xs"
-                          style={{
-                            color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan,
-                            backgroundColor: risk != null && risk > 6 ? `${COLORS.rose}1f` : `${COLORS.cyan}1f`,
-                            borderColor: risk != null && risk > 6 ? `${COLORS.rose}50` : `${COLORS.cyan}50`,
-                          }}
-                        >
-                          {risk == null ? "—" : `${risk}/10`}
-                        </span>
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex justify-center">
+                          <span
+                            className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-extrabold tabular-nums border shadow-xs"
+                            style={{
+                              color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan,
+                              backgroundColor: risk != null && risk > 6 ? `${COLORS.rose}1f` : `${COLORS.cyan}1f`,
+                              borderColor: risk != null && risk > 6 ? `${COLORS.rose}50` : `${COLORS.cyan}50`,
+                            }}
+                          >
+                            {risk == null ? "—" : `${risk}/10`}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-4 py-3 tabular-nums font-semibold text-text/85">{inCrore(row.tco)}</td>
+                      <td className="px-4 py-3 text-right tabular-nums font-semibold text-text">{formatCroreValue(row.tco)}</td>
                       <td className="px-4 py-3 text-right">
                         <ChevronRight className="ml-auto h-4 w-4 text-text/20 transition-transform group-hover:translate-x-0.5 group-hover:text-text/60" />
                       </td>

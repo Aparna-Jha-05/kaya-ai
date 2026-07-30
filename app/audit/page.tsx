@@ -31,28 +31,39 @@ function exportCsv(rows: ActivityEvent[]) {
 
 function passFailCell(value: "PASS" | "FAIL" | "FLAG") {
   return (
-    <span
-      className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${
-        value === "FAIL" ? "bg-rose/15 text-rose" : value === "FLAG" ? "bg-amber/15 text-amber" : "bg-cyan/10 text-cyan"
-      }`}
-    >
-      {value}
-    </span>
+    <div className="flex justify-center">
+      <PatrolBadge status={value} size="sm" />
+    </div>
   );
 }
 
 function riskCell(value: "Low" | "Med" | "High" | "Unknown") {
-  const color = value === "High" ? "text-rose" : value === "Low" ? "text-cyan" : "text-amber";
-  return <span className={`font-mono text-xs font-semibold ${color}`}>{value}</span>;
+  const color = value === "High" ? COLORS.rose : value === "Low" ? COLORS.cyan : COLORS.amber;
+  return (
+    <div className="flex justify-center">
+      <span
+        className="inline-flex items-center rounded-md px-2 py-0.5 font-mono text-xs font-extrabold tabular-nums border shadow-xs"
+        style={{
+          color,
+          backgroundColor: `${color}1f`,
+          borderColor: `${color}50`,
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
 }
 
 function decisionCell(value: ScorecardRow["decision"]) {
   const color = value === "REJECT" ? COLORS.rose : value === "RECOMMENDED" ? COLORS.cyan : COLORS.amber;
   const label = value === "REJECT" ? "Do not select" : value === "RECOMMENDED" ? "Ready" : "Needs review";
   return (
-    <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ color, backgroundColor: `${color}18` }}>
-      {label}
-    </span>
+    <div className="flex justify-center">
+      <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs" style={{ color, backgroundColor: `${color}20`, borderColor: `${color}50` }}>
+        {label}
+      </span>
+    </div>
   );
 }
 
@@ -126,27 +137,27 @@ export default function AuditPage() {
           caption="Per-bid summary of all four patrol results and 5-year TCO²."
         />
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm border-collapse">
             <colgroup>
               <col className="w-[20%] min-w-[150px]" />
-              <col className="w-[11%] whitespace-nowrap" />
-              <col className="w-[11%] whitespace-nowrap" />
-              <col className="w-[11%] whitespace-nowrap" />
-              <col className="w-[11%] whitespace-nowrap" />
-              <col className="w-[11%] whitespace-nowrap" />
-              <col className="w-[12%] whitespace-nowrap" />
-              <col className="w-[13%] whitespace-nowrap" />
+              <col className="w-[12%] min-w-[110px]" />
+              <col className="w-[11%] min-w-[95px]" />
+              <col className="w-[11%] min-w-[95px]" />
+              <col className="w-[11%] min-w-[95px]" />
+              <col className="w-[11%] min-w-[95px]" />
+              <col className="w-[13%] min-w-[110px]" />
+              <col className="w-[11%] min-w-[100px]" />
             </colgroup>
             <thead>
-              <tr className="border-b-2 border-line table-header text-left bg-surface/50">
-                <th className="px-4 py-3 font-bold">Vendor</th>
-                <th className="px-4 py-3 font-bold">Upfront</th>
-                <th className="px-4 py-3 font-bold">Engineering</th>
-                <th className="px-4 py-3 font-bold">Carbon</th>
-                <th className="px-4 py-3 font-bold">Vendor risk</th>
-                <th className="px-4 py-3 font-bold">Schedule risk</th>
-                <th className="px-4 py-3 font-bold">5-yr TCO²</th>
-                <th className="px-4 py-3 font-bold">Decision</th>
+              <tr className="border-b-2 border-line table-header bg-surface/50">
+                <th className="px-4 py-3 text-left font-bold">Vendor</th>
+                <th className="px-4 py-3 text-right font-bold">Upfront (₹ Cr)</th>
+                <th className="px-4 py-3 text-center font-bold">Engineering</th>
+                <th className="px-4 py-3 text-center font-bold">Carbon</th>
+                <th className="px-4 py-3 text-center font-bold">Vendor risk</th>
+                <th className="px-4 py-3 text-center font-bold">Schedule risk</th>
+                <th className="px-4 py-3 text-right font-bold">5-yr TCO (₹ Cr)</th>
+                <th className="px-4 py-3 text-center font-bold">Decision</th>
               </tr>
             </thead>
             <tbody>
@@ -165,18 +176,18 @@ export default function AuditPage() {
               ) : scorecards.length ? (
                 scorecards.map((row) => (
                   <tr key={row.id} className="border-b border-line/40 align-middle transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
-                    <td className="px-4 py-3 font-semibold text-text">{row.vendor}</td>
-                    <td className="px-4 py-3 font-mono text-text/80">
-                      {row.upfront_cost_cr == null ? "—" : `₹${row.upfront_cost_cr.toFixed(2)} Cr`}
+                    <td className="px-4 py-3 text-left font-semibold text-text truncate">{row.vendor}</td>
+                    <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">
+                      {row.upfront_cost_cr == null ? "—" : `₹${row.upfront_cost_cr.toFixed(2)}`}
                     </td>
-                    <td className="px-4 py-3">{passFailCell(row.engineering)}</td>
-                    <td className="px-4 py-3">{passFailCell(row.carbon)}</td>
-                    <td className="px-4 py-3">{riskCell(row.vendorRisk)}</td>
-                    <td className="px-4 py-3">{riskCell(row.scheduleRisk)}</td>
-                    <td className="px-4 py-3 font-mono text-text/80">
-                      {row.tco2_cr == null ? "—" : `₹${row.tco2_cr.toFixed(2)} Cr`}
+                    <td className="px-4 py-3 text-center">{passFailCell(row.engineering)}</td>
+                    <td className="px-4 py-3 text-center">{passFailCell(row.carbon)}</td>
+                    <td className="px-4 py-3 text-center">{riskCell(row.vendorRisk)}</td>
+                    <td className="px-4 py-3 text-center">{riskCell(row.scheduleRisk)}</td>
+                    <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">
+                      {row.tco2_cr == null ? "—" : `₹${row.tco2_cr.toFixed(2)}`}
                     </td>
-                    <td className="px-4 py-3">{decisionCell(row.decision)}</td>
+                    <td className="px-4 py-3 text-center">{decisionCell(row.decision)}</td>
                   </tr>
                 ))
               ) : (

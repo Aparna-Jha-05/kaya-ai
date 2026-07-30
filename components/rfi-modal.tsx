@@ -84,13 +84,13 @@ export default function RFIModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80 p-4 backdrop-blur-md" role="presentation" onMouseDown={onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="rfi-title" className="w-full max-w-2xl rounded-xl border border-line bg-card p-6 shadow-2xl animate-in fade-in zoom-in duration-200" onMouseDown={(event) => event.stopPropagation()}>
-        <div className="mb-4 flex items-center justify-between border-b border-line pb-4">
-          <div>
+      <div role="dialog" aria-modal="true" aria-labelledby="rfi-title" className="w-full max-w-2xl min-w-0 max-w-full overflow-hidden rounded-2xl border border-line border-b-2 bg-card p-6 shadow-2xl animate-in fade-in zoom-in duration-200" onMouseDown={(event) => event.stopPropagation()}>
+        <div className="mb-4 flex items-center justify-between gap-3 border-b border-line pb-4 min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="page-eyebrow mb-0.5">
               REQUEST FOR INFORMATION
             </div>
-            <h3 id="rfi-title" className="text-lg font-bold flex items-center gap-2">
+            <h3 id="rfi-title" className="text-lg font-bold flex items-center gap-2 truncate">
               Request information
             </h3>
           </div>
@@ -98,13 +98,13 @@ export default function RFIModal({
             ref={closeRef}
             onClick={onClose}
             aria-label="Close RFI draft"
-            className="inline-flex items-center gap-1 rounded border border-line px-2 py-1 text-xs text-text/60 hover:bg-surface hover:text-text"
+            className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-xs font-bold text-text/70 hover:bg-surface hover:text-text tactile-press shadow-xs"
           >
             <X className="h-3.5 w-3.5" /> Close
           </button>
         </div>
 
-        <p className="mb-3 text-xs text-text/60">
+        <p className="mb-3 text-xs font-medium text-text/60 break-words">
           This server-generated draft is built from recorded findings for {vendorName}. Review it before recording approval.
         </p>
 
@@ -114,7 +114,7 @@ export default function RFIModal({
           onChange={(e) => setEmailBody(e.target.value)}
           disabled={loading || !rfiId}
           placeholder={loading ? "Generating the evidence-bound draft…" : "RFI draft unavailable."}
-          className="h-56 w-full resize-none rounded-lg border border-line bg-inset p-3 font-mono text-xs leading-relaxed text-text outline-none focus:border-cyan"
+          className="h-56 w-full max-w-full min-w-0 box-border resize-none rounded-xl border border-line bg-surface p-4 font-mono text-xs leading-relaxed text-text outline-none focus:border-cyan shadow-xs"
         />
 
         <div className="mt-5 flex items-center justify-between border-t border-line pt-3">

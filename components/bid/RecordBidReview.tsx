@@ -58,16 +58,16 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-line border-b-2 bg-card p-5 shadow-xs">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between min-w-0 max-w-full">
+          <div className="min-w-0 flex-1">
             <p className="page-eyebrow">Bid review</p>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              <h2 className="text-xl font-bold text-text">{source.vendor_name}</h2>
-              <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase shadow-xs" style={{ color, backgroundColor: `${color}18` }}>
+            <div className="mt-1 flex flex-wrap items-center gap-2 min-w-0">
+              <h2 className="text-xl font-bold text-text truncate">{source.vendor_name}</h2>
+              <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase shadow-xs shrink-0" style={{ color, backgroundColor: `${color}18` }}>
                 {recommendationLabel(record.scorecard.recommendation)}
               </span>
             </div>
-            <p className="mt-1 text-sm font-medium text-text/60">
+            <p className="mt-1 text-sm font-medium text-text/60 truncate">
               {equipment.equipment_type} · {equipment.model_number} · {record.filename}
             </p>
           </div>
@@ -266,12 +266,19 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
             caption="Traceable source excerpts and page location details extracted from the PDF text layer."
           />
           <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono">
+            <table className="w-full text-xs font-mono border-collapse">
+              <colgroup>
+                <col className="w-[18%] min-w-[120px]" />
+                <col className="w-[18%] min-w-[120px]" />
+                <col className="w-[10%] min-w-[70px]" />
+                <col className="w-[24%] min-w-[150px]" />
+                <col className="w-[30%] min-w-[200px]" />
+              </colgroup>
               <thead>
                 <tr className="border-b-2 border-line text-left table-header bg-surface/50">
                   <th className="px-4 py-2.5 font-bold">Field</th>
                   <th className="px-4 py-2.5 font-bold">Value</th>
-                  <th className="px-4 py-2.5 font-bold">Page</th>
+                  <th className="px-4 py-2.5 font-bold text-center">Page</th>
                   <th className="px-4 py-2.5 font-bold">Bounding Box</th>
                   <th className="px-4 py-2.5 font-bold">Source Excerpt</th>
                 </tr>
@@ -280,8 +287,8 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
                 {candidates.map((c, i) => (
                   <tr key={i} className="border-b border-line/40 align-top transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
                     <td className="px-4 py-2.5 font-bold text-cyan">{c.field}</td>
-                    <td className="px-4 py-2.5 text-text">{String(c.normalized_value)} {c.unit ?? ""}</td>
-                    <td className="px-4 py-2.5 text-text/60">{c.page ?? "—"}</td>
+                    <td className="px-4 py-2.5 text-text font-semibold">{String(c.normalized_value)} {c.unit ?? ""}</td>
+                    <td className="px-4 py-2.5 text-text/60 text-center">{c.page ?? "—"}</td>
                     <td className="px-4 py-2.5">
                       {c.bbox ? (
                         <span className="rounded-md bg-cyan/10 px-1.5 py-0.5 font-bold text-cyan border border-cyan/20">
@@ -310,12 +317,19 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
             caption="Parsed drawing text annotations. These are detected text annotations, not full CAD/BIM model geometry."
           />
           <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono">
+            <table className="w-full text-xs font-mono border-collapse">
+              <colgroup>
+                <col className="w-[22%] min-w-[140px]" />
+                <col className="w-[20%] min-w-[130px]" />
+                <col className="w-[12%] min-w-[80px]" />
+                <col className="w-[26%] min-w-[160px]" />
+                <col className="w-[20%] min-w-[130px]" />
+              </colgroup>
               <thead>
                 <tr className="border-b-2 border-line text-left table-header bg-surface/50">
                   <th className="px-4 py-2.5 font-bold">Annotation Field</th>
                   <th className="px-4 py-2.5 font-bold">Value</th>
-                  <th className="px-4 py-2.5 font-bold">Page</th>
+                  <th className="px-4 py-2.5 font-bold text-center">Page</th>
                   <th className="px-4 py-2.5 font-bold">Coordinates</th>
                   <th className="px-4 py-2.5 font-bold">Status</th>
                 </tr>
@@ -324,8 +338,8 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
                 {annotations.map((a, i) => (
                   <tr key={i} className="border-b border-line/40 align-top transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
                     <td className="px-4 py-2.5 font-bold text-amber">{a.field}</td>
-                    <td className="px-4 py-2.5 text-text">{a.normalized_value} {a.unit}</td>
-                    <td className="px-4 py-2.5 text-text/60">Page {a.page}</td>
+                    <td className="px-4 py-2.5 text-text font-semibold">{a.normalized_value} {a.unit}</td>
+                    <td className="px-4 py-2.5 text-text/60 text-center">Page {a.page}</td>
                     <td className="px-4 py-2.5 text-text/70">[{a.bbox.map((v) => v.toFixed(1)).join(", ")}]</td>
                     <td className="px-4 py-2.5 text-text/50">{a.interpretation_status}</td>
                   </tr>

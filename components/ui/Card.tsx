@@ -11,7 +11,7 @@ export default function Card({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-line border-b-2 bg-card shadow-xs transition-all duration-150 hover:border-cyan/40 ${className}`}
+      className={`rounded-2xl border border-line border-b-2 bg-card shadow-xs transition-all duration-150 hover:border-cyan/40 max-w-full overflow-hidden ${className}`}
       style={accent ? { borderLeft: `3px solid ${accent}` } : undefined}
     >
       {children}
@@ -33,7 +33,7 @@ export function CardHeader({
       <div className="min-w-0 flex-1">
         <h3 className="text-[15px] font-bold tracking-tight text-text truncate">{title}</h3>
         {caption && (
-          <p className="mt-1 text-[13px] leading-snug text-text/60 font-medium">{caption}</p>
+          <p className="mt-1 text-[13px] leading-snug text-text/60 font-medium break-words">{caption}</p>
         )}
       </div>
       {right}

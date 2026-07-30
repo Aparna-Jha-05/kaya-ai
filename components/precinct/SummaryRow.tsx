@@ -62,21 +62,21 @@ export default function SummaryRow() {
       value: metrics?.total,
       color: COLORS.text,
       Icon: FileCheck2,
-      sub: metrics?.offline ? "no service connection" : "in the current review set",
+      sub: metrics?.offline ? "Offline" : "Active set",
     },
     {
       label: "Hard-limit failures",
       value: metrics?.failures,
       color: COLORS.rose,
       Icon: AlertOctagon,
-      sub: "engineering or carbon constraint exceeded",
+      sub: "Constraints exceeded",
     },
     {
       label: "Documents missing",
       value: metrics?.missingDocs,
       color: COLORS.amber,
       Icon: FileWarning,
-      sub: "safety certificates not on record",
+      sub: "Certificates missing",
     },
   ];
 
