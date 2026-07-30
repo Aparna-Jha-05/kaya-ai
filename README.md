@@ -40,7 +40,7 @@ need up to 45 seconds to wake after inactivity.
 All vendor names, documents, prices, and evidence in the public demonstration
 are synthetic competition fixtures.
 
-## Judge's 60-second tour
+## 60-second tour
 
 1. [Open the live application](https://po-lice.vercel.app).
 2. Select **CoolTech**, the lowest-cost bid at ₹3.80 Cr.
@@ -165,8 +165,7 @@ Changes should use a short-lived feature branch and a pull request into
 
 ## Team
 
-| Team member | Primary contribution |
-| --- | --- |
-| **Jb Anmol** | Full-stack integration, extraction, backend orchestration, and release verification |
-| **Pratham Amritkar** | RAG and AI systems |
-| **Aparna Jha** | Procurement-domain specifications and QA |
+| Team member 
+| **Jb Anmol**, IITM
+| **Pratham Amritkar**, IITM
+| **Aparna Jha**, IITM
