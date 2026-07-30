@@ -92,7 +92,7 @@ export default function ActiveBidsTable() {
       )}
 
       {(source === "live" || source === "empty") && (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-xl border border-line bg-card shadow-xs">
           <table className="w-full text-sm">
             <colgroup>
               <col className="w-[28%] min-w-[180px]" />
@@ -104,14 +104,14 @@ export default function ActiveBidsTable() {
               <col className="w-[3%]" />
             </colgroup>
             <thead>
-              <tr className="border-b border-white/10 text-left table-header">
-                <th className="px-4 py-2.5">Vendor</th>
-                <th className="px-4 py-2.5">Upfront cost</th>
-                <th className="px-4 py-2.5">Engineering</th>
-                <th className="px-4 py-2.5">Carbon</th>
-                <th className="px-4 py-2.5">Vendor reliability</th>
-                <th className="px-4 py-2.5">5-year cost</th>
-                <th className="px-4 py-2.5" />
+              <tr className="border-b-2 border-line text-left table-header bg-surface/50">
+                <th className="px-4 py-3">Vendor</th>
+                <th className="px-4 py-3">Upfront cost</th>
+                <th className="px-4 py-3">Engineering</th>
+                <th className="px-4 py-3">Carbon</th>
+                <th className="px-4 py-3">Vendor reliability</th>
+                <th className="px-4 py-3">5-year cost</th>
+                <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody className="font-mono">
@@ -133,7 +133,7 @@ export default function ActiveBidsTable() {
                       role="link"
                       tabIndex={0}
                       aria-label={`Review bid from ${row.vendor}`}
-                      className="group cursor-pointer border-b border-white/5 transition-colors hover:bg-white/[0.03]"
+                      className="group cursor-pointer border-b border-line/40 transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10"
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">

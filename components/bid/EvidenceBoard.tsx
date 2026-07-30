@@ -125,28 +125,28 @@ export default function EvidenceBoard({ record }: { record: BidRecord }) {
           </svg>
           {nodes.map((nd) => (
             <button key={nd.id} type="button" onClick={() => setSelectedId(nd.id === selectedId ? null : nd.id)}
-              className={`absolute flex cursor-pointer flex-col justify-center rounded-lg border bg-surface px-3 py-2 text-left shadow-lg transition-colors hover:bg-card ${selectedId === nd.id ? "border-cyan/60" : "border-white/10"}`}
-              style={{ left: nd.x, top: nd.y, width: NODE_W, height: NODE_H, borderLeft: `3px solid ${nd.color}` }}>
-              <div className="mb-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.06em]" style={{ color: nd.color }}>{nd.kind}</div>
-              <div className="text-xs leading-snug text-text/85">{nd.label}</div>
+              className={`absolute flex cursor-pointer flex-col justify-center rounded-xl border bg-surface px-3.5 py-2.5 text-left shadow-xs transition-all hover:bg-card tactile-press ${selectedId === nd.id ? "border-cyan ring-2 ring-cyan/40" : "border-line"}`}
+              style={{ left: nd.x, top: nd.y, width: NODE_W, height: NODE_H, borderLeft: `3.5px solid ${nd.color}` }}>
+              <div className="mb-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.08em]" style={{ color: nd.color }}>{nd.kind}</div>
+              <div className="text-xs font-semibold leading-snug text-text">{nd.label}</div>
             </button>
           ))}
         </div>
       </div>
       {selected?.details && (
-        <div className="border-t border-white/5 bg-inset/40 px-4 py-3">
+        <div className="border-t border-line bg-surface/50 px-4 py-3.5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-wider" style={{ color: selected.color }}>{selected.kind} details</p>
-              <p className="mt-1 text-xs text-text/65">{selected.label}</p>
+              <p className="font-mono text-[10px] font-bold uppercase tracking-wider" style={{ color: selected.color }}>{selected.kind} details</p>
+              <p className="mt-1 text-xs font-medium text-text/70">{selected.label}</p>
             </div>
-            <button type="button" onClick={() => setSelectedId(null)} className="text-xs text-text/45 hover:text-text">Close</button>
+            <button type="button" onClick={() => setSelectedId(null)} className="text-xs font-semibold text-text/50 hover:text-text">Close</button>
           </div>
           <dl className="mt-3 grid gap-2 sm:grid-cols-2">
             {selected.details.map((d) => (
-              <div key={d.label} className="rounded border border-white/10 bg-surface px-3 py-2">
-                <dt className="font-mono text-[9px] uppercase tracking-wide text-text/40">{d.label}</dt>
-                <dd className="mt-1 font-mono text-xs text-text/75">{d.value}</dd>
+              <div key={d.label} className="rounded-xl border border-line bg-card px-3 py-2 shadow-xs">
+                <dt className="font-mono text-[9px] font-bold uppercase tracking-wider text-text/45">{d.label}</dt>
+                <dd className="mt-1 font-mono text-xs text-text/80">{d.value}</dd>
               </div>
             ))}
           </dl>

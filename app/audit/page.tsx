@@ -138,15 +138,15 @@ export default function AuditPage() {
               <col className="w-[13%] whitespace-nowrap" />
             </colgroup>
             <thead>
-              <tr className="border-b border-white/10 table-header text-left">
-                <th className="px-4 py-2.5">Vendor</th>
-                <th className="px-4 py-2.5">Upfront</th>
-                <th className="px-4 py-2.5">Engineering</th>
-                <th className="px-4 py-2.5">Carbon</th>
-                <th className="px-4 py-2.5">Vendor risk</th>
-                <th className="px-4 py-2.5">Schedule risk</th>
-                <th className="px-4 py-2.5">5-yr TCO²</th>
-                <th className="px-4 py-2.5">Decision</th>
+              <tr className="border-b-2 border-line table-header text-left bg-surface/50">
+                <th className="px-4 py-3 font-bold">Vendor</th>
+                <th className="px-4 py-3 font-bold">Upfront</th>
+                <th className="px-4 py-3 font-bold">Engineering</th>
+                <th className="px-4 py-3 font-bold">Carbon</th>
+                <th className="px-4 py-3 font-bold">Vendor risk</th>
+                <th className="px-4 py-3 font-bold">Schedule risk</th>
+                <th className="px-4 py-3 font-bold">5-yr TCO²</th>
+                <th className="px-4 py-3 font-bold">Decision</th>
               </tr>
             </thead>
             <tbody>
@@ -158,14 +158,14 @@ export default function AuditPage() {
                 </tr>
               ) : recState === "offline" ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-rose">
+                  <td colSpan={8} className="px-4 py-10 text-center text-rose font-medium">
                     Scorecard service connection failed. Click &quot;Retry connection&quot; above.
                   </td>
                 </tr>
               ) : scorecards.length ? (
                 scorecards.map((row) => (
-                  <tr key={row.id} className="border-b border-white/5 align-middle hover:bg-white/[0.02]">
-                    <td className="px-4 py-3 font-medium text-text">{row.vendor}</td>
+                  <tr key={row.id} className="border-b border-line/40 align-middle transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
+                    <td className="px-4 py-3 font-semibold text-text">{row.vendor}</td>
                     <td className="px-4 py-3 font-mono text-text/80">
                       {row.upfront_cost_cr == null ? "—" : `₹${row.upfront_cost_cr.toFixed(2)} Cr`}
                     </td>
@@ -193,7 +193,7 @@ export default function AuditPage() {
 
       {/* Activity Event Log */}
       {evState === "offline" && (
-        <p className="rounded-lg border border-amber/25 bg-amber/5 px-4 py-2.5 text-sm text-amber/90">
+        <p className="rounded-xl border border-amber/30 bg-amber/10 px-4 py-3 text-sm font-semibold text-amber">
           The activity service is unavailable. Click &quot;Retry connection&quot; above when the service is online.
         </p>
       )}
@@ -213,13 +213,13 @@ export default function AuditPage() {
               <col className="w-[25%] min-w-[200px]" />
             </colgroup>
             <thead>
-              <tr className="border-b border-white/10 table-header text-left">
-                <th className="px-4 py-2.5">Timestamp</th>
-                <th className="px-4 py-2.5">Bid</th>
-                <th className="px-4 py-2.5">Compliance check</th>
-                <th className="px-4 py-2.5">Action</th>
-                <th className="px-4 py-2.5">Rule</th>
-                <th className="px-4 py-2.5">Evidence</th>
+              <tr className="border-b-2 border-line table-header text-left bg-surface/50">
+                <th className="px-4 py-3 font-bold">Timestamp</th>
+                <th className="px-4 py-3 font-bold">Bid</th>
+                <th className="px-4 py-3 font-bold">Compliance check</th>
+                <th className="px-4 py-3 font-bold">Action</th>
+                <th className="px-4 py-3 font-bold">Rule</th>
+                <th className="px-4 py-3 font-bold">Evidence</th>
               </tr>
             </thead>
             <tbody className="font-mono text-[12px]">
@@ -231,7 +231,7 @@ export default function AuditPage() {
                 </tr>
               ) : events.length ? (
                 events.map((ev) => (
-                  <tr key={ev.id} className="border-b border-white/5 align-top hover:bg-white/[0.02]">
+                  <tr key={ev.id} className="border-b border-line/40 align-top transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
                     <td className="whitespace-nowrap px-4 py-2.5 text-text/50">{new Date(ev.timestamp).toLocaleString()}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-text/80">{ev.bid_id}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-text/70">{displayCheckName(ev.check_name)}</td>

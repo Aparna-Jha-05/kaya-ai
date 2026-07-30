@@ -102,11 +102,16 @@ textarea {
   font: inherit;
 }
 
-/* Dense uppercase utility text remains legible on standard laptop displays. */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Duolingo-grade tactile utility text & crisp labels. */
 .ui-label {
   font-family: var(--font-mono), monospace;
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.08em;
   line-height: 1.35;
 }
@@ -114,7 +119,7 @@ textarea {
 .page-eyebrow {
   font-family: var(--font-mono), monospace;
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-cyan));
@@ -123,10 +128,31 @@ textarea {
 .table-header {
   font-family: var(--font-mono), monospace;
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: rgba(var(--color-text), 0.45);
+  letter-spacing: 0.08em;
+  color: rgba(var(--color-text), 0.55);
+}
+
+/* Tactile 3D & Crisp Card Depth Utilities */
+.tactile-card {
+  background-color: rgb(var(--color-card));
+  border: 1px solid rgb(var(--color-line));
+  border-bottom: 2px solid rgb(var(--color-line));
+  border-radius: 1rem;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tactile-card:hover {
+  border-color: rgba(var(--color-cyan), 0.4);
+}
+
+.tactile-press {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.tactile-press:active {
+  transform: translateY(1.5px);
 }
 
 /* Code and machine values need a little more leading than prose at small sizes. */

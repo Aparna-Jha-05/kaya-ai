@@ -24,13 +24,13 @@ export default function AppSidebar() {
   };
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-white/10 bg-bg/70 px-3 py-5 lg:flex">
-      <Link href="/" className="mb-7 flex items-center gap-2.5 px-2">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-cyan/15 ring-1 ring-cyan/40">
-          <Image src="/icon.svg" alt="PO-LICE Icon" width={20} height={20} priority />
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-line bg-card/40 px-3 py-5 lg:flex">
+      <Link href="/" className="mb-7 flex items-center gap-2.5 px-2 group">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan/15 ring-1 ring-cyan/40 shadow-xs group-hover:scale-105 transition-transform duration-150">
+          <Image src="/icon.svg" alt="PO-LICE Icon" width={22} height={22} priority />
         </span>
         <div>
-          <span className="block font-mono text-sm font-bold tracking-tight text-text">PO-LICE</span>
+          <span className="block font-mono text-sm font-bold tracking-tight text-text group-hover:text-cyan transition-colors">PO-LICE</span>
           <span className="block text-[10px] text-text/45 leading-tight font-medium">Purchase Order Liability, Intelligence &amp; Compliance Engine</span>
         </div>
       </Link>
@@ -42,7 +42,9 @@ export default function AppSidebar() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors ${active ? "bg-cyan/10 font-medium text-cyan" : "text-text/55 hover:bg-white/5 hover:text-text"
+              className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-all duration-150 ${active
+                  ? "bg-cyan/15 font-bold text-cyan ring-1 ring-cyan/30 shadow-xs"
+                  : "text-text/60 font-semibold hover:bg-surface hover:text-text"
                 }`}
             >
               <Icon className="h-4 w-4" />
@@ -52,12 +54,12 @@ export default function AppSidebar() {
         })}
       </nav>
 
-      <div className="mt-auto space-y-2 pt-3 border-t border-white/10">
+      <div className="mt-auto space-y-2 pt-3 border-t border-line">
         <Link
           href="/bids/new"
-          className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${isUploadActive
+          className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition-all ${isUploadActive
               ? "bg-cyan/25 ring-1 ring-cyan/50 text-cyan"
-              : "bg-cyan/15 text-cyan hover:bg-cyan/25"
+              : "bg-cyan text-on-accent hover:bg-cyan/90 tactile-press shadow-xs"
             }`}
         >
           <FilePlus2 className="h-4 w-4" />

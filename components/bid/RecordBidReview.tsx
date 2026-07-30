@@ -57,17 +57,17 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
 
   return (
     <div className="space-y-5">
-      <section className="rounded-xl border border-white/10 bg-card/60 p-4">
+      <section className="rounded-2xl border border-line border-b-2 bg-card p-5 shadow-xs">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="page-eyebrow">Bid review</p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <h2 className="text-xl font-semibold text-text">{source.vendor_name}</h2>
-              <span className="rounded px-2 py-1 text-[10px] font-bold uppercase" style={{ color, backgroundColor: `${color}18` }}>
+              <h2 className="text-xl font-bold text-text">{source.vendor_name}</h2>
+              <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase shadow-xs" style={{ color, backgroundColor: `${color}18` }}>
                 {recommendationLabel(record.scorecard.recommendation)}
               </span>
             </div>
-            <p className="mt-1 text-sm text-text/55">
+            <p className="mt-1 text-sm font-medium text-text/60">
               {equipment.equipment_type} · {equipment.model_number} · {record.filename}
             </p>
           </div>
@@ -79,7 +79,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
         </div>
       </section>
 
-      <div className="tab-strip overflow-x-auto border-b border-white/10">
+      <div className="tab-strip overflow-x-auto border-b-2 border-line">
         <div role="tablist" aria-label="Bid review sections" className="flex min-w-max gap-1">
           {tabs.map(({ id, label, Icon }) => (
             <button
@@ -248,9 +248,9 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
             </colgroup>
             <tbody>
               {fields.map(([label, value]) => (
-                <tr key={label} className="border-b border-white/5">
-                  <th className="px-4 py-3 text-left font-medium text-text/55">{label}</th>
-                  <td className="px-4 py-3 font-mono text-text">{value}</td>
+                <tr key={label} className="border-b border-line/40 hover:bg-cyan/5 transition-colors">
+                  <th className="px-4 py-3 text-left font-bold text-text/60">{label}</th>
+                  <td className="px-4 py-3 font-mono font-medium text-text">{value}</td>
                 </tr>
               ))}
             </tbody>
@@ -268,32 +268,32 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
           <div className="overflow-x-auto">
             <table className="w-full text-xs font-mono">
               <thead>
-                <tr className="border-b border-white/10 text-left text-text/40">
-                  <th className="px-4 py-2">Field</th>
-                  <th className="px-4 py-2">Value</th>
-                  <th className="px-4 py-2">Page</th>
-                  <th className="px-4 py-2">Bounding Box</th>
-                  <th className="px-4 py-2">Source Excerpt</th>
+                <tr className="border-b-2 border-line text-left table-header bg-surface/50">
+                  <th className="px-4 py-2.5 font-bold">Field</th>
+                  <th className="px-4 py-2.5 font-bold">Value</th>
+                  <th className="px-4 py-2.5 font-bold">Page</th>
+                  <th className="px-4 py-2.5 font-bold">Bounding Box</th>
+                  <th className="px-4 py-2.5 font-bold">Source Excerpt</th>
                 </tr>
               </thead>
               <tbody>
                 {candidates.map((c, i) => (
-                  <tr key={i} className="border-b border-white/5 align-top">
-                    <td className="px-4 py-2 text-cyan">{c.field}</td>
-                    <td className="px-4 py-2 text-text">{String(c.normalized_value)} {c.unit ?? ""}</td>
-                    <td className="px-4 py-2 text-text/60">{c.page ?? "—"}</td>
-                    <td className="px-4 py-2">
+                  <tr key={i} className="border-b border-line/40 align-top transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
+                    <td className="px-4 py-2.5 font-bold text-cyan">{c.field}</td>
+                    <td className="px-4 py-2.5 text-text">{String(c.normalized_value)} {c.unit ?? ""}</td>
+                    <td className="px-4 py-2.5 text-text/60">{c.page ?? "—"}</td>
+                    <td className="px-4 py-2.5">
                       {c.bbox ? (
-                        <span className="rounded bg-cyan/10 px-1.5 py-0.5 text-cyan">
+                        <span className="rounded-md bg-cyan/10 px-1.5 py-0.5 font-bold text-cyan border border-cyan/20">
                           [{c.bbox.map((v) => v.toFixed(1)).join(", ")}]
                         </span>
                       ) : (
-                        <span className="rounded bg-white/5 px-1.5 py-0.5 text-text/40">
+                        <span className="rounded-md bg-surface px-1.5 py-0.5 text-text/40 border border-line">
                           Region unavailable
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-2 text-text/50 max-w-[260px] truncate">{c.source_excerpt}</td>
+                    <td className="px-4 py-2.5 text-text/60 max-w-[260px] truncate">{c.source_excerpt}</td>
                   </tr>
                 ))}
               </tbody>
@@ -312,22 +312,22 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
           <div className="overflow-x-auto">
             <table className="w-full text-xs font-mono">
               <thead>
-                <tr className="border-b border-white/10 text-left text-text/40">
-                  <th className="px-4 py-2">Annotation Field</th>
-                  <th className="px-4 py-2">Value</th>
-                  <th className="px-4 py-2">Page</th>
-                  <th className="px-4 py-2">Coordinates</th>
-                  <th className="px-4 py-2">Status</th>
+                <tr className="border-b-2 border-line text-left table-header bg-surface/50">
+                  <th className="px-4 py-2.5 font-bold">Annotation Field</th>
+                  <th className="px-4 py-2.5 font-bold">Value</th>
+                  <th className="px-4 py-2.5 font-bold">Page</th>
+                  <th className="px-4 py-2.5 font-bold">Coordinates</th>
+                  <th className="px-4 py-2.5 font-bold">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {annotations.map((a, i) => (
-                  <tr key={i} className="border-b border-white/5 align-top">
-                    <td className="px-4 py-2 text-amber">{a.field}</td>
-                    <td className="px-4 py-2 text-text">{a.normalized_value} {a.unit}</td>
-                    <td className="px-4 py-2 text-text/60">Page {a.page}</td>
-                    <td className="px-4 py-2 text-text/70">[{a.bbox.map((v) => v.toFixed(1)).join(", ")}]</td>
-                    <td className="px-4 py-2 text-text/50">{a.interpretation_status}</td>
+                  <tr key={i} className="border-b border-line/40 align-top transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
+                    <td className="px-4 py-2.5 font-bold text-amber">{a.field}</td>
+                    <td className="px-4 py-2.5 text-text">{a.normalized_value} {a.unit}</td>
+                    <td className="px-4 py-2.5 text-text/60">Page {a.page}</td>
+                    <td className="px-4 py-2.5 text-text/70">[{a.bbox.map((v) => v.toFixed(1)).join(", ")}]</td>
+                    <td className="px-4 py-2.5 text-text/50">{a.interpretation_status}</td>
                   </tr>
                 ))}
               </tbody>
@@ -403,9 +403,9 @@ function ViceSquadCard({ record }: { record: BidRecord }) {
         {entries.length > 0 && (
           <dl className="grid gap-2 sm:grid-cols-2">
             {entries.map(([k, v]) => (
-              <div key={k} className="rounded border border-white/10 bg-inset px-3 py-2">
-                <dt className="font-mono text-[9px] uppercase tracking-wide text-text/40">{k.replaceAll("_", " ")}</dt>
-                <dd className="mt-1 font-mono text-xs text-text/75">
+              <div key={k} className="rounded-xl border border-line bg-surface px-3.5 py-2.5 shadow-xs">
+                <dt className="font-mono text-[9px] font-bold uppercase tracking-wider text-text/50">{k.replaceAll("_", " ")}</dt>
+                <dd className="mt-1 font-mono text-xs font-semibold text-text">
                   {formatEvidenceValue(v)}
                 </dd>
               </div>
@@ -548,54 +548,54 @@ function EvidenceDrawer({
         onMouseDown={(event) => event.stopPropagation()}
         className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-line bg-card shadow-2xl"
       >
-        <div className="flex items-start justify-between border-b border-white/10 px-5 py-4">
+        <div className="flex items-start justify-between border-b border-line px-5 py-4">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-wider text-cyan">Evidence & Location Detail</p>
-            <h3 className="mt-1 text-base font-semibold text-text">{displayCheckName(check.patrol_name)}</h3>
+            <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-cyan">Evidence & Location Detail</p>
+            <h3 className="mt-1 text-base font-bold text-text">{displayCheckName(check.patrol_name)}</h3>
           </div>
-          <button ref={closeRef} type="button" onClick={onClose} className="rounded border border-white/10 px-2 py-1 text-xs text-text/60 hover:text-text">
+          <button ref={closeRef} type="button" onClick={onClose} className="rounded-lg border border-line px-2.5 py-1 text-xs font-bold text-text/70 hover:text-text tactile-press shadow-xs">
             Close
           </button>
         </div>
         <div className="space-y-5 overflow-y-auto p-5">
           <section>
-            <p className="text-[10px] uppercase tracking-wide text-text/40">Patrol Result</p>
-            <p className="mt-2 text-sm text-text/75">{check.reason}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Patrol Result</p>
+            <p className="mt-2 text-sm text-text/80">{check.reason}</p>
           </section>
 
           <section>
-            <p className="text-[10px] uppercase tracking-wide text-text/40">Measured Value vs Constraint Limit</p>
-            <p className="mt-2 break-words text-sm font-mono text-text/75">{evidenceText(check.evidence)}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Measured Value vs Constraint Limit</p>
+            <p className="mt-2 break-words text-sm font-mono text-text/80">{evidenceText(check.evidence)}</p>
           </section>
 
           <section>
-            <p className="text-[10px] uppercase tracking-wide text-text/40">Rule Identifier</p>
-            <code className="mt-2 block break-words rounded bg-inset p-3 text-xs text-text/65">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Rule Identifier</p>
+            <code className="mt-2 block break-words rounded-xl border border-line bg-surface p-3 text-xs text-text/75 shadow-xs">
               {check.rule_broken ?? "No rule exception — constraint satisfied"}
             </code>
           </section>
 
           <section>
-            <p className="text-[10px] uppercase tracking-wide text-text/40">Source Location & Geometry</p>
-            <div className="mt-2 space-y-2 rounded border border-white/10 bg-inset p-3 text-xs font-mono">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Source Location & Geometry</p>
+            <div className="mt-2 space-y-2 rounded-xl border border-line bg-surface p-3.5 text-xs font-mono shadow-xs">
               <div className="flex justify-between">
-                <span className="text-text/40">Page:</span>
+                <span className="text-text/50">Page:</span>
                 <span className="text-text/80">{relevantCandidate?.page != null ? `Page ${relevantCandidate.page}` : "Document text"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text/40">Geometry Region:</span>
-                <span className={relevantCandidate?.bbox ? "text-cyan" : "text-text/40"}>
+                <span className="text-text/50">Geometry Region:</span>
+                <span className={relevantCandidate?.bbox ? "text-cyan font-bold" : "text-text/40"}>
                   {relevantCandidate?.bbox ? `[${relevantCandidate.bbox.map((v) => v.toFixed(1)).join(", ")}]` : "Region unavailable"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text/40">Extractor Type:</span>
+                <span className="text-text/50">Extractor Type:</span>
                 <span className="text-text/70">{relevantCandidate ? "Detected PDF text region" : "Deterministic rule"}</span>
               </div>
               {relevantCandidate?.source_excerpt && (
-                <div className="mt-2 border-t border-white/5 pt-2">
-                  <span className="block text-[10px] text-text/40 uppercase">Cited Excerpt:</span>
-                  <p className="mt-1 text-text/70 italic">&quot;{relevantCandidate.source_excerpt}&quot;</p>
+                <div className="mt-2 border-t border-line/50 pt-2">
+                  <span className="block text-[10px] text-text/50 uppercase font-bold">Cited Excerpt:</span>
+                  <p className="mt-1 text-text/80 italic">&quot;{relevantCandidate.source_excerpt}&quot;</p>
                 </div>
               )}
             </div>

@@ -27,8 +27,8 @@ export default function Tooltip({
     >
       {label}
       {open && body && (
-        <span className="absolute bottom-full left-1/2 z-50 mb-2 w-60 -translate-x-1/2 rounded-lg border border-white/15 bg-card px-3 py-2 text-left text-xs font-normal leading-relaxed text-text/80 shadow-xl">
-          {term && <span className="mb-1 block font-mono text-[10px] font-bold text-cyan">{term}</span>}
+        <span className="absolute bottom-full left-1/2 z-50 mb-2 w-64 -translate-x-1/2 rounded-xl border border-line border-b-2 bg-card px-3.5 py-2.5 text-left text-xs font-medium leading-relaxed text-text shadow-xl">
+          {term && <span className="mb-1 block font-mono text-[10px] font-bold text-cyan tracking-wider">{term}</span>}
           {body}
         </span>
       )}

@@ -18,10 +18,10 @@ export default function TopHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 shrink-0 border-b border-white/10 bg-bg/90 backdrop-blur lg:hidden">
+    <header className="sticky top-0 z-40 shrink-0 border-b border-line bg-bg/90 backdrop-blur lg:hidden">
       <div className="mx-auto flex items-center justify-between gap-x-3 px-4 py-2.5">
         <Link href="/" className="flex items-center gap-2 shrink-0 group">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-cyan/15 ring-1 ring-cyan/40">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan/15 ring-1 ring-cyan/40 shadow-xs">
             <Image src="/icon.svg" alt="PO-LICE Icon" width={20} height={20} priority />
           </span>
           <div className="leading-tight">
@@ -47,15 +47,15 @@ export default function TopHeader() {
             </NavLink>
           </nav>
 
-          <div className="flex shrink-0 items-center gap-1.5 border-l border-white/10 pl-2">
+          <div className="flex shrink-0 items-center gap-1.5 border-l border-line pl-2">
             <ThemeToggle compact />
             <Link
               href="/bids/new"
               title="Upload bid"
               aria-label="Upload bid"
-              className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 transition-colors ${isUploadActive
+              className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line transition-all ${isUploadActive
                   ? "bg-cyan/25 ring-1 ring-cyan/50 text-cyan"
-                  : "bg-surface/80 text-text/70 hover:bg-white/5 hover:text-cyan"
+                  : "bg-surface text-text/80 hover:border-cyan/40 hover:text-cyan tactile-press"
                 }`}
             >
               <FilePlus2 className="h-4 w-4" />

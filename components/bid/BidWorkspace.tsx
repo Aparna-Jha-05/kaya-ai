@@ -32,7 +32,7 @@ export default function BidWorkspace({ initialRecord }: { initialRecord?: BidRec
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-white/10 bg-card/60 p-4" aria-label="Bid processing progress">
+      <div className="rounded-2xl border border-line border-b-2 bg-card p-5 shadow-xs" aria-label="Bid processing progress">
         <div className="flex items-center justify-between gap-1 overflow-x-auto">
           {PIPELINE.map((item, index) => {
             const active = index <= lit;

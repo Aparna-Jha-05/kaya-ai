@@ -28,11 +28,11 @@ export default function TcoChart({ data }: { data: Row[] }) {
 
   if (!mounted) {
     return (
-      <div className="rounded-lg border border-white/10 bg-inset p-4">
-        <div className="mb-3 text-xs font-medium text-text/60">
+      <div className="rounded-xl border border-line bg-surface p-4 shadow-xs">
+        <div className="mb-3 text-xs font-bold text-text/70">
           Upfront cost vs 5-year risk-adjusted cost (₹ Cr) — lower is better
         </div>
-        <div className="flex h-[260px] items-center justify-center text-xs text-text/40">
+        <div className="flex h-[260px] items-center justify-center text-xs font-medium text-text/40">
           Loading cost comparison…
         </div>
       </div>
@@ -40,8 +40,8 @@ export default function TcoChart({ data }: { data: Row[] }) {
   }
 
   return (
-    <div className="rounded-lg border border-white/10 bg-inset p-4">
-      <div className="mb-3 text-xs font-medium text-text/60">
+    <div className="rounded-xl border border-line bg-surface p-4 shadow-xs">
+      <div className="mb-3 text-xs font-bold text-text/70">
         Upfront cost vs 5-year risk-adjusted cost (₹ Cr) — lower is better
       </div>
       <ResponsiveContainer width="100%" height={260}>

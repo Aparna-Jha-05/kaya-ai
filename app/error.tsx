@@ -21,13 +21,13 @@ export default function Error({
         <button
           type="button"
           onClick={() => reset()}
-          className="rounded-lg bg-cyan/15 px-4 py-2 text-sm font-medium text-cyan hover:bg-cyan/25"
+          className="rounded-xl bg-cyan px-4 py-2 text-sm font-bold text-on-accent hover:bg-cyan/90 tactile-press shadow-xs"
         >
           Try again
         </button>
         <Link
           href="/"
-          className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-text/70 hover:bg-white/5"
+          className="rounded-xl border border-line bg-surface px-4 py-2 text-sm font-bold text-text/80 hover:border-cyan/40 hover:text-text tactile-press shadow-xs"
         >
           Return to Queue
         </Link>

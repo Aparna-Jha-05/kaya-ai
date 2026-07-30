@@ -173,7 +173,7 @@ export default function BidPortfolio() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Find vendor, model, or equipment"
-                className="h-10 w-full rounded-lg border border-white/10 bg-inset pl-9 pr-3 text-sm text-text placeholder:text-text/35 focus:border-cyan/50 focus:outline-none"
+                className="h-10 w-full rounded-xl border border-line bg-surface pl-9 pr-3 text-sm font-medium text-text placeholder:text-text/40 focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs"
               />
             </label>
             <label>
@@ -181,7 +181,7 @@ export default function BidPortfolio() {
               <select
                 value={stateFilter}
                 onChange={(event) => setStateFilter(event.target.value as StateFilter)}
-                className="h-10 w-full rounded-lg border border-white/10 bg-inset px-3 text-sm text-text focus:border-cyan/50 focus:outline-none"
+                className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs"
               >
                 <option value="all">Any review state</option>
                 <option value="RECOMMENDED">Ready for decision</option>
@@ -194,7 +194,7 @@ export default function BidPortfolio() {
               <select
                 value={compliance}
                 onChange={(event) => setCompliance(event.target.value as ComplianceFilter)}
-                className="h-10 w-full rounded-lg border border-white/10 bg-inset px-3 text-sm text-text focus:border-cyan/50 focus:outline-none"
+                className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs"
               >
                 <option value="all">Any compliance result</option>
                 <option value="eligible">Hard checks passed</option>
@@ -205,7 +205,7 @@ export default function BidPortfolio() {
               type="button"
               onClick={reset}
               disabled={!resetNeeded}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-white/10 px-3 text-xs text-text/60 hover:border-white/25 hover:text-text disabled:cursor-not-allowed disabled:opacity-35"
+              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-line px-3.5 text-xs font-bold text-text/70 hover:border-cyan/40 hover:text-text tactile-press disabled:cursor-not-allowed disabled:opacity-35 shadow-xs"
             >
               <X className="h-3.5 w-3.5" /> Clear filters
             </button>
@@ -218,11 +218,11 @@ export default function BidPortfolio() {
               return (
                 <label
                   key={bid.id}
-                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs ${
+                  className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-all ${
                     selectedItem
-                      ? "border-cyan/50 bg-cyan/10 text-cyan"
-                      : "border-white/10 text-text/60 hover:border-white/25 hover:text-text"
-                  } ${disabled ? "cursor-not-allowed opacity-45" : "cursor-pointer"}`}
+                      ? "border-cyan bg-cyan/15 text-cyan ring-1 ring-cyan/40 shadow-xs"
+                      : "border-line text-text/70 hover:border-cyan/40 hover:text-text shadow-xs"
+                  } ${disabled ? "cursor-not-allowed opacity-45" : "cursor-pointer tactile-press"}`}
                 >
                   <input
                     type="checkbox"
@@ -266,15 +266,15 @@ export default function BidPortfolio() {
                   <col className="w-[9%] whitespace-nowrap" />
                 </colgroup>
                 <thead>
-                  <tr className="border-b border-white/10 text-left text-[11px] uppercase tracking-wide text-text/40">
-                    <th className="px-4 py-3 font-medium">Bid</th>
-                    <th className="px-4 py-3 font-medium">Upfront cost</th>
-                    <th className="px-4 py-3 font-medium">Engineering</th>
-                    <th className="px-4 py-3 font-medium">Carbon</th>
-                    <th className="px-4 py-3 font-medium">Vendor reliability</th>
-                    <th className="px-4 py-3 font-medium">Schedule impact</th>
-                    <th className="px-4 py-3 font-medium">5-year cost</th>
-                    <th className="px-4 py-3 font-medium">Review state</th>
+                  <tr className="border-b-2 border-line text-left table-header bg-surface/50">
+                    <th className="px-4 py-3 font-bold">Bid</th>
+                    <th className="px-4 py-3 font-bold">Upfront cost</th>
+                    <th className="px-4 py-3 font-bold">Engineering</th>
+                    <th className="px-4 py-3 font-bold">Carbon</th>
+                    <th className="px-4 py-3 font-bold">Vendor reliability</th>
+                    <th className="px-4 py-3 font-bold">Schedule impact</th>
+                    <th className="px-4 py-3 font-bold">5-year cost</th>
+                    <th className="px-4 py-3 font-bold">Review state</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -300,7 +300,7 @@ export default function BidPortfolio() {
                         role="button"
                         tabIndex={0}
                         aria-label={`Inspect ${bid.vendor}`}
-                        className={`cursor-pointer border-b border-white/5 ${activeRow ? "bg-cyan/[0.06]" : "hover:bg-white/[0.025]"}`}
+                        className={`cursor-pointer border-b border-line/40 transition-colors duration-150 ${activeRow ? "bg-cyan/10 font-medium" : "hover:bg-cyan/5 dark:hover:bg-cyan/10"}`}
                       >
                         <td className="px-4 py-3">
                           <p className="font-medium text-text">{bid.vendor}</p>
@@ -333,9 +333,9 @@ export default function BidPortfolio() {
             </div>
 
             {active && active.upfront != null && (
-              <div className="border-t border-white/10 p-4">
-                <p className="font-mono text-[10px] uppercase tracking-wider text-cyan">Cost scenario</p>
-                <p className="mt-1 text-xs text-text/55">Adjust commercial assumptions; the bid service recalculates the result.</p>
+              <div className="border-t border-line p-4">
+                <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-cyan">Cost scenario</p>
+                <p className="mt-1 text-xs text-text/60 font-medium">Adjust commercial assumptions; the bid service recalculates the result.</p>
                 <div className="mt-3">
                   <TCOSlider key={active.id} baseCapexCr={(active.upfront ?? 0) / 10_000_000} onTCOChange={updateScenario} />
                 </div>
@@ -379,10 +379,10 @@ function Inspector({ bid }: { bid: Comparable }) {
   const color = recommendationTone(bid.recommendation) === "rose" ? COLORS.rose : recommendationTone(bid.recommendation) === "amber" ? COLORS.amber : COLORS.cyan;
   return (
     <Card accent={color} className="h-fit p-5 xl:sticky xl:top-5">
-      <p className="font-mono text-[10px] uppercase tracking-wider text-text/40">Selected bid</p>
-      <h2 className="mt-1 text-lg font-semibold text-text">{bid.vendor}</h2>
-      <p className="mt-1 text-sm text-text/55">{bid.model}</p>
-      <div className="mt-5 grid grid-cols-2 gap-3 border-y border-white/10 py-4 text-xs">
+      <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-text/50">Selected bid</p>
+      <h2 className="mt-1 text-lg font-bold text-text">{bid.vendor}</h2>
+      <p className="mt-1 text-sm font-medium text-text/60">{bid.model}</p>
+      <div className="mt-5 grid grid-cols-2 gap-3 border-y border-line py-4 text-xs">
         <Metric label="Review state" value={recommendationLabel(bid.recommendation)} />
         <Metric label="5-year cost" value={inCrore(bid.cost)} />
         <Metric label="Vendor reliability" value={check(bid, "Vendor reliability")?.risk == null ? "Not provided" : `${check(bid, "Vendor reliability")?.risk}/10`} />
