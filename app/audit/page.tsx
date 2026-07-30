@@ -138,16 +138,16 @@ export default function AuditPage() {
           caption="Per-bid summary of all four patrol results and 5-year TCO²."
         />
         <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
+          <table className="w-full text-sm border-collapse table-fixed">
             <colgroup>
-              <col className="w-[20%] min-w-[150px]" />
-              <col className="w-[12%] min-w-[110px]" />
-              <col className="w-[11%] min-w-[95px]" />
-              <col className="w-[11%] min-w-[95px]" />
-              <col className="w-[11%] min-w-[95px]" />
-              <col className="w-[11%] min-w-[95px]" />
-              <col className="w-[13%] min-w-[110px]" />
-              <col className="w-[11%] min-w-[100px]" />
+              <col className="w-[20%]" />
+              <col className="w-[12%]" />
+              <col className="w-[10%]" />
+              <col className="w-[10%]" />
+              <col className="w-[11%]" />
+              <col className="w-[11%]" />
+              <col className="w-[14%]" />
+              <col className="w-[12%]" />
             </colgroup>
             <thead>
               <tr className="border-b-2 border-line table-header bg-surface/50">

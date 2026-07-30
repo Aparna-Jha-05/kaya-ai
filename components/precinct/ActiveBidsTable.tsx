@@ -98,15 +98,15 @@ export default function ActiveBidsTable() {
 
       {(source === "live" || source === "empty") && (
         <div className="overflow-x-auto rounded-xl border border-line bg-card shadow-xs">
-          <table className="w-full text-sm border-collapse">
+          <table className="w-full text-sm border-collapse table-fixed">
             <colgroup>
-              <col className="w-[26%] min-w-[200px]" />
-              <col className="w-[14%] min-w-[130px]" />
-              <col className="w-[12%] min-w-[100px]" />
-              <col className="w-[12%] min-w-[100px]" />
-              <col className="w-[14%] min-w-[110px]" />
-              <col className="w-[15%] min-w-[130px]" />
-              <col className="w-[7%] min-w-[40px]" />
+              <col className="w-[24%]" />
+              <col className="w-[15%]" />
+              <col className="w-[11%]" />
+              <col className="w-[11%]" />
+              <col className="w-[11%]" />
+              <col className="w-[18%]" />
+              <col className="w-[10%]" />
             </colgroup>
             <thead>
               <tr className="border-b-2 border-line table-header bg-surface/50">
