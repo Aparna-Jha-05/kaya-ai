@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AlertOctagon, FileCheck2, FileWarning, RefreshCw } from "lucide-react";
+import Card from "@/components/ui/Card";
 import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type BidRecord } from "@/lib/api";
 import { hasHardFailure } from "@/lib/recordUtils";
