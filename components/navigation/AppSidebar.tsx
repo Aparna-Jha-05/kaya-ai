@@ -25,7 +25,7 @@ export default function AppSidebar() {
 
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-line bg-card/40 px-3 py-5 lg:flex">
-      <Link href="/" className="mb-7 flex items-center gap-3 px-1 group">
+      <Link href="/" title="Purchase Order Liability, Intelligence & Compliance Engine" className="mb-7 flex items-center gap-3 px-1 group">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-cyan shadow-[0_4px_14px_rgba(56,189,248,0.4)] group-hover:shadow-[0_4px_20px_rgba(56,189,248,0.6)] group-hover:scale-105 transition-all duration-200">
           <Image src="/icon.svg" alt="PO-LICE" width={22} height={22} priority />
         </span>

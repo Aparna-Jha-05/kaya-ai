@@ -20,7 +20,7 @@ export default function TopHeader() {
   return (
     <header className="sticky top-0 z-40 shrink-0 border-b border-line bg-bg/90 backdrop-blur lg:hidden">
       <div className="mx-auto flex items-center justify-between gap-x-3 px-4 py-2.5">
-        <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+        <Link href="/" title="Purchase Order Liability, Intelligence & Compliance Engine" className="flex items-center gap-2.5 shrink-0 group">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-cyan shadow-[0_4px_12px_rgba(56,189,248,0.35)] group-hover:shadow-[0_4px_18px_rgba(56,189,248,0.55)] group-hover:scale-105 transition-all duration-200">
             <Image src="/icon.svg" alt="PO-LICE" width={20} height={20} priority />
           </span>

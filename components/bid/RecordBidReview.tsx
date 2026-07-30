@@ -6,7 +6,6 @@ import { CheckCircle2, FileSearch, Network, ScrollText, ShieldCheck } from "luci
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import EvidenceBoard from "@/components/bid/EvidenceBoard";
-import Tooltip from "@/components/ui/Tooltip";
 import RFIModal from "@/components/rfi-modal";
 import { procurementApi, type ActivityEvent, type BidRecord } from "@/lib/api";
 import { activityActionLabel, cleanReasonText, displayCheckName, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
@@ -233,11 +232,8 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
     <div className="space-y-5">
       <Card>
         <CardHeader
-          title={
-            <Tooltip text="Confirm extracted document values against the source PDF before acting.">
-              <span>Extracted source data</span>
-            </Tooltip>
-          }
+          title="Extracted source data"
+          caption="Confirm extracted document values against the source PDF before acting."
           right={
             <a href={procurementApi.sourceUrl(record.id)} target="_blank" rel="noreferrer" className="text-xs font-semibold text-cyan hover:underline">
               Open source PDF
@@ -266,11 +262,8 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
       {candidates.length > 0 && (
         <Card>
           <CardHeader
-            title={
-              <Tooltip text="Traceable source excerpts and page location details extracted from the PDF text layer.">
-                <span>Extracted PDF text regions</span>
-              </Tooltip>
-            }
+            title="Extracted PDF text regions"
+            caption="Traceable source excerpts and page location details extracted from the PDF text layer."
           />
           <div className="overflow-x-auto">
             <table className="w-full text-xs font-mono border-collapse table-fixed">
@@ -320,11 +313,8 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
       {annotations.length > 0 && (
         <Card accent={COLORS.amber}>
           <CardHeader
-            title={
-              <Tooltip text="Parsed drawing text annotations. These are detected text annotations, not full CAD/BIM model geometry.">
-                <span>Detected dimension annotations</span>
-              </Tooltip>
-            }
+            title="Detected dimension annotations"
+            caption="Parsed drawing text annotations — detected text only, not full CAD/BIM model geometry."
           />
           <div className="overflow-x-auto">
             <table className="w-full text-xs font-mono border-collapse table-fixed">
