@@ -14,8 +14,8 @@ export function displayCheckName(name: string) {
   const normalized = name.toLowerCase();
   if (normalized.includes("building") || normalized.includes("engineering")) return "Engineering";
   if (normalized.includes("green") || normalized.includes("carbon")) return "Carbon";
-  if (normalized.includes("vice") || normalized.includes("reliability")) return "Vendor reliability";
-  if (normalized.includes("traffic") || normalized.includes("schedule")) return "Schedule impact";
+  if (normalized.includes("vice") || normalized.includes("reliability")) return "Reliability";
+  if (normalized.includes("traffic") || normalized.includes("schedule")) return "Schedule";
   return name;
 }
 

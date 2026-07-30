@@ -253,7 +253,7 @@ export default function BidPortfolio() {
                 </span>
               }
             />
-            <div className="overflow-x-auto overflow-y-auto max-h-[225px]">
+            <div className="overflow-x-auto overflow-y-auto max-h-[320px]">
               <table className="w-full text-sm border-collapse table-fixed">
                 <colgroup>
                   <col className="w-[20%]" />
@@ -412,22 +412,29 @@ export default function BidPortfolio() {
 function Inspector({ bid }: { bid: Comparable }) {
   const color = recommendationTone(bid.recommendation) === "rose" ? COLORS.rose : recommendationTone(bid.recommendation) === "amber" ? COLORS.amber : COLORS.cyan;
   return (
-    <Card accent={color} className="h-fit p-5 xl:sticky xl:top-5">
-      <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-text/50">Selected bid</p>
-      <h2 className="mt-1 text-lg font-bold text-text">{bid.vendor}</h2>
-      <p className="mt-1 text-sm font-medium text-text/60">{bid.model}</p>
-      <div className="mt-5 grid grid-cols-2 gap-3 border-y border-line py-4 text-xs">
+    <Card accent={color} className="h-fit p-5 xl:sticky xl:top-5 space-y-4">
+      <div>
+        <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-cyan">Selected bid inspector</p>
+        <h2 className="mt-1 text-lg font-extrabold text-text">{bid.vendor}</h2>
+        <p className="mt-0.5 text-xs font-medium text-text/50">{bid.equipment} · {bid.model}</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 border-y border-line py-3.5 text-xs">
         <Metric label="Review state" value={recommendationLabel(bid.recommendation)} />
         <Metric label="5-year TCO²" value={inCrore(bid.cost)} />
-        <Metric label="Vendor reliability" value={check(bid, "Vendor reliability")?.risk == null ? "Not provided" : `${check(bid, "Vendor reliability")?.risk}/10`} />
-        <Metric label="Schedule impact" value={check(bid, "Schedule impact")?.status ?? "Review"} />
+        <Metric label="Reliability" value={check(bid, "Reliability")?.risk == null ? "Not provided" : `${check(bid, "Reliability")?.risk}/10`} />
+        <Metric label="Schedule" value={check(bid, "Schedule")?.status ?? "Review"} />
       </div>
-      <p className="mt-4 text-xs leading-relaxed text-text/60">
+
+      <p className="text-xs leading-relaxed text-text/60">
         {bid.checks.map((value) => cleanReasonText(value.reason)).filter(Boolean).join(" ")}
       </p>
-      <Link href={`/bids/${bid.id}`} className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-cyan hover:underline">
-        Open bid review <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
+
+      <div>
+        <Link href={`/bids/${bid.id}`} className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan hover:underline tactile-press">
+          Open bid review <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
     </Card>
   );
 }
@@ -435,8 +442,8 @@ function Inspector({ bid }: { bid: Comparable }) {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-wide text-text/40">{label}</p>
-      <p className="mt-1 font-mono text-xs font-semibold text-text">{value}</p>
+      <p className="text-[10px] font-extrabold uppercase tracking-wide text-text/40">{label}</p>
+      <p className="mt-1 font-mono text-xs font-bold text-text">{value}</p>
     </div>
   );
 }

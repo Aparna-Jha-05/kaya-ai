@@ -136,7 +136,7 @@ export default function AuditPage() {
           title={recState === "ready" ? `${scorecards.length} bid scorecard${scorecards.length === 1 ? "" : "s"}` : "Compliance scorecard"}
           caption="Per-bid summary of all four patrol results and 5-year TCO²."
         />
-        <div className="overflow-x-auto overflow-y-auto max-h-[225px]">
+        <div className="overflow-x-auto overflow-y-auto max-h-[320px]">
           <table className="w-full text-sm border-collapse table-fixed">
             <colgroup>
               <col className="w-[20%]" />

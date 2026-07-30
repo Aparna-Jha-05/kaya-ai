@@ -34,14 +34,14 @@ export const PATROL_META = {
   },
   vice: {
     key: "vice",
-    name: "Vendor reliability",
+    name: "Reliability",
     color: COLORS.violet,
     caption: "checks delivery history and dispute risk",
     icon: "ShieldAlert",
   },
   traffic: {
     key: "traffic",
-    name: "Schedule impact",
+    name: "Schedule",
     color: COLORS.amber,
     caption: "estimates the effect of late delivery on the schedule",
     icon: "Truck",
@@ -50,6 +50,8 @@ export const PATROL_META = {
 
 // Plain-English definitions for jargon tooltips.
 export const GLOSSARY: Record<string, string> = {
+  Reliability:
+    "Delivery and dispute history used to calculate a reliability risk score from 1 to 10.",
   "Vendor reliability":
     "Delivery and dispute history used to calculate a reliability risk score from 1 to 10.",
   "TCO²":
@@ -58,6 +60,7 @@ export const GLOSSARY: Record<string, string> = {
   ROJ: "Required-On-Job date — the deadline a piece of equipment must be on site to keep the master schedule.",
   Engineering: "Checks power, cooling, water and floor load against hard site limits.",
   Carbon: "Compares embodied carbon with the project kgCO₂e budget.",
+  Schedule: "Estimates delay exposure in days from the project schedule.",
   "Schedule impact": "Estimates delay exposure in days from the project schedule.",
   "Pydantic JSON": "A schema-validated JSON object — every field has a type and confidence score.",
 };
