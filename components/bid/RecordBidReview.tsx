@@ -58,20 +58,20 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-line border-b-2 bg-card p-5 shadow-xs">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between min-w-0 max-w-full">
-          <div className="min-w-0 flex-1">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between min-w-0 max-w-full">
+          <div className="min-w-0 flex-1 space-y-1">
             <p className="page-eyebrow">Bid review</p>
-            <div className="mt-1 flex flex-wrap items-center gap-3 min-w-0">
-              <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-text truncate">{source.vendor_name}</h1>
+            <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text break-words">{source.vendor_name}</h1>
               <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase shadow-xs shrink-0" style={{ color, backgroundColor: `${color}18` }}>
                 {recommendationLabel(record.scorecard.recommendation)}
               </span>
             </div>
-            <p className="mt-1 text-xs font-medium text-text/50 truncate">
-              {equipment.equipment_type} · {equipment.model_number} · {record.filename}
+            <p className="text-xs font-medium text-text/50 break-words">
+              {equipment.equipment_type} · {equipment.model_number} · <span className="font-mono text-[11px]">{record.filename}</span>
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-left sm:text-right text-xs pt-1 sm:pt-0 border-t sm:border-t-0 border-line/40">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line/40 pt-3.5 lg:border-t-0 lg:pt-0 text-xs">
             <Metric label="Upfront cost" value={inCrore(source.bid_amount_inr)} />
             <Metric label="5-year TCO²" value={inCrore(record.scorecard.calculated_tco2_inr)} />
             <Metric label="Delivery" value={source.promised_delivery_weeks == null ? "Not provided" : `${source.promised_delivery_weeks} weeks`} />
@@ -387,43 +387,77 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
 }
 
 function ViceSquadCard({ record }: { record: BidRecord }) {
-  const vice = record.scorecard.patrol_results.find((p) => p.patrol_name.toLowerCase().includes("vice"));
+  const vice = record.scorecard.patrol_results.find((p) => p.patrol_name.toLowerCase().includes("vice") || p.patrol_name.toLowerCase().includes("reliability"));
   if (!vice || vice.status === "PASS") return null;
   const entries = vice.evidence ? Object.entries(vice.evidence) : [];
+  const riskColor = vice.risk_score != null && vice.risk_score >= 7 ? COLORS.rose : vice.risk_score != null && vice.risk_score >= 4 ? COLORS.amber : COLORS.cyan;
+
   return (
     <Card accent={COLORS.violet}>
       <CardHeader
-        title="Vice Squad — Vendor integrity signals"
-        caption="Supporting context from the deterministic integrity check. Requires reviewer interpretation."
+        title="Reliability Patrol — Vendor integrity signals"
+        caption="Deterministic vendor integrity and compliance index findings. Requires reviewer interpretation."
       />
-      <div className="space-y-3 p-4">
-        <div className="flex items-start gap-4">
+      <div className="space-y-4 p-5">
+        <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-line/60 bg-surface/60 p-4">
           {vice.risk_score != null && (
             <div className="shrink-0">
-              <p className="font-mono text-[10px] uppercase tracking-wider text-violet">Risk score</p>
-              <p
-                className="mt-1 font-mono text-2xl font-bold"
-                style={{
-                  color: vice.risk_score >= 7 ? COLORS.rose : vice.risk_score >= 4 ? COLORS.amber : COLORS.cyan,
-                }}
-              >
-                {vice.risk_score}
-                <span className="text-sm text-text/40">/10</span>
-              </p>
+              <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-violet">Vendor Risk Score</p>
+              <div className="mt-1 flex items-baseline gap-1">
+                <span
+                  className="font-mono text-2xl font-black tabular-nums"
+                  style={{ color: riskColor }}
+                >
+                  {vice.risk_score}
+                </span>
+                <span className="font-mono text-xs font-extrabold text-text/40">/10</span>
+              </div>
             </div>
           )}
-          <p className="text-sm leading-relaxed text-text/70">{cleanReasonText(vice.reason)}</p>
+          <div className="min-w-0 flex-1 sm:border-l sm:border-line/60 sm:pl-4">
+            <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-text/40">Patrol Finding</p>
+            <p className="mt-0.5 text-sm font-medium text-text leading-snug">{cleanReasonText(vice.reason)}</p>
+          </div>
         </div>
+
         {entries.length > 0 && (
-          <dl className="grid gap-2 sm:grid-cols-2">
-            {entries.map(([k, v]) => (
-              <div key={k} className="rounded-xl border border-line bg-surface px-3.5 py-2.5 shadow-xs">
-                <dt className="font-mono text-[9px] font-bold uppercase tracking-wider text-text/50">{k.replaceAll("_", " ")}</dt>
-                <dd className="mt-1 font-mono text-xs font-semibold text-text">
-                  {formatEvidenceValue(v)}
-                </dd>
-              </div>
-            ))}
+          <dl className="grid gap-3 sm:grid-cols-2">
+            {entries.map(([k, v]) => {
+              const isScoreIndex = typeof v === "number" && (k.includes("index") || k.includes("score"));
+              const scoreVal = isScoreIndex ? Number(v) : 0;
+              const indexTone = scoreVal < 70 ? COLORS.rose : scoreVal < 85 ? COLORS.amber : COLORS.emerald;
+
+              return (
+                <div key={k} className="rounded-xl border border-line bg-card p-4 shadow-xs space-y-2">
+                  <dt className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-text/50">
+                      {k.replaceAll("_", " ")}
+                    </span>
+                    {isScoreIndex && (
+                      <span className="font-mono text-xs font-black tabular-nums" style={{ color: indexTone }}>
+                        {scoreVal}/100
+                      </span>
+                    )}
+                  </dt>
+                  <dd>
+                    {isScoreIndex ? (
+                      <div className="space-y-1.5 pt-0.5">
+                        <div className="h-2 w-full rounded-full bg-surface border border-line/40 overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-300"
+                            style={{ width: `${Math.min(100, Math.max(0, scoreVal))}%`, backgroundColor: indexTone }}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="font-mono text-xs font-semibold text-text">
+                        {formatEvidenceValue(v)}
+                      </span>
+                    )}
+                  </dd>
+                </div>
+              );
+            })}
           </dl>
         )}
       </div>
