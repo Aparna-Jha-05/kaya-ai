@@ -12,6 +12,18 @@ final decision with a human reviewer.
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688)](https://fastapi.tiangolo.com/)
 [![OpenSpec](https://img.shields.io/badge/specs-OpenSpec-5B5BD6)](./openspec/changes/)
 
+[**Open live demo**](https://po-lice.vercel.app) ·
+[**Technical architecture**](./TECHNICAL.md) ·
+[**Business case**](./BUSINESS.md) ·
+[**Demo runbook**](./DEMO_RUNBOOK.md)
+
+**3 synthetic demo bids · 4 deterministic patrols · 46 backend tests · 11/11 deployed acceptance checks**
+
+![PO-LICE walkthrough: review queue, rejected low-cost bid, deterministic checks, and cited evidence](./public/readme/po-lice-demo.gif)
+
+*The live workflow: identify the cheapest bid, inspect deterministic failures,
+and trace the decision back to its PDF evidence.*
+
 ## Live prototype
 
 | Resource | Link |
@@ -25,6 +37,18 @@ final decision with a human reviewer.
 These public links were checked on **30 July 2026**. The free-tier backend may
 need up to 45 seconds to wake after inactivity.
 
+All vendor names, documents, prices, and evidence in the public demonstration
+are synthetic competition fixtures.
+
+## Judge's 60-second tour
+
+1. [Open the live application](https://po-lice.vercel.app).
+2. Select **CoolTech**, the lowest-cost bid at ₹3.80 Cr.
+3. Open **Checks** to see its power, access, warranty, and carbon failures.
+4. Select **Inspect evidence & geometry** to trace a rule result to the cited
+   PDF excerpt, page, and region.
+5. Return to the comparison and contrast it with the recommended Trane bid.
+
 ## The idea
 
 The lowest-price bid is not necessarily the lowest-risk bid. PO-LICE combines
@@ -32,6 +56,10 @@ document evidence, engineering limits, sustainability constraints, commercial
 terms, delivery risk, and reviewer actions in one explainable workflow.
 
 > **Models extract and explain; deterministic rules and math validate.**
+
+Unlike a generic procurement chatbot, PO-LICE never allows an LLM to determine
+compliance. Models may extract evidence; versioned deterministic rules produce
+the result, and an authorised reviewer makes the final decision.
 
 An LLM may propose a value only when it can cite the source document. It
 cannot set thresholds or decide `PASS`, `FAIL`, or `FLAG`. Missing evidence
@@ -62,7 +90,6 @@ working features.
 | [ML extraction guide](./backend/ML_EXTRACTION.md) | Ollama/Gemini cascade, privacy controls, evaluation, and fallback |
 | [Backend agent guide](./backend/AGENTS.md) | Backend invariants and contributor rules |
 | [Active OpenSpec changes](./openspec/changes/) | Accepted intent, design decisions, and remaining work |
-| [Original concept PDF](./docs/PO-LICE.pdf) | Aspirational competition concept; not implementation evidence |
 
 ## Architecture at a glance
 
@@ -133,6 +160,9 @@ The current backend suite contains **46 tests**. The last recorded public
 acceptance run passed **11/11 checks**; rerun it for release evidence rather
 than treating this sentence as a permanent guarantee.
 
+Changes should use a short-lived feature branch and a pull request into
+`main`. CI should be green before merge; never force-merge through conflicts.
+
 ## Team
 
 | Team member | Primary contribution |
@@ -140,10 +170,3 @@ than treating this sentence as a permanent guarantee.
 | **Jb Anmol** | Full-stack integration, extraction, backend orchestration, and release verification |
 | **Pratham Amritkar** | RAG and AI systems |
 | **Aparna Jha** | Procurement-domain specifications and QA |
-
-Changes should use a short-lived feature branch and a pull request into
-`main`. CI should be green before merge; never force-merge through conflicts.
-
-## License
-
-Hackathon prototype. Add an explicit license before reuse outside the team.
