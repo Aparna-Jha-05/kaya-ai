@@ -267,14 +267,14 @@ export default function BidPortfolio() {
                 </colgroup>
                 <thead>
                   <tr className="border-b-2 border-line table-header bg-surface/50">
-                    <th className="px-4 py-3 text-left font-bold whitespace-nowrap">Bid</th>
+                    <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Bid</th>
                     <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Engineering</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Carbon</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Reliability</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Schedule</th>
                     <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO (INR)</th>
-                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Review state</th>
+                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Review state</th>
                   </tr>
                 </thead>
                 <tbody>

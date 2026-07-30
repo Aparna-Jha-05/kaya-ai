@@ -149,14 +149,14 @@ export default function AuditPage() {
             </colgroup>
             <thead>
               <tr className="border-b-2 border-line table-header bg-surface/50">
-                <th className="px-4 py-3 text-left font-bold whitespace-nowrap">Vendor</th>
+                <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
                 <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Engineering</th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Carbon</th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Vendor risk</th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Schedule risk</th>
                 <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO (INR)</th>
-                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Decision</th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Decision</th>
               </tr>
             </thead>
             <tbody>

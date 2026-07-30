@@ -88,11 +88,8 @@ export default function CaseFilesPanel() {
   return (
     <Card>
       <CardHeader
-        title={
-          <Tooltip text="Pending reviewer tasks requiring verification before purchase order sign-off.">
-            <span>Action queue</span>
-          </Tooltip>
-        }
+        title="Action queue"
+        caption="Reviewer tasks requiring verification"
       />
       <ul className="divide-y divide-line/40">
         {source === "loading" && (

@@ -97,7 +97,7 @@ export default function ActiveBidsTable() {
       )}
 
       {(source === "live" || source === "empty") && (
-        <div className="overflow-x-auto rounded-xl border border-line bg-card shadow-xs">
+        <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse table-fixed">
             <colgroup>
               <col className="w-[24%]" />
@@ -110,7 +110,7 @@ export default function ActiveBidsTable() {
             </colgroup>
             <thead>
               <tr className="border-b-2 border-line table-header bg-surface/50">
-                <th className="px-4 py-3 text-left whitespace-nowrap">Vendor</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
                 <th className="px-4 py-3 text-right whitespace-nowrap">Upfront (INR)</th>
                 <th className="px-4 py-3 text-center whitespace-nowrap">
                   <Tooltip text="Hard limit check. Validates physical floor load capacity against equipment weight.">
@@ -128,7 +128,7 @@ export default function ActiveBidsTable() {
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-right whitespace-nowrap">5-yr TCO (INR)</th>
-                <th className="px-4 py-3 text-right whitespace-nowrap" />
+                <th className="px-4 py-3 text-right whitespace-nowrap last:rounded-tr-[0.9rem]" />
               </tr>
             </thead>
             <tbody className="font-mono">

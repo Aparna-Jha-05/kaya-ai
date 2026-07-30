@@ -253,7 +253,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
             <tbody>
               {fields.map(([label, value]) => (
                 <tr key={label} className="border-b border-line/40 hover:bg-cyan/5 transition-colors">
-                  <th className="px-4 py-3 text-left font-bold text-text/60">{label}</th>
+                  <th className="px-4 py-3 text-left font-bold text-text/60 first:rounded-tl-[0.9rem]">{label}</th>
                   <td className="px-4 py-3 font-mono font-semibold text-text">{value}</td>
                 </tr>
               ))}
@@ -283,11 +283,11 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
               </colgroup>
               <thead>
                 <tr className="border-b-2 border-line text-left table-header bg-surface/50">
-                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Field</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Field</th>
                   <th className="px-4 py-2.5 font-bold whitespace-nowrap">Value</th>
                   <th className="px-4 py-2.5 font-bold text-center whitespace-nowrap">Page</th>
                   <th className="px-4 py-2.5 font-bold whitespace-nowrap">Bounding Box</th>
-                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Source Excerpt</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Source Excerpt</th>
                 </tr>
               </thead>
               <tbody>
@@ -337,11 +337,11 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
               </colgroup>
               <thead>
                 <tr className="border-b-2 border-line text-left table-header bg-surface/50">
-                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Annotation Field</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Annotation Field</th>
                   <th className="px-4 py-2.5 font-bold whitespace-nowrap">Value</th>
                   <th className="px-4 py-2.5 font-bold text-center whitespace-nowrap">Page</th>
                   <th className="px-4 py-2.5 font-bold whitespace-nowrap">Coordinates</th>
-                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Status</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Status</th>
                 </tr>
               </thead>
               <tbody>
