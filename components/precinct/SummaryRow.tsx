@@ -62,37 +62,33 @@ export default function SummaryRow() {
       value: metrics?.total,
       color: COLORS.text,
       Icon: FileCheck2,
-      sub: metrics?.offline ? "Offline" : "Active set",
     },
     {
       label: "Hard-limit failures",
       value: metrics?.failures,
       color: COLORS.rose,
       Icon: AlertOctagon,
-      sub: "Constraints exceeded",
     },
     {
       label: "Documents missing",
       value: metrics?.missingDocs,
       color: COLORS.amber,
       Icon: FileWarning,
-      sub: "Certificates missing",
     },
   ];
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       {cards.map((card) => (
-        <Card key={card.label} accent={card.color} className="p-4.5">
+        <Card key={card.label} accent={card.color} className="p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold uppercase tracking-wider text-text/50 truncate">{card.label}</div>
-              <div className="mt-2 font-mono text-3xl font-bold tabular-nums" style={{ color: card.color }}>
+              <div className="ui-label text-text/50 truncate">{card.label}</div>
+              <div className="mt-3 font-mono text-3xl sm:text-4xl font-extrabold tabular-nums" style={{ color: card.color }}>
                 {loading ? "…" : (metrics ? card.value : "—")}
               </div>
-              <div className="mt-1 text-xs font-medium text-text/50 leading-tight">{card.sub}</div>
             </div>
-            <card.Icon className="h-5 w-5 shrink-0" style={{ color: card.color }} />
+            <card.Icon className="h-5 w-5 shrink-0 mt-0.5" style={{ color: card.color }} />
           </div>
         </Card>
       ))}

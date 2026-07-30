@@ -68,10 +68,10 @@ export default function ActiveBidsTable() {
         title="Submitted bids"
         caption={
           source === "error"
-            ? "Service connection failed. Service may be starting up."
+            ? "Service connection failed"
             : source === "empty"
-            ? "No bids yet. Upload a bid PDF to start the compliance review."
-            : "Engineering and carbon are hard checks. Vendor reliability and schedule impact inform review."
+            ? "No submitted bids"
+            : undefined
         }
       />
       {source === "loading" && (
@@ -95,23 +95,23 @@ export default function ActiveBidsTable() {
         <div className="overflow-x-auto rounded-xl border border-line bg-card shadow-xs">
           <table className="w-full text-sm border-collapse">
             <colgroup>
-              <col className="w-[26%] min-w-[190px]" />
-              <col className="w-[14%] min-w-[120px]" />
+              <col className="w-[26%] min-w-[200px]" />
+              <col className="w-[14%] min-w-[130px]" />
               <col className="w-[12%] min-w-[100px]" />
               <col className="w-[12%] min-w-[100px]" />
               <col className="w-[14%] min-w-[110px]" />
-              <col className="w-[15%] min-w-[120px]" />
+              <col className="w-[15%] min-w-[130px]" />
               <col className="w-[7%] min-w-[40px]" />
             </colgroup>
             <thead>
               <tr className="border-b-2 border-line table-header bg-surface/50">
-                <th className="px-4 py-3 text-left">Vendor</th>
-                <th className="px-4 py-3 text-right">Upfront (₹ Cr)</th>
-                <th className="px-4 py-3 text-center">Engineering</th>
-                <th className="px-4 py-3 text-center">Carbon</th>
-                <th className="px-4 py-3 text-center">Vendor reliability</th>
-                <th className="px-4 py-3 text-right">5-yr TCO (₹ Cr)</th>
-                <th className="px-4 py-3 text-right" />
+                <th className="px-4 py-3 text-left whitespace-nowrap">Vendor</th>
+                <th className="px-4 py-3 text-right whitespace-nowrap">Upfront (₹ Cr)</th>
+                <th className="px-4 py-3 text-center whitespace-nowrap">Engineering</th>
+                <th className="px-4 py-3 text-center whitespace-nowrap">Carbon</th>
+                <th className="px-4 py-3 text-center whitespace-nowrap">Reliability</th>
+                <th className="px-4 py-3 text-right whitespace-nowrap">5-yr TCO (₹ Cr)</th>
+                <th className="px-4 py-3 text-right whitespace-nowrap" />
               </tr>
             </thead>
             <tbody className="font-mono">
