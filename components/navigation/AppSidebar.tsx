@@ -25,14 +25,13 @@ export default function AppSidebar() {
 
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-line bg-card/40 px-3 py-5 lg:flex">
-      <Link href="/" className="mb-7 flex items-center gap-2.5 px-2 group">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan/15 ring-1 ring-cyan/40 shadow-xs group-hover:scale-105 transition-transform duration-150">
-          <Image src="/icon.svg" alt="PO-LICE Icon" width={22} height={22} priority />
+      <Link href="/" className="mb-7 flex items-center gap-3 px-1 group">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-cyan shadow-[0_4px_14px_rgba(56,189,248,0.4)] group-hover:shadow-[0_4px_20px_rgba(56,189,248,0.6)] group-hover:scale-105 transition-all duration-200">
+          <Image src="/icon.svg" alt="PO-LICE" width={22} height={22} priority />
         </span>
-        <div>
-          <span className="block font-mono text-sm font-bold tracking-tight text-text group-hover:text-cyan transition-colors">PO-LICE</span>
-          <span className="block text-[10px] text-text/45 leading-tight font-medium">Purchase Order Liability, Intelligence &amp; Compliance Engine</span>
-        </div>
+        <span className="text-xl font-extrabold tracking-tight text-text group-hover:text-cyan transition-colors duration-200 leading-none">
+          PO-LICE
+        </span>
       </Link>
 
       <nav aria-label="Primary navigation" className="space-y-1">
