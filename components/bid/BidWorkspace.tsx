@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 import { Braces, Check, ClipboardList, FileText, ScanText, Users } from "lucide-react";
@@ -25,31 +26,43 @@ export default function BidWorkspace({ initialRecord }: { initialRecord?: BidRec
   const record = initialRecord;
   const stage: Stage = record ? "results" : "upload";
   const lit = STAGE_INDEX[stage];
+  const [displayLit, setDisplayLit] = useState(0);
+
+  useEffect(() => {
+    if (lit === 0) return;
+    let current = 0;
+    const id = setInterval(() => {
+      current += 1;
+      setDisplayLit(current);
+      if (current >= lit) clearInterval(id);
+    }, 350);
+    return () => clearInterval(id);
+  }, [lit]);
 
   function onUploaded(next: BidRecord) {
     router.replace(`/bids/${next.id}`);
   }
 
-  const progressPercent = `${(lit / (PIPELINE.length - 1)) * 100}%`;
+  const progressPercent = `${(displayLit / (PIPELINE.length - 1)) * 100}%`;
 
   return (
     <div className="space-y-6">
       <div className="relative rounded-2xl border border-line border-b-2 bg-card p-5 shadow-xs" aria-label="Bid processing progress">
-        <div className="absolute left-[10%] right-[10%] top-[33px] h-0.5 bg-line/60 z-0">
-          <motion.div
-            initial={false}
-            animate={{ width: progressPercent }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            className="h-full bg-cyan shadow-[0_0_8px_rgba(56,189,248,0.5)]"
-          />
-        </div>
+        <div className="relative flex items-center justify-between">
+          <div className="absolute inset-x-[18px] top-[18px] h-0.5 bg-line/60 z-0">
+            <motion.div
+              initial={false}
+              animate={{ width: progressPercent }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="h-full bg-cyan shadow-[0_0_8px_rgba(56,189,248,0.5)]"
+            />
+          </div>
 
-        <div className="relative z-10 flex items-center justify-between">
           {PIPELINE.map((item, index) => {
-            const active = index <= lit;
-            const complete = index < lit;
+            const active = index <= displayLit;
+            const complete = index < displayLit;
             return (
-              <div key={item.key} className="flex flex-col items-center gap-1.5 px-2">
+              <div key={item.key} className="relative z-10 flex flex-col items-center gap-1.5 px-2">
                 <div
                   className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-all ${
                     active
