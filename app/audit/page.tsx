@@ -103,12 +103,10 @@ export default function AuditPage() {
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="page-eyebrow">System audit</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-text">Activity log</h1>
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-text/50">
-            Timestamped compliance checks, reviewer actions, and bid scorecard summary.
-          </p>
+          <h1 className="mt-1 text-2xl lg:text-3xl font-extrabold tracking-tight text-text truncate">Activity log</h1>
+          <p className="mt-1 text-xs font-medium text-text/50">Timestamped compliance checks, reviewer actions, and audit trail</p>
         </div>
         <div className="flex items-center gap-2">
           {(evState === "offline" || recState === "offline") && (

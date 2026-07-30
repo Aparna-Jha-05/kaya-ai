@@ -33,7 +33,7 @@ export function CardHeader({
       <div className="min-w-0 flex-1">
         <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-text truncate">{title}</h3>
         {caption && (
-          <p className="mt-1 text-[13px] leading-snug text-text/60 font-medium break-words">{caption}</p>
+          <p className="mt-0.5 text-xs leading-normal text-text/50 font-medium truncate">{caption}</p>
         )}
       </div>
       {right}

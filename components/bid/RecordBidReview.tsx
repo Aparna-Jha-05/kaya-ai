@@ -6,6 +6,7 @@ import { CheckCircle2, FileSearch, Network, ScrollText, ShieldCheck } from "luci
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import EvidenceBoard from "@/components/bid/EvidenceBoard";
+import Tooltip from "@/components/ui/Tooltip";
 import RFIModal from "@/components/rfi-modal";
 import { procurementApi, type ActivityEvent, type BidRecord } from "@/lib/api";
 import { activityActionLabel, displayCheckName, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
@@ -232,25 +233,28 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
     <div className="space-y-5">
       <Card>
         <CardHeader
-          title="Extracted source data"
-          caption="Values are extracted from the uploaded document. Confirm them against the source PDF before acting."
+          title={
+            <Tooltip text="Confirm extracted document values against the source PDF before acting.">
+              <span>Extracted source data</span>
+            </Tooltip>
+          }
           right={
-            <a href={procurementApi.sourceUrl(record.id)} target="_blank" rel="noreferrer" className="text-xs text-cyan hover:underline">
+            <a href={procurementApi.sourceUrl(record.id)} target="_blank" rel="noreferrer" className="text-xs font-semibold text-cyan hover:underline">
               Open source PDF
             </a>
           }
         />
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm border-collapse table-fixed">
             <colgroup>
-              <col className="w-[28%] min-w-[150px]" />
+              <col className="w-[28%]" />
               <col className="w-[72%]" />
             </colgroup>
             <tbody>
               {fields.map(([label, value]) => (
                 <tr key={label} className="border-b border-line/40 hover:bg-cyan/5 transition-colors">
                   <th className="px-4 py-3 text-left font-bold text-text/60">{label}</th>
-                  <td className="px-4 py-3 font-mono font-medium text-text">{value}</td>
+                  <td className="px-4 py-3 font-mono font-semibold text-text">{value}</td>
                 </tr>
               ))}
             </tbody>
@@ -262,32 +266,35 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
       {candidates.length > 0 && (
         <Card>
           <CardHeader
-            title="Extracted PDF text regions"
-            caption="Traceable source excerpts and page location details extracted from the PDF text layer."
+            title={
+              <Tooltip text="Traceable source excerpts and page location details extracted from the PDF text layer.">
+                <span>Extracted PDF text regions</span>
+              </Tooltip>
+            }
           />
           <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono border-collapse">
+            <table className="w-full text-xs font-mono border-collapse table-fixed">
               <colgroup>
-                <col className="w-[18%] min-w-[120px]" />
-                <col className="w-[18%] min-w-[120px]" />
-                <col className="w-[10%] min-w-[70px]" />
-                <col className="w-[24%] min-w-[150px]" />
-                <col className="w-[30%] min-w-[200px]" />
+                <col className="w-[18%]" />
+                <col className="w-[18%]" />
+                <col className="w-[10%]" />
+                <col className="w-[24%]" />
+                <col className="w-[30%]" />
               </colgroup>
               <thead>
                 <tr className="border-b-2 border-line text-left table-header bg-surface/50">
-                  <th className="px-4 py-2.5 font-bold">Field</th>
-                  <th className="px-4 py-2.5 font-bold">Value</th>
-                  <th className="px-4 py-2.5 font-bold text-center">Page</th>
-                  <th className="px-4 py-2.5 font-bold">Bounding Box</th>
-                  <th className="px-4 py-2.5 font-bold">Source Excerpt</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Field</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Value</th>
+                  <th className="px-4 py-2.5 font-bold text-center whitespace-nowrap">Page</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Bounding Box</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Source Excerpt</th>
                 </tr>
               </thead>
               <tbody>
                 {candidates.map((c, i) => (
                   <tr key={i} className="border-b border-line/40 align-top transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
-                    <td className="px-4 py-2.5 font-bold text-cyan">{c.field}</td>
-                    <td className="px-4 py-2.5 text-text font-semibold">{String(c.normalized_value)} {c.unit ?? ""}</td>
+                    <td className="px-4 py-2.5 font-bold text-cyan truncate">{c.field}</td>
+                    <td className="px-4 py-2.5 text-text font-semibold truncate">{String(c.normalized_value)} {c.unit ?? ""}</td>
                     <td className="px-4 py-2.5 text-text/60 text-center">{c.page ?? "—"}</td>
                     <td className="px-4 py-2.5">
                       {c.bbox ? (
@@ -313,25 +320,28 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
       {annotations.length > 0 && (
         <Card accent={COLORS.amber}>
           <CardHeader
-            title="Detected dimension annotations"
-            caption="Parsed drawing text annotations. These are detected text annotations, not full CAD/BIM model geometry."
+            title={
+              <Tooltip text="Parsed drawing text annotations. These are detected text annotations, not full CAD/BIM model geometry.">
+                <span>Detected dimension annotations</span>
+              </Tooltip>
+            }
           />
           <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono border-collapse">
+            <table className="w-full text-xs font-mono border-collapse table-fixed">
               <colgroup>
-                <col className="w-[22%] min-w-[140px]" />
-                <col className="w-[20%] min-w-[130px]" />
-                <col className="w-[12%] min-w-[80px]" />
-                <col className="w-[26%] min-w-[160px]" />
-                <col className="w-[20%] min-w-[130px]" />
+                <col className="w-[22%]" />
+                <col className="w-[20%]" />
+                <col className="w-[12%]" />
+                <col className="w-[26%]" />
+                <col className="w-[20%]" />
               </colgroup>
               <thead>
                 <tr className="border-b-2 border-line text-left table-header bg-surface/50">
-                  <th className="px-4 py-2.5 font-bold">Annotation Field</th>
-                  <th className="px-4 py-2.5 font-bold">Value</th>
-                  <th className="px-4 py-2.5 font-bold text-center">Page</th>
-                  <th className="px-4 py-2.5 font-bold">Coordinates</th>
-                  <th className="px-4 py-2.5 font-bold">Status</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Annotation Field</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Value</th>
+                  <th className="px-4 py-2.5 font-bold text-center whitespace-nowrap">Page</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Coordinates</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Status</th>
                 </tr>
               </thead>
               <tbody>
