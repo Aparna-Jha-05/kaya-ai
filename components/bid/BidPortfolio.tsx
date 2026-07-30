@@ -312,6 +312,7 @@ export default function BidPortfolio() {
                         </td>
                         <td className="px-4 py-3">
                           <PatrolBadge status={status(bid, "Carbon")} size="sm" />
+                        </td>
                         <td className="px-4 py-3 font-mono">
                           <span
                             className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-extrabold font-mono tabular-nums border shadow-xs"
