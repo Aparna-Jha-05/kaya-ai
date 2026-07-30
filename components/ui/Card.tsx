@@ -29,9 +29,9 @@ export function CardHeader({
   right?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-line/60 px-4.5 py-3.5">
+    <div className="flex items-start justify-between gap-4 border-b border-line/60 px-5 py-4 sm:px-6 sm:py-4.5">
       <div className="min-w-0 flex-1">
-        <h3 className="text-[15px] font-bold tracking-tight text-text truncate">{title}</h3>
+        <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-text truncate">{title}</h3>
         {caption && (
           <p className="mt-1 text-[13px] leading-snug text-text/60 font-medium break-words">{caption}</p>
         )}

@@ -43,9 +43,9 @@ export function activityActionLabel(action: string) {
 }
 
 export function inCrore(value: number | null | undefined) {
-  return value == null ? "Not provided" : `₹${(value / 10_000_000).toFixed(2)} Cr`;
+  return value == null ? "Not provided" : `${(value / 10_000_000).toFixed(2)} Cr`;
 }
 
 export function formatCroreValue(value: number | null | undefined) {
-  return value == null ? "—" : `₹${(value / 10_000_000).toFixed(2)}`;
+  return value == null ? "—" : `${(value / 10_000_000).toFixed(2)} Cr`;
 }

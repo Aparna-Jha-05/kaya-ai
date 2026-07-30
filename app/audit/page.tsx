@@ -151,14 +151,14 @@ export default function AuditPage() {
             </colgroup>
             <thead>
               <tr className="border-b-2 border-line table-header bg-surface/50">
-                <th className="px-4 py-3 text-left font-bold">Vendor</th>
-                <th className="px-4 py-3 text-right font-bold">Upfront (₹ Cr)</th>
-                <th className="px-4 py-3 text-center font-bold">Engineering</th>
-                <th className="px-4 py-3 text-center font-bold">Carbon</th>
-                <th className="px-4 py-3 text-center font-bold">Vendor risk</th>
-                <th className="px-4 py-3 text-center font-bold">Schedule risk</th>
-                <th className="px-4 py-3 text-right font-bold">5-yr TCO (₹ Cr)</th>
-                <th className="px-4 py-3 text-center font-bold">Decision</th>
+                <th className="px-4 py-3 text-left font-bold whitespace-nowrap">Vendor</th>
+                <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Engineering</th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Carbon</th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Vendor risk</th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Schedule risk</th>
+                <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO (INR)</th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Decision</th>
               </tr>
             </thead>
             <tbody>
@@ -179,14 +179,14 @@ export default function AuditPage() {
                   <tr key={row.id} className="border-b border-line/40 align-middle transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
                     <td className="px-4 py-3 text-left font-semibold text-text truncate">{row.vendor}</td>
                     <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">
-                      {row.upfront_cost_cr == null ? "—" : `₹${row.upfront_cost_cr.toFixed(2)}`}
+                      {row.upfront_cost_cr == null ? "—" : `${row.upfront_cost_cr.toFixed(2)} Cr`}
                     </td>
                     <td className="px-4 py-3 text-center">{passFailCell(row.engineering)}</td>
                     <td className="px-4 py-3 text-center">{passFailCell(row.carbon)}</td>
                     <td className="px-4 py-3 text-center">{riskCell(row.vendorRisk)}</td>
                     <td className="px-4 py-3 text-center">{riskCell(row.scheduleRisk)}</td>
                     <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">
-                      {row.tco2_cr == null ? "—" : `₹${row.tco2_cr.toFixed(2)}`}
+                      {row.tco2_cr == null ? "—" : `${row.tco2_cr.toFixed(2)} Cr`}
                     </td>
                     <td className="px-4 py-3 text-center">{decisionCell(row.decision)}</td>
                   </tr>
