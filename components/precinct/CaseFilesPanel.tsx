@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, FileSearch, Mail, RefreshCw } from "lucide-react";
+import Card, { CardHeader } from "@/components/ui/Card";
 import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type BidRecord } from "@/lib/api";
 import { displayCheckName } from "@/lib/recordUtils";
