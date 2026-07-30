@@ -143,14 +143,14 @@ export default function ActiveBidsTable() {
                           />
                           <span className="font-sans font-medium text-text">{row.vendor}</span>
                           {row.rejected && (
-                            <span className="rounded bg-rose/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-rose">
+                            <span className="rounded-md bg-rose/15 px-2 py-0.5 text-[9px] font-extrabold uppercase text-rose border border-rose/30 shadow-xs">
                               action needed
                             </span>
                           )}
                         </div>
-                        <div className="ml-4 mt-0.5 text-[11px] text-text/35">{row.model}</div>
+                        <div className="ml-4 mt-0.5 text-[11px] font-medium text-text/45">{row.model}</div>
                       </td>
-                      <td className="px-4 py-3 tabular-nums text-text/80">{inCrore(row.cost)}</td>
+                      <td className="px-4 py-3 tabular-nums font-semibold text-text/85">{inCrore(row.cost)}</td>
                       <td className="px-4 py-3">
                         <PatrolBadge status={engineering} size="sm" />
                       </td>
@@ -159,15 +159,17 @@ export default function ActiveBidsTable() {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className="tabular-nums font-bold"
+                          className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-extrabold tabular-nums border shadow-xs"
                           style={{
                             color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan,
+                            backgroundColor: risk != null && risk > 6 ? `${COLORS.rose}1f` : `${COLORS.cyan}1f`,
+                            borderColor: risk != null && risk > 6 ? `${COLORS.rose}50` : `${COLORS.cyan}50`,
                           }}
                         >
                           {risk == null ? "—" : `${risk}/10`}
                         </span>
                       </td>
-                      <td className="px-4 py-3 tabular-nums text-text/80">{inCrore(row.tco)}</td>
+                      <td className="px-4 py-3 tabular-nums font-semibold text-text/85">{inCrore(row.tco)}</td>
                       <td className="px-4 py-3 text-right">
                         <ChevronRight className="ml-auto h-4 w-4 text-text/20 transition-transform group-hover:translate-x-0.5 group-hover:text-text/60" />
                       </td>

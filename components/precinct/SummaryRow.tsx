@@ -83,16 +83,16 @@ export default function SummaryRow() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       {cards.map((card) => (
-        <Card key={card.label} accent={card.color} className="p-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="text-xs uppercase tracking-wide text-text/45">{card.label}</div>
-              <div className="mt-2 font-mono text-4xl font-bold tabular-nums" style={{ color: card.color }}>
+        <Card key={card.label} accent={card.color} className="p-4.5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-bold uppercase tracking-wider text-text/50 truncate">{card.label}</div>
+              <div className="mt-2 font-mono text-3xl font-bold tabular-nums" style={{ color: card.color }}>
                 {loading ? "…" : (metrics ? card.value : "—")}
               </div>
-              <div className="mt-1 text-xs text-text/40">{card.sub}</div>
+              <div className="mt-1 text-xs font-medium text-text/50 leading-tight">{card.sub}</div>
             </div>
-            <card.Icon className="h-5 w-5" style={{ color: card.color }} />
+            <card.Icon className="h-5 w-5 shrink-0" style={{ color: card.color }} />
           </div>
         </Card>
       ))}

@@ -312,16 +312,24 @@ export default function BidPortfolio() {
                         </td>
                         <td className="px-4 py-3">
                           <PatrolBadge status={status(bid, "Carbon")} size="sm" />
-                        </td>
-                        <td className="px-4 py-3 font-mono" style={{ color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan }}>
-                          {risk == null ? "—" : `${risk}/10`}
+                        <td className="px-4 py-3 font-mono">
+                          <span
+                            className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-extrabold font-mono tabular-nums border shadow-xs"
+                            style={{
+                              color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan,
+                              backgroundColor: risk != null && risk > 6 ? `${COLORS.rose}1f` : `${COLORS.cyan}1f`,
+                              borderColor: risk != null && risk > 6 ? `${COLORS.rose}50` : `${COLORS.cyan}50`,
+                            }}
+                          >
+                            {risk == null ? "—" : `${risk}/10`}
+                          </span>
                         </td>
                         <td className="px-4 py-3">
                           <PatrolBadge status={status(bid, "Schedule impact")} size="sm" />
                         </td>
-                        <td className="px-4 py-3 font-mono text-text/80">{inCrore(shownCost(bid))}</td>
+                        <td className="px-4 py-3 font-mono font-semibold text-text/85">{inCrore(shownCost(bid))}</td>
                         <td className="px-4 py-3">
-                          <span className="rounded px-2 py-1 text-[10px] font-bold uppercase" style={{ color, backgroundColor: `${color}18` }}>
+                          <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs" style={{ color, backgroundColor: `${color}20`, borderColor: `${color}50` }}>
                             {recommendationLabel(bid.recommendation)}
                           </span>
                         </td>

@@ -96,18 +96,18 @@ export default function CaseFilesPanel() {
             : "Items that need reviewer attention before a purchase order can progress."
         }
       />
-      <ul className="divide-y divide-white/5">
+      <ul className="divide-y divide-line/40">
         {source === "loading" && (
-          <li className="px-4 py-6 text-sm text-text/50">Loading action queue…</li>
+          <li className="px-4.5 py-6 text-sm font-medium text-text/50">Loading action queue…</li>
         )}
 
         {source === "error" && (
-          <li className="p-4 space-y-3">
-            <p className="text-xs text-rose">{errorMessage}</p>
+          <li className="p-4.5 space-y-3">
+            <p className="text-xs font-medium text-rose">{errorMessage}</p>
             <button
               type="button"
               onClick={loadData}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-3 py-1.5 text-xs font-semibold text-cyan hover:bg-cyan/25"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-cyan/15 px-3 py-1.5 text-xs font-bold text-cyan hover:bg-cyan/25 tactile-press shadow-xs"
             >
               <RefreshCw className="h-3.5 w-3.5" /> Retry
             </button>
@@ -120,20 +120,20 @@ export default function CaseFilesPanel() {
               <li key={item.id}>
                 <Link
                   href={`/bids/${item.bidId}`}
-                  className="flex gap-3 px-4 py-3 transition-colors hover:bg-white/[0.03]"
+                  className="flex gap-3 px-4.5 py-3.5 transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10"
                 >
                   <span
-                    className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
+                    className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg shadow-xs"
                     style={{ backgroundColor: `${item.color}1a` }}
                   >
                     <item.icon className="h-3.5 w-3.5" style={{ color: item.color }} />
                   </span>
-                  <span className="min-w-0">
-                    <span className="block text-xs leading-snug text-text/85">{item.title}</span>
-                    <span className="mt-1 flex items-center gap-2">
-                      <span className="text-[11px] text-text/40">{item.meta}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xs font-semibold leading-snug text-text">{item.title}</span>
+                    <span className="mt-1 flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-medium text-text/50">{item.meta}</span>
                       {item.action && (
-                        <span className="rounded bg-violet/15 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-violet">
+                        <span className="rounded-md bg-violet/15 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-violet border border-violet/20">
                           action needed
                         </span>
                       )}
@@ -143,7 +143,7 @@ export default function CaseFilesPanel() {
               </li>
             ))
           ) : (
-            <li className="px-4 py-6 text-sm text-text/50">No actions need review.</li>
+            <li className="px-4.5 py-6 text-sm font-medium text-text/50">No actions need review.</li>
           ))}
       </ul>
     </Card>

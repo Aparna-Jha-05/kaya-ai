@@ -17,16 +17,16 @@ export default function PatrolBadge({
 }) {
   const color = STATUS_COLOR[status];
   const Icon = ICON[status];
-  const pad = size === "sm" ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-1 text-xs";
-  const icon = size === "sm" ? "h-2.5 w-2.5" : "h-3 w-3";
+  const pad = size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs";
+  const icon = size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5";
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded font-mono font-bold uppercase tracking-[0.06em] ${pad}`}
+      className={`inline-flex items-center gap-1 rounded-lg font-mono font-extrabold uppercase tracking-[0.08em] shadow-xs transition-all ${pad}`}
       style={{
         color,
-        backgroundColor: `${color}1a`,
-        border: `1px solid ${color}55`,
+        backgroundColor: `${color}22`,
+        border: `1.5px solid ${color}66`,
       }}
     >
       <Icon className={icon} strokeWidth={3} />
