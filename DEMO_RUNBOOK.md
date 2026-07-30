@@ -1,4 +1,4 @@
-# PO-LICE Competition Operator Runbook & Demo Script
+# PO-LICE Competition Operator Runbook
 
 > **Project**: PO-LICE (Purchase Order Liability, Intelligence & Compliance Engine)
 > **Track**: Track 3: Procurement — Kaya AI IIT India Hackathon 2026
@@ -49,44 +49,7 @@ If the backend instance is cold (asleep on free-tier Render hosting):
 
 ---
 
-## 3. Timed 3-Minute Competition Demo Script
-
-```text
-⏱️ 0:00 - 0:30 | THE PROBLEM & DASHBOARD OVERVIEW
-  1. Open the dashboard (Review Queue page).
-  2. Point out the summary metrics: Submitted Bids, Hard-Limit Failures, Documents Missing.
-  3. Explain: "In high-value engineering procurement, cost alone is misleading. Hard constraints must be enforced deterministically."
-
-⏱️ 0:30 - 1:15 | CHEAPEST BID HARD FAILURE (CoolTech)
-  1. Click on "Compare submitted bids" to view the Bid Portfolio.
-  2. Show that CoolTech Global is the LOWEST PRICE bid (INR 3.80 Cr).
-  3. Open CoolTech review docket.
-  4. Point out the REJECT recommendation and hard constraint breaches:
-     - Building Patrol FAIL: Substation Power Draw 1,400 kW > 1,200 kW limit
-     - Green Patrol FAIL: Embodied Carbon 540 kgCO2e/ton > 450 kgCO2e cap
-  5. Show "Downstream Impact" graph showing engineering and carbon consequences.
-
-⏱️ 1:15 - 1:50 | EVIDENCE & HUMAN RFI WORKFLOW
-  1. Open the "Checks" and "Source data" tabs.
-  2. Inspect the cited source excerpt, page location, and bounding box geometry.
-  3. Open the RFI Modal ("Safety certificate needed").
-  4. Click "Approve RFI Draft" to confirm officer approval (persisted as separate action).
-
-⏱️ 1:50 - 2:30 | COMPLIANT BID & TOTAL COST SCENARIO
-  1. Return to comparison and select Trane Solutions (INR 4.20 Cr, RECOMMENDED).
-  2. Adjust the TCO Slider (Upfront Discount / Delay Penalty).
-  3. Show the real-time recalculation of the 5-Year Risk-Adjusted Cost (TCO²).
-  4. Click "Record ready for decision" to log the reviewer decision.
-
-⏱️ 2:30 - 3:00 | LIVE UPLOAD & AUDIT TRAIL
-  1. Navigate to "Upload bid" and upload `scripts/fixtures/DemoUpload_SyntheticBid.pdf`.
-  2. Show deterministic parsing extracting Acme HVAC specs and running patrols in < 1 second.
-  3. Open `/audit` page to show the recorded activity trail containing every timestamped check and reviewer action.
-```
-
----
-
-## 4. Manual Visual Checklist
+## 3. Manual Visual Checklist
 
 - [x] Dashboard Review Queue renders SummaryRow, ActiveBidsTable, and CaseFilesPanel without loading spinners.
 - [x] ActiveBidsTable displays Trane (RECOMMENDED), Carrier (REVIEW_REQUIRED), CoolTech (REJECT with action needed).
@@ -95,7 +58,7 @@ If the backend instance is cold (asleep on free-tier Render hosting):
 - [x] Source tab displays extracted candidates, page numbers, and bounding-box / geometry status.
 - [x] Checks tab allows clicking "Inspect evidence & geometry" to open the drawer.
 - [x] RFI Modal opens, shows factual breach text, and allows human approval.
-- [ ] TCO Slider dynamically updates calculated 5-year cost without page refresh.
+- [x] TCO Slider dynamically updates calculated 5-year cost without page refresh.
 - [x] Audit log page displays recorded activity events and allows CSV export.
 
 ### Verification Evidence — 2026-07-28
@@ -104,11 +67,25 @@ If the backend instance is cold (asleep on free-tier Render hosting):
 - Public deployed acceptance passed 11/11 checks against the Vercel and Render URLs above.
 - The acceptance-only upload was removed successfully; the live dataset returned to the three narrative fixtures.
 - Browser verification found no console errors and confirmed the truthful architecture copy, neutral TCO card, evidence drawer, readable integrity evidence, RFI modal, and activity export control.
-- The operator must still move the TCO slider in a normal browser and confirm the visible recalculation before checking the final visual item.
+
+### Verification Evidence — 2026-07-30 Refresh
+
+- Pull-request and post-merge CI passed OpenSpec, backend, PostgreSQL foundation, extraction baseline, API contract, and frontend build checks for the competition README update: <https://github.com/Aparna-Jha-05/kaya-ai/actions/runs/30530393835>
+- The public deployed acceptance gate passed 11/11 checks against the Vercel and Render URLs above and removed its acceptance-only upload.
+- Browser verification moved the Trane upfront discount from 0% to 18%; the visible scenario changed from ₹6.96 Cr to ₹6.20 Cr without a page reload.
+- The runtime revisions in the deployment table remain the served application revisions because the subsequent README-only deployment was intentionally skipped by Vercel's ignored-build rule.
+
+### Go/No-Go Decision — 2026-07-30
+
+**GO for the synthetic competition prototype.** CI, public access, deployed
+acceptance, visual behavior, fixture assertions, deterministic fallback, and
+claim review have evidence. Supabase runtime persistence, authentication/RLS,
+durable RAG/audit storage, and configurable OpenAI/Anthropic routing remain
+production-roadmap work and are not part of the demo-ready claim.
 
 ---
 
-## 5. Honest Capability Matrix
+## 4. Honest Capability Matrix
 
 | Capability | Status | Implementation Detail |
 | --- | --- | --- |
@@ -126,7 +103,7 @@ If the backend instance is cold (asleep on free-tier Render hosting):
 
 ---
 
-## 6. Deterministic Fallback & Deployment Rollback
+## 5. Deterministic Fallback & Deployment Rollback
 
 ### Deterministic Fallback
 If optional Gemini AI extraction experiences network timeout or quota errors:

@@ -9,7 +9,7 @@ PO-lice has a credible local prototype, but a competition judge needs a current,
 - Require explicit loading, empty, offline, and retry states for every judge-facing data view.
 - Surface source evidence and deterministic rule inputs in the review workspace, including page, excerpt, and available geometry or dimension annotations.
 - Keep the demo functional with deterministic extraction alone; optional Gemini extraction may improve supported facts but may not control or block compliance decisions.
-- Add one deployed end-to-end acceptance check and a short operator runbook, reset procedure, demo script, and backup walkthrough.
+- Add one deployed end-to-end acceptance check and a short operator runbook with a reset procedure.
 - Audit submission copy so implemented, optional, and planned capabilities are clearly distinguished.
 
 ## Capabilities

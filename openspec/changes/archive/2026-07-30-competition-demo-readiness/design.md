@@ -12,7 +12,7 @@ The demo must preserve the project rule that models extract and explain while de
 - Present a short, deterministic procurement story with clear PASS, FLAG, and FAIL evidence.
 - Reuse the current API, repository, extraction, patrol, RFI, simulation, and activity paths.
 - Turn network failures and empty data into actionable UI states rather than stalled screens.
-- Establish a repeatable pre-demo gate, operator runbook, and backup walkthrough.
+- Establish a repeatable pre-demo gate and operator runbook.
 - Keep all public claims aligned with executed behavior.
 
 **Non-Goals:**
@@ -84,7 +84,7 @@ The script will use existing fixtures and Python's installed HTTP stack or stand
 
 ### 8. Use an explicit go/no-go checklist
 
-The demo is ready only when CI is green, the current public deployment passes the acceptance runner, fixtures show all three outcomes, the visual checklist passes, model-free mode works, claims are audited, and the backup walkthrough is accessible. A failure blocks submission readiness until fixed or removed from the demo script.
+The demo is ready only when CI is green, the current public deployment passes the acceptance runner, fixtures show all three outcomes, the visual checklist passes, model-free mode works, and claims are audited. A failure blocks submission readiness until fixed or removed from the claimed demo flow.
 
 ## Risks / Trade-offs
 
@@ -104,11 +104,6 @@ The demo is ready only when CI is green, the current public deployment passes th
 4. Deploy the backend with deterministic extraction, exact-origin CORS, and idempotent demo bootstrap.
 5. configure and deploy the frontend with the public backend origin.
 6. Run CI, the deployed acceptance runner, and the visual checklist; record the approved revisions.
-7. Enable optional Gemini only if the same gate still passes, then capture the backup walkthrough.
+7. Enable optional Gemini only if the same gate still passes.
 
 Rollback is a deployment rollback to the last green revision. The deterministic fixture path remains the fallback if optional model extraction is disabled.
-
-## Open Questions
-
-- Which final Vercel and Render public URLs will be placed in the submission?
-- Does the competition require a video file, an unlisted hosted link, or both?
