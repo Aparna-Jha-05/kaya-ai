@@ -96,16 +96,11 @@ export default function BidDetailClient({ id }: { id: string }) {
     );
 
   if (record) {
-    const tone = recommendationTone(record.scorecard.recommendation);
-    const color = tone === "rose" ? COLORS.rose : tone === "amber" ? COLORS.amber : COLORS.cyan;
     return (
-      <div className="space-y-6">
-        <Header
-          title={record.source.vendor_name}
-          subtitle={`${record.source.equipment.equipment_type} · ${record.source.equipment.model_number} · ${record.filename}`}
-          badge={recommendationLabel(record.scorecard.recommendation)}
-          color={color}
-        />
+      <div className="space-y-4">
+        <Link href="/bids" className="inline-flex items-center gap-1.5 text-xs font-semibold text-text/60 hover:text-text transition-colors">
+          <ArrowLeft className="h-3.5 w-3.5" /> Back to comparison
+        </Link>
         <BidWorkspace initialRecord={record} />
       </div>
     );

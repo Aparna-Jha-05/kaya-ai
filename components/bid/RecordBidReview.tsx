@@ -62,19 +62,19 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between min-w-0 max-w-full">
           <div className="min-w-0 flex-1">
             <p className="page-eyebrow">Bid review</p>
-            <div className="mt-1 flex flex-wrap items-center gap-2 min-w-0">
-              <h2 className="text-xl font-bold text-text truncate">{source.vendor_name}</h2>
+            <div className="mt-1 flex flex-wrap items-center gap-3 min-w-0">
+              <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-text truncate">{source.vendor_name}</h1>
               <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase shadow-xs shrink-0" style={{ color, backgroundColor: `${color}18` }}>
                 {recommendationLabel(record.scorecard.recommendation)}
               </span>
             </div>
-            <p className="mt-1 text-sm font-medium text-text/60 truncate">
+            <p className="mt-1 text-xs font-medium text-text/50 truncate">
               {equipment.equipment_type} · {equipment.model_number} · {record.filename}
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-3 text-right text-xs">
+          <div className="grid grid-cols-3 gap-4 text-right text-xs">
             <Metric label="Upfront cost" value={inCrore(source.bid_amount_inr)} />
-            <Metric label="5-year cost" value={inCrore(record.scorecard.calculated_tco2_inr)} />
+            <Metric label="5-year TCO²" value={inCrore(record.scorecard.calculated_tco2_inr)} />
             <Metric label="Delivery" value={source.promised_delivery_weeks == null ? "Not provided" : `${source.promised_delivery_weeks} weeks`} />
           </div>
         </div>
@@ -564,24 +564,24 @@ function EvidenceDrawer({
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-bg/60" role="presentation" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs" role="presentation" onMouseDown={onClose}>
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Evidence detail"
         onMouseDown={(event) => event.stopPropagation()}
-        className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-line bg-card shadow-2xl"
+        className="fixed right-0 top-0 bottom-0 z-[101] flex w-full max-w-md flex-col border-l border-line bg-card shadow-2xl"
       >
-        <div className="flex items-start justify-between border-b border-line px-5 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-4 bg-surface/30">
           <div>
-            <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-cyan">Evidence & Location Detail</p>
-            <h3 className="mt-1 text-base font-bold text-text">{displayCheckName(check.patrol_name)}</h3>
+            <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-cyan">Evidence & Location Detail</p>
+            <h3 className="mt-0.5 text-base font-extrabold text-text">{displayCheckName(check.patrol_name)}</h3>
           </div>
-          <button ref={closeRef} type="button" onClick={onClose} className="rounded-lg border border-line px-2.5 py-1 text-xs font-bold text-text/70 hover:text-text tactile-press shadow-xs">
+          <button ref={closeRef} type="button" onClick={onClose} className="rounded-xl border border-line bg-surface hover:bg-surface/80 px-3 py-1.5 text-xs font-extrabold text-text/80 hover:text-text tactile-press shadow-xs">
             Close
           </button>
         </div>
-        <div className="space-y-5 overflow-y-auto p-5">
+        <div className="flex-1 space-y-5 overflow-y-auto p-5">
           <section>
             <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Patrol Result</p>
             <p className="mt-2 text-sm text-text/80">{check.reason}</p>

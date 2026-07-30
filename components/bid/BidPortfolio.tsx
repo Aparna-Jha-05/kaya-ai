@@ -161,6 +161,7 @@ export default function BidPortfolio() {
       <Card>
         <CardHeader
           title="Comparison setup"
+          caption="Filter and select up to 3 bids for side-by-side analysis"
           right={<span className="font-mono text-xs font-extrabold text-cyan">{selectedIds.length}/3 selected</span>}
         />
         <div className="p-5 sm:p-6 space-y-4 min-w-0 max-w-full">
@@ -244,6 +245,7 @@ export default function BidPortfolio() {
           <Card>
             <CardHeader
               title="Bid comparison"
+              caption="Side-by-side compliance checks and TCO² scenario analysis"
               right={
                 <span className="inline-flex items-center gap-1.5 text-xs text-text/50 font-medium">
                   <SlidersHorizontal className="h-3.5 w-3.5 text-blue" /> {label(compliance)}
@@ -266,10 +268,26 @@ export default function BidPortfolio() {
                   <tr className="border-b-2 border-line table-header">
                     <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Bid</th>
                     <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
-                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Engineering</th>
-                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Carbon</th>
-                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Reliability</th>
-                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Schedule</th>
+                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                      <Tooltip text="Hard limit check. Validates physical floor load capacity against equipment weight.">
+                        <span>Engineering</span>
+                      </Tooltip>
+                    </th>
+                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                      <Tooltip text="Hard limit check. Validates embodied carbon emissions factor against project carbon cap.">
+                        <span>Carbon</span>
+                      </Tooltip>
+                    </th>
+                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                      <Tooltip text="Vendor risk score (0-10) calculated from historical performance metrics.">
+                        <span>Reliability</span>
+                      </Tooltip>
+                    </th>
+                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                      <Tooltip text="Schedule impact estimation calculating late delivery risk in days.">
+                        <span>Schedule</span>
+                      </Tooltip>
+                    </th>
                     <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO² (INR)</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Review state</th>
                   </tr>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Download, RefreshCw } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
+import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type ActivityEvent, type BidRecord } from "@/lib/api";
 import { activityActionLabel, displayCheckName } from "@/lib/recordUtils";
 import { allScorecardsFromRecords, type ScorecardRow } from "@/lib/tco";
@@ -151,11 +152,27 @@ export default function AuditPage() {
               <tr className="border-b-2 border-line table-header">
                 <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
                 <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
-                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Engineering</th>
-                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Carbon</th>
-                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Vendor risk</th>
-                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Schedule risk</th>
-                <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO (INR)</th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                  <Tooltip text="Hard limit check. Validates physical floor load capacity against equipment weight.">
+                    <span>Engineering</span>
+                  </Tooltip>
+                </th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                  <Tooltip text="Hard limit check. Validates embodied carbon emissions factor against project carbon cap.">
+                    <span>Carbon</span>
+                  </Tooltip>
+                </th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                  <Tooltip text="Vendor risk score (0-10) calculated from historical performance metrics.">
+                    <span>Vendor risk</span>
+                  </Tooltip>
+                </th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                  <Tooltip text="Schedule impact estimation calculating late delivery risk in days.">
+                    <span>Schedule risk</span>
+                  </Tooltip>
+                </th>
+                <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO² (INR)</th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Decision</th>
               </tr>
             </thead>
