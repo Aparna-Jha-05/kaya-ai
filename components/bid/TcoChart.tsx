@@ -16,7 +16,7 @@ import {
 interface Row {
   vendor: string;
   Upfront: number;
-  "5-year cost": number;
+  "5-year TCO²": number;
 }
 
 export default function TcoChart({ data }: { data: Row[] }) {
