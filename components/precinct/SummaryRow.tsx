@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AlertOctagon, FileCheck2, FileWarning, RefreshCw } from "lucide-react";
-import Card from "@/components/ui/Card";
+import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type BidRecord } from "@/lib/api";
 import { hasHardFailure } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
@@ -62,18 +62,21 @@ export default function SummaryRow() {
       value: metrics?.total,
       color: COLORS.text,
       Icon: FileCheck2,
+      help: metrics?.offline ? "No active service connection." : "Active procurement bids in current review queue.",
     },
     {
       label: "Hard-limit failures",
       value: metrics?.failures,
       color: COLORS.rose,
       Icon: AlertOctagon,
+      help: "Bids exceeding engineering limits or carbon budget thresholds.",
     },
     {
       label: "Documents missing",
       value: metrics?.missingDocs,
       color: COLORS.amber,
       Icon: FileWarning,
+      help: "Bids missing safety, OSHA, or compliance certificates.",
     },
   ];
 
@@ -83,7 +86,11 @@ export default function SummaryRow() {
         <Card key={card.label} accent={card.color} className="p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <div className="ui-label text-text/50 truncate">{card.label}</div>
+              <div className="flex items-center gap-1.5">
+                <Tooltip text={card.help}>
+                  <span className="ui-label text-text/60 hover:text-text transition-colors truncate">{card.label}</span>
+                </Tooltip>
+              </div>
               <div className="mt-3 font-mono text-3xl sm:text-4xl font-extrabold tabular-nums" style={{ color: card.color }}>
                 {loading ? "…" : (metrics ? card.value : "—")}
               </div>

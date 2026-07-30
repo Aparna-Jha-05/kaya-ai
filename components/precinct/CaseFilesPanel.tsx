@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, FileSearch, Mail, RefreshCw } from "lucide-react";
-import Card, { CardHeader } from "@/components/ui/Card";
+import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type BidRecord } from "@/lib/api";
 import { displayCheckName } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
@@ -87,13 +87,10 @@ export default function CaseFilesPanel() {
   return (
     <Card>
       <CardHeader
-        title="Action queue"
-        caption={
-          source === "error"
-            ? "Action items unavailable while service is offline."
-            : source === "empty"
-            ? "No bids uploaded yet. Upload a bid PDF to generate action items."
-            : "Items that need reviewer attention before a purchase order can progress."
+        title={
+          <Tooltip text="Pending reviewer tasks requiring verification before purchase order sign-off.">
+            <span>Action queue</span>
+          </Tooltip>
         }
       />
       <ul className="divide-y divide-line/40">
