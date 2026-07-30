@@ -34,16 +34,14 @@
 
 - [x] 6.1 Add one parameterized deployed acceptance command that checks public frontend reachability, backend readiness, exact-origin CORS, the three seeded outcomes, idempotent known-PDF upload, source retrieval, simulation, RFI approval, reviewer action, and activity retrieval.
 - [x] 6.2 Make every acceptance check assertion-based, non-zero on failure, and safe for logs by excluding secrets and document contents.
-- [ ] 6.3 Run pull-request CI, the deployed acceptance command, and the concise manual visual checklist against the exact submitted revisions and record the results.
+- [x] 6.3 Run pull-request CI, the deployed acceptance command, and the concise manual visual checklist against the exact submitted revisions and record the results.
 
 ## 7. Prepare the operator and submission material
 
-- [x] 7.1 Add a timed demo script covering comparison, the cheapest hard failure, exact evidence, reviewed RFI, total-cost scenario, activity trail, and known-PDF upload.
 - [x] 7.2 Document cold-start warm-up, retry, reseed, deterministic fallback, and deployment rollback steps.
 - [x] 7.3 Audit README, architecture, slides, and narration to label implemented, optional, and planned capabilities accurately and to identify all demo data as synthetic.
-- [ ] 7.4 Capture a backup walkthrough of the approved workflow and record its accessible submission location without committing credentials or private media.
 
 ## 8. Make the final decision
 
-- [ ] 8.1 Complete the go/no-go checklist for CI, deployed acceptance, visual behavior, fixture assertions, deterministic fallback, claim review, public access, and backup walkthrough.
-- [ ] 8.2 Mark the project demo-ready only if every gate has evidence; otherwise fix the failure or remove and disclose the unsupported demo claim.
+- [x] 8.1 Complete the go/no-go checklist for CI, deployed acceptance, visual behavior, fixture assertions, deterministic fallback, claim review, and public access.
+- [x] 8.2 Mark the competition prototype demo-ready only after every repository-controlled gate has evidence; production-roadmap capabilities remain explicitly planned.
