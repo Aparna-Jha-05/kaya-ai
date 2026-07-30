@@ -30,13 +30,15 @@ export default function BidWorkspace({ initialRecord }: { initialRecord?: BidRec
     router.replace(`/bids/${next.id}`);
   }
 
+  const progressPercent = `${(lit / (PIPELINE.length - 1)) * 100}%`;
+
   return (
     <div className="space-y-6">
       <div className="relative rounded-2xl border border-line border-b-2 bg-card p-5 shadow-xs" aria-label="Bid processing progress">
         <div className="absolute left-[10%] right-[10%] top-[33px] h-0.5 bg-line/60 z-0">
           <motion.div
             initial={false}
-            animate={{ width: `${(lit / (PIPELINE.length - 1)) * 100%}` }}
+            animate={{ width: progressPercent }}
             transition={{ duration: 0.4, ease: "easeOut" }}
             className="h-full bg-cyan shadow-[0_0_8px_rgba(56,189,248,0.5)]"
           />
