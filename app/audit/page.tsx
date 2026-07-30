@@ -135,7 +135,7 @@ export default function AuditPage() {
           title={recState === "ready" ? `${scorecards.length} bid scorecard${scorecards.length === 1 ? "" : "s"}` : "Compliance scorecard"}
           caption="Per-bid summary of all four patrol results and 5-year TCO²."
         />
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-auto max-h-[225px]">
           <table className="w-full text-sm border-collapse table-fixed">
             <colgroup>
               <col className="w-[20%]" />
@@ -147,8 +147,8 @@ export default function AuditPage() {
               <col className="w-[14%]" />
               <col className="w-[12%]" />
             </colgroup>
-            <thead>
-              <tr className="border-b-2 border-line table-header bg-surface/50">
+            <thead className="sticky top-0 z-10 bg-surface">
+              <tr className="border-b-2 border-line table-header">
                 <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
                 <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Engineering</th>

@@ -91,7 +91,7 @@ export default function CaseFilesPanel() {
         title="Action queue"
         caption="Reviewer tasks requiring verification"
       />
-      <ul className="divide-y divide-line/40">
+      <ul className="divide-y divide-line/40 max-h-[225px] overflow-y-auto">
         {source === "loading" && (
           <li className="px-5 py-6 sm:px-6 text-sm font-medium text-text/50">Loading action queue…</li>
         )}

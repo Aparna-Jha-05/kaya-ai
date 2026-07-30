@@ -163,8 +163,8 @@ export default function BidPortfolio() {
           title="Comparison setup"
           right={<span className="font-mono text-xs font-extrabold text-cyan">{selectedIds.length}/3 selected</span>}
         />
-        <div className="space-y-4 p-4.5 min-w-0 max-w-full overflow-hidden">
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_180px_190px_auto] min-w-0 max-w-full">
+        <div className="p-5 sm:p-6 space-y-4 min-w-0 max-w-full">
+          <div className="grid gap-3.5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_170px_180px_auto] min-w-0 max-w-full">
             <label className="relative min-w-0 max-w-full block">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text/40" />
               <span className="sr-only">Find a bid</span>
@@ -210,14 +210,14 @@ export default function BidPortfolio() {
             </button>
           </div>
 
-          <div className="flex flex-wrap gap-2" aria-label="Bids available for comparison">
+          <div className="pt-1.5 flex flex-wrap gap-2.5" aria-label="Bids available for comparison">
             {filtered.map((bid) => {
               const selectedItem = selectedIds.includes(bid.id);
               const disabled = !selectedItem && selectedIds.length >= 3;
               return (
                 <label
                   key={bid.id}
-                  className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition-all ${
                     selectedItem
                       ? "border-cyan bg-cyan/15 text-cyan ring-1 ring-cyan/40 shadow-xs"
                       : "border-line text-text/70 hover:border-cyan/40 hover:text-text shadow-xs"
@@ -250,7 +250,7 @@ export default function BidPortfolio() {
                 </span>
               }
             />
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-auto max-h-[225px]">
               <table className="w-full text-sm border-collapse table-fixed">
                 <colgroup>
                   <col className="w-[20%]" />
@@ -262,8 +262,8 @@ export default function BidPortfolio() {
                   <col className="w-[14%]" />
                   <col className="w-[12%]" />
                 </colgroup>
-                <thead>
-                  <tr className="border-b-2 border-line table-header bg-surface/50">
+                <thead className="sticky top-0 z-10 bg-surface">
+                  <tr className="border-b-2 border-line table-header">
                     <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Bid</th>
                     <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Engineering</th>

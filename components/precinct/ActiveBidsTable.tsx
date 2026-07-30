@@ -97,7 +97,7 @@ export default function ActiveBidsTable() {
       )}
 
       {(source === "live" || source === "empty") && (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-auto max-h-[225px]">
           <table className="w-full text-sm border-collapse table-fixed">
             <colgroup>
               <col className="w-[24%]" />
@@ -108,8 +108,8 @@ export default function ActiveBidsTable() {
               <col className="w-[18%]" />
               <col className="w-[10%]" />
             </colgroup>
-            <thead>
-              <tr className="border-b-2 border-line table-header bg-surface/50">
+            <thead className="sticky top-0 z-10 bg-surface">
+              <tr className="border-b-2 border-line table-header">
                 <th className="px-4 py-3 text-left whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
                 <th className="px-4 py-3 text-right whitespace-nowrap">Upfront (INR)</th>
                 <th className="px-4 py-3 text-center whitespace-nowrap">
