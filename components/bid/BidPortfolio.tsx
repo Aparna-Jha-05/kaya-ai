@@ -8,7 +8,7 @@ import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import TCOSlider from "@/components/tco-slider";
 import { procurementApi, type BidRecord, type CheckStatus } from "@/lib/api";
-import { displayCheckName, formatCroreValue, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
+import { cleanReasonText, displayCheckName, formatCroreValue, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
 
 const TcoChart = dynamic(() => import("@/components/bid/TcoChart"), {
@@ -407,7 +407,7 @@ function Inspector({ bid }: { bid: Comparable }) {
         <Metric label="Schedule impact" value={check(bid, "Schedule impact")?.status ?? "Review"} />
       </div>
       <p className="mt-4 text-xs leading-relaxed text-text/60">
-        {bid.checks.map((value) => value.reason).join(" ")}
+        {bid.checks.map((value) => cleanReasonText(value.reason)).filter(Boolean).join(" ")}
       </p>
       <Link href={`/bids/${bid.id}`} className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-cyan hover:underline">
         Open bid review <ArrowRight className="h-3.5 w-3.5" />

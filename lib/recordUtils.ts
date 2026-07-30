@@ -49,3 +49,8 @@ export function inCrore(value: number | null | undefined) {
 export function formatCroreValue(value: number | null | undefined) {
   return value == null ? "—" : `${(value / 10_000_000).toFixed(2)} Cr`;
 }
+
+export function cleanReasonText(reason: string | null | undefined) {
+  if (!reason) return "";
+  return reason.replace(/^Agreement Compliance Index:\s*\d+(\.\d+)?(\/\d+)?\.\s*/i, "").trim();
+}

@@ -9,7 +9,7 @@ import EvidenceBoard from "@/components/bid/EvidenceBoard";
 import Tooltip from "@/components/ui/Tooltip";
 import RFIModal from "@/components/rfi-modal";
 import { procurementApi, type ActivityEvent, type BidRecord } from "@/lib/api";
-import { activityActionLabel, displayCheckName, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
+import { activityActionLabel, cleanReasonText, displayCheckName, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
 
 type Tab = "summary" | "source" | "checks" | "impact" | "activity";
@@ -422,7 +422,7 @@ function ViceSquadCard({ record }: { record: BidRecord }) {
               </p>
             </div>
           )}
-          <p className="text-sm leading-relaxed text-text/70">{vice.reason}</p>
+          <p className="text-sm leading-relaxed text-text/70">{cleanReasonText(vice.reason)}</p>
         </div>
         {entries.length > 0 && (
           <dl className="grid gap-2 sm:grid-cols-2">
