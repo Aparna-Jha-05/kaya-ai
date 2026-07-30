@@ -22,7 +22,7 @@ export default function TopHeader() {
       <div className="mx-auto flex items-center justify-between gap-x-3 px-4 py-2.5">
         <Link href="/" title="Purchase Order Liability, Intelligence & Compliance Engine" className="flex items-center gap-2.5 shrink-0 group">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-cyan shadow-[0_4px_12px_rgba(56,189,248,0.35)] group-hover:shadow-[0_4px_18px_rgba(56,189,248,0.55)] group-hover:scale-105 transition-all duration-200">
-            <Image src="/icon.svg" alt="PO-LICE" width={20} height={20} priority />
+            <Image src="/icon.svg" alt="PO-LICE" width={22} height={22} priority />
           </span>
           <span className="text-lg font-extrabold tracking-tight text-text group-hover:text-cyan transition-colors duration-200 leading-none">
             PO-LICE
@@ -49,8 +49,8 @@ export default function TopHeader() {
               title="Upload bid"
               aria-label="Upload bid"
               className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line transition-all ${isUploadActive
-                  ? "bg-cyan/25 ring-1 ring-cyan/50 text-cyan"
-                  : "bg-surface text-text/80 hover:border-cyan/40 hover:text-cyan tactile-press"
+                ? "bg-cyan/25 ring-1 ring-cyan/50 text-cyan"
+                : "bg-surface text-text/80 hover:border-cyan/40 hover:text-cyan tactile-press"
                 }`}
             >
               <FilePlus2 className="h-4 w-4" />
@@ -67,8 +67,8 @@ function NavLink({ href, active, children }: { href: string; active: boolean; ch
     <Link
       href={href}
       className={`rounded-md px-3 py-1.5 transition-colors ${active
-          ? "bg-cyan/10 font-medium text-cyan"
-          : "text-text/60 hover:bg-white/5 hover:text-text"
+        ? "bg-cyan/10 font-medium text-cyan"
+        : "text-text/60 hover:bg-white/5 hover:text-text"
         }`}
     >
       {children}
