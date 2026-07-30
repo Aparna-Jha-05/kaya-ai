@@ -17,3 +17,12 @@ backend/data/
 /docs/
 *.pdf
 onboarding.html
+
+# Local agent and browser tooling
+/.agent/
+/.claude/
+/.codegraph/
+/.codex/
+/.opencode/
+/.playwright-cli/
+/output/playwright/

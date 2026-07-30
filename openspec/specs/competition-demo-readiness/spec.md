@@ -1,4 +1,9 @@
-## ADDED Requirements
+## Purpose
+
+Define the public, deterministic, evidence-led competition prototype and the
+repository-controlled gates required before it is described as demo-ready.
+
+## Requirements
 
 ### Requirement: Public integrated demo
 The system SHALL provide a public HTTPS frontend and backend pair for the competition, SHALL allow access without a platform account or deployment-protection login, and SHALL configure the frontend API origin and backend CORS policy to communicate only through the intended public origins.
@@ -114,7 +119,7 @@ The repository SHALL provide one repeatable deployed acceptance command that ass
 - **THEN** the operator also completes the concise visual checklist for comparison, evidence, failure states, RFI, scenario, and activity before submission
 
 ### Requirement: Demo operations and recovery
-The repository SHALL document a pre-demo checklist, a timed judge script, demo-data bootstrap behavior, cold-start recovery, rollback steps, final public URLs, and a backup walkthrough created from the same approved workflow.
+The repository SHALL document a pre-demo checklist, demo-data bootstrap behavior, cold-start recovery, rollback steps, and final public URLs.
 
 #### Scenario: Operator prepares the demo
 - **WHEN** the operator follows the pre-demo checklist
@@ -122,7 +127,7 @@ The repository SHALL document a pre-demo checklist, a timed judge script, demo-d
 
 #### Scenario: Live upload cannot complete
 - **WHEN** a network, cold-start, or optional model failure interrupts the live upload
-- **THEN** the operator can continue the same evidence-led story with the seeded record and backup walkthrough
+- **THEN** the operator can continue the same evidence-led story with the seeded record
 
 #### Scenario: Deployment regresses
 - **WHEN** the current deployment fails the readiness gate
@@ -132,7 +137,7 @@ The repository SHALL document a pre-demo checklist, a timed judge script, demo-d
 Public documentation and demo narration SHALL distinguish implemented, optional, and planned capabilities. The public demo SHALL use only synthetic data and MUST NOT expose credentials, private vendor content, internal filesystem paths, or unsupported production-security claims.
 
 #### Scenario: Submission claims are reviewed
-- **WHEN** the README, architecture diagram, slides, and demo script are prepared
+- **WHEN** the README, architecture diagram, slides, and demo copy are prepared
 - **THEN** Supabase persistence, authentication, RLS, pgvector RAG, full CAD/BIM interpretation, immutable production audit storage, and automatic external dispatch are described as planned unless runtime evidence proves otherwise
 
 #### Scenario: Demo data is inspected
@@ -144,7 +149,7 @@ Public documentation and demo narration SHALL distinguish implemented, optional,
 - **THEN** no API key or credential is present
 
 ### Requirement: Competition go or no-go decision
-The project SHALL be marked demo-ready only after pull-request CI, deployed acceptance, the visual checklist, deterministic fallback, fixture assertions, claim review, and backup walkthrough all pass for the submitted revision.
+The project SHALL be marked demo-ready only after pull-request CI, deployed acceptance, the visual checklist, deterministic fallback, fixture assertions, and claim review all pass for the submitted revision.
 
 #### Scenario: Every gate passes
 - **WHEN** all readiness evidence is recorded for the submitted revision

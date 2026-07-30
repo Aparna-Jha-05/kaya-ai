@@ -10,7 +10,7 @@ final decision with a human reviewer.
 [![CI](https://github.com/Aparna-Jha-05/kaya-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Aparna-Jha-05/kaya-ai/actions/workflows/ci.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688)](https://fastapi.tiangolo.com/)
-[![OpenSpec](https://img.shields.io/badge/specs-OpenSpec-5B5BD6)](./openspec/changes/)
+[![OpenSpec](https://img.shields.io/badge/specs-OpenSpec-5B5BD6)](./openspec/README.md)
 
 [**Open live demo**](https://po-lice.vercel.app) ·
 [**Technical architecture**](./TECHNICAL.md) ·
@@ -86,10 +86,10 @@ working features.
 | --- | --- |
 | [Business overview](./BUSINESS.md) | Problem, users, value, differentiators, demo story, and limitations |
 | [Technical guide](./TECHNICAL.md) | Architecture, data flow, API, persistence, AI controls, testing, and deployment |
-| [Demo runbook](./DEMO_RUNBOOK.md) | Three-minute script, cold-start procedure, acceptance gate, and rollback |
+| [Demo runbook](./DEMO_RUNBOOK.md) | Cold-start procedure, acceptance evidence, capability matrix, and rollback |
 | [ML extraction guide](./backend/ML_EXTRACTION.md) | Ollama/Gemini cascade, privacy controls, evaluation, and fallback |
 | [Backend agent guide](./backend/AGENTS.md) | Backend invariants and contributor rules |
-| [Active OpenSpec changes](./openspec/changes/) | Accepted intent, design decisions, and remaining work |
+| [OpenSpec engineering roadmap](./openspec/README.md) | Versioned specifications, honest task progress, and remaining work |
 
 ## Architecture at a glance
 
@@ -165,7 +165,8 @@ Changes should use a short-lived feature branch and a pull request into
 
 ## Team
 
-| Team member 
-| **Jb Anmol**, IITM
-| **Pratham Amritkar**, IITM
-| **Aparna Jha**, IITM
+| Team member |
+| --- |
+| **Jb Anmol**, IITM |
+| **Pratham Amritkar**, IITM |
+| **Aparna Jha**, IITM |
