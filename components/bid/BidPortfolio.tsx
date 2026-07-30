@@ -273,7 +273,7 @@ export default function BidPortfolio() {
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Carbon</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Reliability</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">Schedule</th>
-                    <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO (INR)</th>
+                    <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO² (INR)</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Review state</th>
                   </tr>
                 </thead>
@@ -365,7 +365,7 @@ export default function BidPortfolio() {
                 data={selected.map((bid) => ({
                   vendor: bid.vendor,
                   Upfront: (bid.upfront ?? 0) / 10_000_000,
-                  "5-year cost": (shownCost(bid) ?? 0) / 10_000_000,
+                  "5-year TCO²": (shownCost(bid) ?? 0) / 10_000_000,
                 }))}
               />
             </div>
@@ -402,7 +402,7 @@ function Inspector({ bid }: { bid: Comparable }) {
       <p className="mt-1 text-sm font-medium text-text/60">{bid.model}</p>
       <div className="mt-5 grid grid-cols-2 gap-3 border-y border-line py-4 text-xs">
         <Metric label="Review state" value={recommendationLabel(bid.recommendation)} />
-        <Metric label="5-year cost" value={inCrore(bid.cost)} />
+        <Metric label="5-year TCO²" value={inCrore(bid.cost)} />
         <Metric label="Vendor reliability" value={check(bid, "Vendor reliability")?.risk == null ? "Not provided" : `${check(bid, "Vendor reliability")?.risk}/10`} />
         <Metric label="Schedule impact" value={check(bid, "Schedule impact")?.status ?? "Review"} />
       </div>

@@ -127,7 +127,7 @@ export default function ActiveBidsTable() {
                     <span>Reliability</span>
                   </Tooltip>
                 </th>
-                <th className="px-4 py-3 text-right whitespace-nowrap">5-yr TCO (INR)</th>
+                <th className="px-4 py-3 text-right whitespace-nowrap">5-yr TCO² (INR)</th>
                 <th className="px-4 py-3 text-right whitespace-nowrap last:rounded-tr-[0.9rem]" />
               </tr>
             </thead>
