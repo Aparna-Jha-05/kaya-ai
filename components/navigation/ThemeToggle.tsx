@@ -36,12 +36,12 @@ export default function ThemeToggle({ compact = false }: { compact?: boolean }) 
   }
 
   return (
-    <div className={`inline-flex items-center rounded-lg border border-white/10 bg-surface/80 p-0.5 ${compact ? "" : "w-full"}`} role="group" aria-label="Color theme">
-      <button type="button" onClick={() => choose("light")} aria-pressed={theme === "light"} className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors ${theme === "light" ? "bg-card text-text shadow-sm" : "text-text/55 hover:text-text"}`}>
+    <div className={`flex items-center rounded-xl border border-line bg-surface p-1 shadow-xs ${compact ? "inline-flex" : "w-full"}`} role="group" aria-label="Color theme">
+      <button type="button" onClick={() => choose("light")} aria-pressed={theme === "light"} className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-xs font-bold transition-all ${compact ? "" : "flex-1"} ${theme === "light" ? "bg-card text-text ring-1 ring-line shadow-xs" : "text-text/60 hover:text-text"}`}>
         <Sun className="h-3.5 w-3.5" />
         <span className={compact ? "sr-only" : ""}>Light</span>
       </button>
-      <button type="button" onClick={() => choose("dark")} aria-pressed={theme === "dark"} className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors ${theme === "dark" ? "bg-card text-text shadow-sm" : "text-text/55 hover:text-text"}`}>
+      <button type="button" onClick={() => choose("dark")} aria-pressed={theme === "dark"} className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-xs font-bold transition-all ${compact ? "" : "flex-1"} ${theme === "dark" ? "bg-card text-text ring-1 ring-line shadow-xs" : "text-text/60 hover:text-text"}`}>
         <Moon className="h-3.5 w-3.5" />
         <span className={compact ? "sr-only" : ""}>Dark</span>
       </button>

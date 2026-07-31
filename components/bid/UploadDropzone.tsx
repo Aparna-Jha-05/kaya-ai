@@ -55,12 +55,12 @@ export default function UploadDropzone({
       role="button"
       tabIndex={0}
       aria-label="Upload a bid PDF"
-      className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
+      className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all duration-150 tactile-press ${
         over
-          ? "border-cyan bg-cyan/5"
+          ? "border-cyan bg-cyan/10 shadow-xs"
           : state === "uploading"
-          ? "border-cyan/60 bg-cyan/5"
-          : "border-white/15 bg-card/50 hover:border-white/30"
+          ? "border-cyan bg-cyan/10"
+          : "border-line bg-card shadow-xs hover:border-cyan/50 hover:bg-surface/50"
       }`}
     >
       <input ref={inputRef} aria-label="Choose a bid PDF" type="file" accept="application/pdf,.pdf" className="sr-only" onChange={(event) => { void upload(event.target.files?.[0]); event.currentTarget.value = ""; }} />

@@ -8,7 +8,7 @@ import PatrolBadge from "@/components/bid/PatrolBadge";
 import EvidenceBoard from "@/components/bid/EvidenceBoard";
 import RFIModal from "@/components/rfi-modal";
 import { procurementApi, type ActivityEvent, type BidRecord } from "@/lib/api";
-import { activityActionLabel, displayCheckName, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
+import { activityActionLabel, cleanReasonText, displayCheckName, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
 
 type Tab = "summary" | "source" | "checks" | "impact" | "activity";
@@ -57,29 +57,29 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
 
   return (
     <div className="space-y-5">
-      <section className="rounded-xl border border-white/10 bg-card/60 p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div>
+      <section className="rounded-2xl border border-line border-b-2 bg-card p-5 shadow-xs">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between min-w-0 max-w-full">
+          <div className="min-w-0 flex-1 space-y-1">
             <p className="page-eyebrow">Bid review</p>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              <h2 className="text-xl font-semibold text-text">{source.vendor_name}</h2>
-              <span className="rounded px-2 py-1 text-[10px] font-bold uppercase" style={{ color, backgroundColor: `${color}18` }}>
+            <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text break-words">{source.vendor_name}</h1>
+              <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase shadow-xs shrink-0" style={{ color, backgroundColor: `${color}18` }}>
                 {recommendationLabel(record.scorecard.recommendation)}
               </span>
             </div>
-            <p className="mt-1 text-sm text-text/55">
-              {equipment.equipment_type} · {equipment.model_number} · {record.filename}
+            <p className="text-xs font-medium text-text/50 break-words">
+              {equipment.equipment_type} · {equipment.model_number} · <span className="font-mono text-[11px]">{record.filename}</span>
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-3 text-right text-xs">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line/40 pt-3.5 lg:border-t-0 lg:pt-0 text-xs">
             <Metric label="Upfront cost" value={inCrore(source.bid_amount_inr)} />
-            <Metric label="5-year cost" value={inCrore(record.scorecard.calculated_tco2_inr)} />
+            <Metric label="5-year TCO²" value={inCrore(record.scorecard.calculated_tco2_inr)} />
             <Metric label="Delivery" value={source.promised_delivery_weeks == null ? "Not provided" : `${source.promised_delivery_weeks} weeks`} />
           </div>
         </div>
       </section>
 
-      <div className="tab-strip overflow-x-auto border-b border-white/10">
+      <div className="tab-strip overflow-x-auto border-b-2 border-line">
         <div role="tablist" aria-label="Bid review sections" className="flex min-w-max gap-1">
           {tabs.map(({ id, label, Icon }) => (
             <button
@@ -102,7 +102,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
         <div className="space-y-5">
           <Card accent={color} className="p-5">
             <p className="font-mono text-[10px] uppercase tracking-wider" style={{ color }}>
-              Review state
+              Status
             </p>
             <h3 className="mt-1 text-lg font-semibold text-text">{nextStep}</h3>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-text/60">
@@ -233,20 +233,24 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
       <Card>
         <CardHeader
           title="Extracted source data"
-          caption="Values are extracted from the uploaded document. Confirm them against the source PDF before acting."
+          caption="Confirm extracted document values against the source PDF before acting."
           right={
-            <a href={procurementApi.sourceUrl(record.id)} target="_blank" rel="noreferrer" className="text-xs text-cyan hover:underline">
+            <a href={procurementApi.sourceUrl(record.id)} target="_blank" rel="noreferrer" className="text-xs font-semibold text-cyan hover:underline">
               Open source PDF
             </a>
           }
         />
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[480px] text-sm border-collapse table-fixed">
+            <colgroup>
+              <col className="w-[28%]" />
+              <col className="w-[72%]" />
+            </colgroup>
             <tbody>
               {fields.map(([label, value]) => (
-                <tr key={label} className="border-b border-white/5">
-                  <th className="px-4 py-3 text-left font-medium text-text/55">{label}</th>
-                  <td className="px-4 py-3 font-mono text-text">{value}</td>
+                <tr key={label} className="border-b border-line/40 hover:bg-cyan/5 transition-colors">
+                  <th className="px-4 py-3 text-left font-bold text-text/60 first:rounded-tl-[0.9rem]">{label}</th>
+                  <td className="px-4 py-3 font-mono font-semibold text-text">{value}</td>
                 </tr>
               ))}
             </tbody>
@@ -262,34 +266,41 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
             caption="Traceable source excerpts and page location details extracted from the PDF text layer."
           />
           <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono">
+            <table className="w-full min-w-[640px] text-xs font-mono border-collapse table-fixed">
+              <colgroup>
+                <col className="w-[18%]" />
+                <col className="w-[18%]" />
+                <col className="w-[10%]" />
+                <col className="w-[24%]" />
+                <col className="w-[30%]" />
+              </colgroup>
               <thead>
-                <tr className="border-b border-white/10 text-left text-text/40">
-                  <th className="px-4 py-2">Field</th>
-                  <th className="px-4 py-2">Value</th>
-                  <th className="px-4 py-2">Page</th>
-                  <th className="px-4 py-2">Bounding Box</th>
-                  <th className="px-4 py-2">Source Excerpt</th>
+                <tr className="border-b-2 border-line text-left table-header bg-surface/50">
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Field</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Value</th>
+                  <th className="px-4 py-2.5 font-bold text-center whitespace-nowrap">Page</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Bounding Box</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Source Excerpt</th>
                 </tr>
               </thead>
               <tbody>
                 {candidates.map((c, i) => (
-                  <tr key={i} className="border-b border-white/5 align-top">
-                    <td className="px-4 py-2 text-cyan">{c.field}</td>
-                    <td className="px-4 py-2 text-text">{String(c.normalized_value)} {c.unit ?? ""}</td>
-                    <td className="px-4 py-2 text-text/60">{c.page ?? "—"}</td>
-                    <td className="px-4 py-2">
+                  <tr key={i} className="border-b border-line/40 align-top transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
+                    <td className="px-4 py-2.5 font-bold text-cyan truncate">{c.field}</td>
+                    <td className="px-4 py-2.5 text-text font-semibold truncate">{String(c.normalized_value)} {c.unit ?? ""}</td>
+                    <td className="px-4 py-2.5 text-text/60 text-center">{c.page ?? "—"}</td>
+                    <td className="px-4 py-2.5">
                       {c.bbox ? (
-                        <span className="rounded bg-cyan/10 px-1.5 py-0.5 text-cyan">
+                        <span className="rounded-md bg-cyan/10 px-1.5 py-0.5 font-bold text-cyan border border-cyan/20">
                           [{c.bbox.map((v) => v.toFixed(1)).join(", ")}]
                         </span>
                       ) : (
-                        <span className="rounded bg-white/5 px-1.5 py-0.5 text-text/40">
+                        <span className="rounded-md bg-surface px-1.5 py-0.5 text-text/40 border border-line">
                           Region unavailable
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-2 text-text/50 max-w-[260px] truncate">{c.source_excerpt}</td>
+                    <td className="px-4 py-2.5 text-text/60 max-w-[260px] truncate">{c.source_excerpt}</td>
                   </tr>
                 ))}
               </tbody>
@@ -303,27 +314,34 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
         <Card accent={COLORS.amber}>
           <CardHeader
             title="Detected dimension annotations"
-            caption="Parsed drawing text annotations. These are detected text annotations, not full CAD/BIM model geometry."
+            caption="Parsed drawing text annotations — detected text only, not full CAD/BIM model geometry."
           />
           <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono">
+            <table className="w-full min-w-[640px] text-xs font-mono border-collapse table-fixed">
+              <colgroup>
+                <col className="w-[22%]" />
+                <col className="w-[20%]" />
+                <col className="w-[12%]" />
+                <col className="w-[26%]" />
+                <col className="w-[20%]" />
+              </colgroup>
               <thead>
-                <tr className="border-b border-white/10 text-left text-text/40">
-                  <th className="px-4 py-2">Annotation Field</th>
-                  <th className="px-4 py-2">Value</th>
-                  <th className="px-4 py-2">Page</th>
-                  <th className="px-4 py-2">Coordinates</th>
-                  <th className="px-4 py-2">Status</th>
+                <tr className="border-b-2 border-line text-left table-header bg-surface/50">
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Annotation Field</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Value</th>
+                  <th className="px-4 py-2.5 font-bold text-center whitespace-nowrap">Page</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Coordinates</th>
+                  <th className="px-4 py-2.5 font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {annotations.map((a, i) => (
-                  <tr key={i} className="border-b border-white/5 align-top">
-                    <td className="px-4 py-2 text-amber">{a.field}</td>
-                    <td className="px-4 py-2 text-text">{a.normalized_value} {a.unit}</td>
-                    <td className="px-4 py-2 text-text/60">Page {a.page}</td>
-                    <td className="px-4 py-2 text-text/70">[{a.bbox.map((v) => v.toFixed(1)).join(", ")}]</td>
-                    <td className="px-4 py-2 text-text/50">{a.interpretation_status}</td>
+                  <tr key={i} className="border-b border-line/40 align-top transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
+                    <td className="px-4 py-2.5 font-bold text-amber">{a.field}</td>
+                    <td className="px-4 py-2.5 text-text font-semibold">{a.normalized_value} {a.unit}</td>
+                    <td className="px-4 py-2.5 text-text/60 text-center">Page {a.page}</td>
+                    <td className="px-4 py-2.5 text-text/70">[{a.bbox.map((v) => v.toFixed(1)).join(", ")}]</td>
+                    <td className="px-4 py-2.5 text-text/50">{a.interpretation_status}</td>
                   </tr>
                 ))}
               </tbody>
@@ -369,43 +387,79 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
 }
 
 function ViceSquadCard({ record }: { record: BidRecord }) {
-  const vice = record.scorecard.patrol_results.find((p) => p.patrol_name.toLowerCase().includes("vice"));
+  const vice = record.scorecard.patrol_results.find((p) => p.patrol_name.toLowerCase().includes("vice") || p.patrol_name.toLowerCase().includes("reliability"));
   if (!vice || vice.status === "PASS") return null;
   const entries = vice.evidence ? Object.entries(vice.evidence) : [];
+  const riskColor = vice.risk_score != null && vice.risk_score >= 7 ? COLORS.rose : vice.risk_score != null && vice.risk_score >= 4 ? COLORS.amber : COLORS.cyan;
+
   return (
     <Card accent={COLORS.violet}>
       <CardHeader
-        title="Vice Squad — Vendor integrity signals"
-        caption="Supporting context from the deterministic integrity check. Requires reviewer interpretation."
+        title="Reliability Patrol — Vendor integrity signals"
+        caption="Deterministic vendor integrity and compliance index findings. Requires reviewer interpretation."
       />
-      <div className="space-y-3 p-4">
-        <div className="flex items-start gap-4">
+      <div className="space-y-4 p-5">
+        <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-line/60 bg-surface/60 p-4">
           {vice.risk_score != null && (
             <div className="shrink-0">
-              <p className="font-mono text-[10px] uppercase tracking-wider text-violet">Risk score</p>
-              <p
-                className="mt-1 font-mono text-2xl font-bold"
-                style={{
-                  color: vice.risk_score >= 7 ? COLORS.rose : vice.risk_score >= 4 ? COLORS.amber : COLORS.cyan,
-                }}
-              >
-                {vice.risk_score}
-                <span className="text-sm text-text/40">/10</span>
-              </p>
+              <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-violet">Vendor Risk Score</p>
+              <div className="mt-1 flex items-baseline gap-1">
+                <span
+                  className="font-mono text-2xl font-black tabular-nums"
+                  style={{ color: riskColor }}
+                >
+                  {vice.risk_score}
+                </span>
+                <span className="font-mono text-xs font-extrabold text-text/40">/10</span>
+              </div>
             </div>
           )}
-          <p className="text-sm leading-relaxed text-text/70">{vice.reason}</p>
+          <div className="min-w-0 flex-1 sm:border-l sm:border-line/60 sm:pl-4">
+            <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-text/40">Patrol Finding</p>
+            <p className="mt-0.5 text-sm font-medium text-text leading-snug">{cleanReasonText(vice.reason)}</p>
+          </div>
         </div>
+
         {entries.length > 0 && (
-          <dl className="grid gap-2 sm:grid-cols-2">
-            {entries.map(([k, v]) => (
-              <div key={k} className="rounded border border-white/10 bg-inset px-3 py-2">
-                <dt className="font-mono text-[9px] uppercase tracking-wide text-text/40">{k.replaceAll("_", " ")}</dt>
-                <dd className="mt-1 font-mono text-xs text-text/75">
-                  {formatEvidenceValue(v)}
-                </dd>
-              </div>
-            ))}
+          <dl className="grid gap-3 sm:grid-cols-2">
+            {entries.map(([k, v]) => {
+              const isScoreIndex = typeof v === "number" && (k.includes("index") || k.includes("score"));
+              const scoreVal = isScoreIndex ? Number(v) : 0;
+              const indexTone = k === "agreement_compliance_index"
+                ? scoreVal === 0 ? COLORS.emerald : scoreVal < 50 ? COLORS.amber : COLORS.rose
+                : scoreVal < 70 ? COLORS.rose : scoreVal < 85 ? COLORS.amber : COLORS.emerald;
+
+              return (
+                <div key={k} className="rounded-xl border border-line bg-card p-4 shadow-xs space-y-2">
+                  <dt className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-text/50">
+                      {k.replaceAll("_", " ")}
+                    </span>
+                    {isScoreIndex && (
+                      <span className="font-mono text-xs font-black tabular-nums" style={{ color: indexTone }}>
+                        {scoreVal}/100
+                      </span>
+                    )}
+                  </dt>
+                  <dd>
+                    {isScoreIndex ? (
+                      <div className="space-y-1.5 pt-0.5">
+                        <div className="h-2 w-full rounded-full bg-surface border border-line/40 overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-300"
+                            style={{ width: `${Math.min(100, Math.max(0, scoreVal))}%`, backgroundColor: indexTone }}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="font-mono text-xs font-semibold text-text">
+                        {formatEvidenceValue(v)}
+                      </span>
+                    )}
+                  </dd>
+                </div>
+              );
+            })}
           </dl>
         )}
       </div>
@@ -536,62 +590,62 @@ function EvidenceDrawer({
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-bg/60" role="presentation" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs" role="presentation" onMouseDown={onClose}>
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Evidence detail"
         onMouseDown={(event) => event.stopPropagation()}
-        className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-line bg-card shadow-2xl"
+        className="fixed right-0 top-0 bottom-0 z-[101] flex w-full max-w-md flex-col border-l border-line bg-card shadow-2xl"
       >
-        <div className="flex items-start justify-between border-b border-white/10 px-5 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-4 bg-surface/30">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-wider text-cyan">Evidence & Location Detail</p>
-            <h3 className="mt-1 text-base font-semibold text-text">{displayCheckName(check.patrol_name)}</h3>
+            <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-cyan">Evidence & Location Detail</p>
+            <h3 className="mt-0.5 text-base font-extrabold text-text">{displayCheckName(check.patrol_name)}</h3>
           </div>
-          <button ref={closeRef} type="button" onClick={onClose} className="rounded border border-white/10 px-2 py-1 text-xs text-text/60 hover:text-text">
+          <button ref={closeRef} type="button" onClick={onClose} className="rounded-xl border border-line bg-surface hover:bg-surface/80 px-3 py-1.5 text-xs font-extrabold text-text/80 hover:text-text tactile-press shadow-xs">
             Close
           </button>
         </div>
-        <div className="space-y-5 overflow-y-auto p-5">
+        <div className="flex-1 space-y-5 overflow-y-auto p-5">
           <section>
-            <p className="text-[10px] uppercase tracking-wide text-text/40">Patrol Result</p>
-            <p className="mt-2 text-sm text-text/75">{check.reason}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Patrol Result</p>
+            <p className="mt-2 text-sm text-text/80">{check.reason}</p>
           </section>
 
           <section>
-            <p className="text-[10px] uppercase tracking-wide text-text/40">Measured Value vs Constraint Limit</p>
-            <p className="mt-2 break-words text-sm font-mono text-text/75">{evidenceText(check.evidence)}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Measured Value vs Constraint Limit</p>
+            <p className="mt-2 break-words text-sm font-mono text-text/80">{evidenceText(check.evidence)}</p>
           </section>
 
           <section>
-            <p className="text-[10px] uppercase tracking-wide text-text/40">Rule Identifier</p>
-            <code className="mt-2 block break-words rounded bg-inset p-3 text-xs text-text/65">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Rule Identifier</p>
+            <code className="mt-2 block break-words rounded-xl border border-line bg-surface p-3 text-xs text-text/75 shadow-xs">
               {check.rule_broken ?? "No rule exception — constraint satisfied"}
             </code>
           </section>
 
           <section>
-            <p className="text-[10px] uppercase tracking-wide text-text/40">Source Location & Geometry</p>
-            <div className="mt-2 space-y-2 rounded border border-white/10 bg-inset p-3 text-xs font-mono">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Source Location & Geometry</p>
+            <div className="mt-2 space-y-2 rounded-xl border border-line bg-surface p-3.5 text-xs font-mono shadow-xs">
               <div className="flex justify-between">
-                <span className="text-text/40">Page:</span>
+                <span className="text-text/50">Page:</span>
                 <span className="text-text/80">{relevantCandidate?.page != null ? `Page ${relevantCandidate.page}` : "Document text"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text/40">Geometry Region:</span>
-                <span className={relevantCandidate?.bbox ? "text-cyan" : "text-text/40"}>
+                <span className="text-text/50">Geometry Region:</span>
+                <span className={relevantCandidate?.bbox ? "text-cyan font-bold" : "text-text/40"}>
                   {relevantCandidate?.bbox ? `[${relevantCandidate.bbox.map((v) => v.toFixed(1)).join(", ")}]` : "Region unavailable"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text/40">Extractor Type:</span>
+                <span className="text-text/50">Extractor Type:</span>
                 <span className="text-text/70">{relevantCandidate ? "Detected PDF text region" : "Deterministic rule"}</span>
               </div>
               {relevantCandidate?.source_excerpt && (
-                <div className="mt-2 border-t border-white/5 pt-2">
-                  <span className="block text-[10px] text-text/40 uppercase">Cited Excerpt:</span>
-                  <p className="mt-1 text-text/70 italic">&quot;{relevantCandidate.source_excerpt}&quot;</p>
+                <div className="mt-2 border-t border-line/50 pt-2">
+                  <span className="block text-[10px] text-text/50 uppercase font-bold">Cited Excerpt:</span>
+                  <p className="mt-1 text-text/80 italic">&quot;{relevantCandidate.source_excerpt}&quot;</p>
                 </div>
               )}
             </div>

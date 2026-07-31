@@ -11,7 +11,7 @@ export default function Card({
 }) {
   return (
     <div
-      className={`rounded-xl border border-white/10 bg-card/80 shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset] ${className}`}
+      className={`rounded-2xl border border-line border-b-2 bg-card shadow-xs transition-all duration-150 hover:border-cyan/40 max-w-full relative overflow-visible ${className}`}
       style={accent ? { borderLeft: `3px solid ${accent}` } : undefined}
     >
       {children}
@@ -29,11 +29,11 @@ export function CardHeader({
   right?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-white/5 px-4 py-3">
-      <div>
-        <h3 className="text-[15px] font-semibold tracking-tight text-text">{title}</h3>
+    <div className="flex items-start justify-between gap-4 border-b border-line/60 px-5 py-4 sm:px-6 sm:py-4.5">
+      <div className="min-w-0 flex-1">
+        <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-text truncate">{title}</h3>
         {caption && (
-          <p className="mt-1 text-[13px] leading-snug text-text/55">{caption}</p>
+          <p className="mt-0.5 text-xs leading-normal text-text/50 font-medium truncate">{caption}</p>
         )}
       </div>
       {right}

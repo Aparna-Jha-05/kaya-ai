@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Download, RefreshCw } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
+import PatrolBadge from "@/components/bid/PatrolBadge";
+import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type ActivityEvent, type BidRecord } from "@/lib/api";
 import { activityActionLabel, displayCheckName } from "@/lib/recordUtils";
 import { allScorecardsFromRecords, type ScorecardRow } from "@/lib/tco";
@@ -31,28 +33,39 @@ function exportCsv(rows: ActivityEvent[]) {
 
 function passFailCell(value: "PASS" | "FAIL" | "FLAG") {
   return (
-    <span
-      className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${
-        value === "FAIL" ? "bg-rose/15 text-rose" : value === "FLAG" ? "bg-amber/15 text-amber" : "bg-cyan/10 text-cyan"
-      }`}
-    >
-      {value}
-    </span>
+    <div className="flex justify-center">
+      <PatrolBadge status={value} size="sm" />
+    </div>
   );
 }
 
 function riskCell(value: "Low" | "Med" | "High" | "Unknown") {
-  const color = value === "High" ? "text-rose" : value === "Low" ? "text-cyan" : "text-amber";
-  return <span className={`font-mono text-xs font-semibold ${color}`}>{value}</span>;
+  const color = value === "High" ? COLORS.rose : value === "Low" ? COLORS.cyan : COLORS.amber;
+  return (
+    <div className="flex justify-center">
+      <span
+        className="inline-flex items-center rounded-md px-2 py-0.5 font-mono text-xs font-extrabold tabular-nums border shadow-xs"
+        style={{
+          color,
+          backgroundColor: `${color}1f`,
+          borderColor: `${color}50`,
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
 }
 
 function decisionCell(value: ScorecardRow["decision"]) {
   const color = value === "REJECT" ? COLORS.rose : value === "RECOMMENDED" ? COLORS.cyan : COLORS.amber;
   const label = value === "REJECT" ? "Do not select" : value === "RECOMMENDED" ? "Ready" : "Needs review";
   return (
-    <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ color, backgroundColor: `${color}18` }}>
-      {label}
-    </span>
+    <div className="flex justify-center">
+      <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs" style={{ color, backgroundColor: `${color}20`, borderColor: `${color}50` }}>
+        {label}
+      </span>
+    </div>
   );
 }
 
@@ -91,12 +104,10 @@ export default function AuditPage() {
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="page-eyebrow">System audit</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-text">Activity log</h1>
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-text/50">
-            Timestamped compliance checks, reviewer actions, and bid scorecard summary.
-          </p>
+          <h1 className="mt-1 text-2xl lg:text-3xl font-extrabold tracking-tight text-text truncate">Activity log</h1>
+          <p className="mt-1 text-xs font-medium text-text/50">Timestamped compliance checks, reviewer actions, and audit trail</p>
         </div>
         <div className="flex items-center gap-2">
           {(evState === "offline" || recState === "offline") && (
@@ -125,18 +136,44 @@ export default function AuditPage() {
           title={recState === "ready" ? `${scorecards.length} bid scorecard${scorecards.length === 1 ? "" : "s"}` : "Compliance scorecard"}
           caption="Per-bid summary of all four patrol results and 5-year TCO²."
         />
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/10 table-header text-left">
-                <th className="px-4 py-2.5">Vendor</th>
-                <th className="px-4 py-2.5">Upfront</th>
-                <th className="px-4 py-2.5">Engineering</th>
-                <th className="px-4 py-2.5">Carbon</th>
-                <th className="px-4 py-2.5">Vendor risk</th>
-                <th className="px-4 py-2.5">Schedule risk</th>
-                <th className="px-4 py-2.5">5-yr TCO²</th>
-                <th className="px-4 py-2.5">Decision</th>
+        <div className="overflow-x-auto overflow-y-auto max-h-[320px]">
+          <table className="w-full min-w-[720px] text-sm border-collapse table-fixed">
+            <colgroup>
+              <col className="w-[20%]" />
+              <col className="w-[12%]" />
+              <col className="w-[10%]" />
+              <col className="w-[10%]" />
+              <col className="w-[11%]" />
+              <col className="w-[11%]" />
+              <col className="w-[14%]" />
+              <col className="w-[12%]" />
+            </colgroup>
+            <thead className="sticky top-0 z-10 bg-surface">
+              <tr className="border-b-2 border-line table-header">
+                <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
+                <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                  <Tooltip text="Hard limit check. Validates physical floor load capacity against equipment weight.">
+                    <span>Engineering</span>
+                  </Tooltip>
+                </th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                  <Tooltip text="Hard limit check. Validates embodied carbon emissions factor against project carbon cap.">
+                    <span>Carbon</span>
+                  </Tooltip>
+                </th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                  <Tooltip text="Vendor risk score (0-10) calculated from historical performance metrics.">
+                    <span>Reliability</span>
+                  </Tooltip>
+                </th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                  <Tooltip text="Schedule impact estimation calculating late delivery risk in days.">
+                    <span>Schedule</span>
+                  </Tooltip>
+                </th>
+                <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO² (INR)</th>
+                <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -148,25 +185,25 @@ export default function AuditPage() {
                 </tr>
               ) : recState === "offline" ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-rose">
+                  <td colSpan={8} className="px-4 py-10 text-center text-rose font-medium">
                     Scorecard service connection failed. Click &quot;Retry connection&quot; above.
                   </td>
                 </tr>
               ) : scorecards.length ? (
                 scorecards.map((row) => (
-                  <tr key={row.id} className="border-b border-white/5 align-middle hover:bg-white/[0.02]">
-                    <td className="px-4 py-3 font-medium text-text">{row.vendor}</td>
-                    <td className="px-4 py-3 font-mono text-text/80">
-                      {row.upfront_cost_cr == null ? "—" : `₹${row.upfront_cost_cr.toFixed(2)} Cr`}
+                  <tr key={row.id} className="border-b border-line/40 align-middle transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
+                    <td className="px-4 py-3 text-left font-semibold text-text truncate">{row.vendor}</td>
+                    <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">
+                      {row.upfront_cost_cr == null ? "—" : `${row.upfront_cost_cr.toFixed(2)} Cr`}
                     </td>
-                    <td className="px-4 py-3">{passFailCell(row.engineering)}</td>
-                    <td className="px-4 py-3">{passFailCell(row.carbon)}</td>
-                    <td className="px-4 py-3">{riskCell(row.vendorRisk)}</td>
-                    <td className="px-4 py-3">{riskCell(row.scheduleRisk)}</td>
-                    <td className="px-4 py-3 font-mono text-text/80">
-                      {row.tco2_cr == null ? "—" : `₹${row.tco2_cr.toFixed(2)} Cr`}
+                    <td className="px-4 py-3 text-center">{passFailCell(row.engineering)}</td>
+                    <td className="px-4 py-3 text-center">{passFailCell(row.carbon)}</td>
+                    <td className="px-4 py-3 text-center">{riskCell(row.vendorRisk)}</td>
+                    <td className="px-4 py-3 text-center">{riskCell(row.scheduleRisk)}</td>
+                    <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">
+                      {row.tco2_cr == null ? "—" : `${row.tco2_cr.toFixed(2)} Cr`}
                     </td>
-                    <td className="px-4 py-3">{decisionCell(row.decision)}</td>
+                    <td className="px-4 py-3 text-center">{decisionCell(row.decision)}</td>
                   </tr>
                 ))
               ) : (
@@ -183,7 +220,7 @@ export default function AuditPage() {
 
       {/* Activity Event Log */}
       {evState === "offline" && (
-        <p className="rounded-lg border border-amber/25 bg-amber/5 px-4 py-2.5 text-sm text-amber/90">
+        <p className="rounded-xl border border-amber/30 bg-amber/10 px-4 py-3 text-sm font-semibold text-amber">
           The activity service is unavailable. Click &quot;Retry connection&quot; above when the service is online.
         </p>
       )}
@@ -193,15 +230,23 @@ export default function AuditPage() {
           caption={evState === "ready" ? "Export includes the server-recorded activity currently shown." : "Connect the activity service to view and export events."}
         />
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[700px] text-sm">
+            <colgroup>
+              <col className="w-[18%] min-w-[150px]" />
+              <col className="w-[12%] min-w-[90px]" />
+              <col className="w-[18%] min-w-[130px]" />
+              <col className="w-[12%] min-w-[100px]" />
+              <col className="w-[15%] min-w-[110px]" />
+              <col className="w-[25%] min-w-[200px]" />
+            </colgroup>
             <thead>
-              <tr className="border-b border-white/10 table-header text-left">
-                <th className="px-4 py-2.5">Timestamp</th>
-                <th className="px-4 py-2.5">Bid</th>
-                <th className="px-4 py-2.5">Compliance check</th>
-                <th className="px-4 py-2.5">Action</th>
-                <th className="px-4 py-2.5">Rule</th>
-                <th className="px-4 py-2.5">Evidence</th>
+              <tr className="border-b-2 border-line table-header text-left bg-surface/50">
+                <th className="px-4 py-3 font-bold">Timestamp</th>
+                <th className="px-4 py-3 font-bold">Bid</th>
+                <th className="px-4 py-3 font-bold">Patrol</th>
+                <th className="px-4 py-3 font-bold">Action</th>
+                <th className="px-4 py-3 font-bold">Rule</th>
+                <th className="px-4 py-3 font-bold">Evidence</th>
               </tr>
             </thead>
             <tbody className="font-mono text-[12px]">
@@ -213,7 +258,7 @@ export default function AuditPage() {
                 </tr>
               ) : events.length ? (
                 events.map((ev) => (
-                  <tr key={ev.id} className="border-b border-white/5 align-top hover:bg-white/[0.02]">
+                  <tr key={ev.id} className="border-b border-line/40 align-top transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
                     <td className="whitespace-nowrap px-4 py-2.5 text-text/50">{new Date(ev.timestamp).toLocaleString()}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-text/80">{ev.bid_id}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-text/70">{displayCheckName(ev.check_name)}</td>
