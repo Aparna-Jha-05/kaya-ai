@@ -3,40 +3,47 @@ import Image from "next/image";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FilePlus2, LayoutList, Scale, ShieldCheck, ScrollText } from "lucide-react";
+import { FilePlus2, LayoutList, Scale, ScrollText } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
 const NAV = [
-  { href: "/", label: "Review queue", Icon: LayoutList },
-  { href: "/bids", label: "Compare bids", Icon: Scale },
-  { href: "/audit", label: "Activity log", Icon: ScrollText },
+  { href: "/", label: "Queue", Icon: LayoutList },
+  { href: "/bids", label: "Compare", Icon: Scale },
+  { href: "/audit", label: "Activity", Icon: ScrollText },
 ];
 
 export default function AppSidebar() {
   const pathname = usePathname();
 
+  const isUploadActive = pathname === "/bids/new";
+
+  const isNavActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    if (href === "/bids") return pathname === "/bids" || (pathname.startsWith("/bids/") && !isUploadActive);
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-white/10 bg-bg/70 px-3 py-5 lg:flex">
-      <Link href="/" className="mb-7 flex items-center gap-2.5 px-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-cyan/15 ring-1 ring-cyan/40">
-          <Image src="/icon.svg" alt="PO-LICE" width={120} height={32} priority />
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-line bg-card/40 px-3 py-5 lg:flex">
+      <Link href="/" title="Purchase Order Liability, Intelligence & Compliance Engine" className="mb-7 flex items-center gap-3 px-1 group">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-cyan shadow-[0_4px_14px_rgba(56,189,248,0.4)] group-hover:shadow-[0_4px_20px_rgba(56,189,248,0.6)] group-hover:scale-105 transition-all duration-200">
+          <Image src="/icon.svg" alt="PO-LICE" width={24} height={24} priority />
         </span>
-        <span>
-          <span className="block font-mono text-sm font-bold tracking-tight text-text">PO-LICE</span>
-          <span className="block text-[9px] text-text/45 leading-tight mt-0.5" style={{ letterSpacing: "0.04em" }}>Purchase Order Liability,</span>
-          <span className="block text-[9px] text-text/45 leading-tight" style={{ letterSpacing: "0.04em" }}>Intelligence &amp; Compliance</span>
-          <span className="block text-[9px] text-cyan/70 leading-tight mt-1 font-mono" style={{ letterSpacing: "0.02em" }}>Catching bid bandits.</span>
+        <span className="text-xl font-extrabold tracking-tight text-text group-hover:text-cyan transition-colors duration-200 leading-none">
+          PO-LICE
         </span>
       </Link>
 
       <nav aria-label="Primary navigation" className="space-y-1">
         {NAV.map(({ href, label, Icon }) => {
-          const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+          const active = isNavActive(href);
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors ${active ? "bg-cyan/10 text-cyan" : "text-text/55 hover:bg-white/5 hover:text-text"
+              className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-all duration-150 ${active
+                ? "bg-cyan/15 font-bold text-cyan ring-1 ring-cyan/30 shadow-xs"
+                : "text-text/60 font-semibold hover:bg-surface hover:text-text"
                 }`}
             >
               <Icon className="h-4 w-4" />
@@ -46,30 +53,18 @@ export default function AppSidebar() {
         })}
       </nav>
 
-      <Link href="/bids/new" className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-cyan/15 px-3 py-2.5 text-sm font-semibold text-cyan transition-colors hover:bg-cyan/25">
-        <FilePlus2 className="h-4 w-4" />
-        Upload bid
-      </Link>
-
-      <div className="mt-auto space-y-3">
+      <div className="mt-auto space-y-2 pt-3 border-t border-line">
+        <Link
+          href="/bids/new"
+          className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition-all ${isUploadActive
+            ? "bg-cyan/25 ring-1 ring-cyan/50 text-cyan"
+            : "bg-cyan text-on-accent hover:bg-cyan/90 tactile-press shadow-xs"
+            }`}
+        >
+          <FilePlus2 className="h-4 w-4" />
+          Upload
+        </Link>
         <ThemeToggle />
-        <div className="rounded-lg border border-white/10 bg-surface/60 p-3 space-y-2">
-          <p className="ui-label font-mono uppercase text-text/50 tracking-widest text-[9px]">Architecture</p>
-          <div className="space-y-1.5">
-            <div className="flex items-start gap-2">
-              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet/70" />
-              <p className="text-[11px] leading-snug text-text/60"><span className="text-violet/90 font-medium">Evidence extracts</span> — PyMuPDF parses PDF text and locations; optional LLM extraction fills supported gaps</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan/70" />
-              <p className="text-[11px] leading-snug text-text/60"><span className="text-cyan/90 font-medium">Code validates</span> — deterministic rules enforce hard engineering limits</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber/70" />
-              <p className="text-[11px] leading-snug text-text/60"><span className="text-amber/90 font-medium">Humans decide</span> — officers approve, reject, or issue RFIs with full evidence trails</p>
-            </div>
-          </div>
-        </div>
       </div>
     </aside>
   );

@@ -14,8 +14,8 @@ export function displayCheckName(name: string) {
   const normalized = name.toLowerCase();
   if (normalized.includes("building") || normalized.includes("engineering")) return "Engineering";
   if (normalized.includes("green") || normalized.includes("carbon")) return "Carbon";
-  if (normalized.includes("vice") || normalized.includes("reliability")) return "Vendor reliability";
-  if (normalized.includes("traffic") || normalized.includes("schedule")) return "Schedule impact";
+  if (normalized.includes("vice") || normalized.includes("reliability")) return "Reliability";
+  if (normalized.includes("traffic") || normalized.includes("schedule")) return "Schedule";
   return name;
 }
 
@@ -44,4 +44,13 @@ export function activityActionLabel(action: string) {
 
 export function inCrore(value: number | null | undefined) {
   return value == null ? "Not provided" : `₹${(value / 10_000_000).toFixed(2)} Cr`;
+}
+
+export function formatCroreValue(value: number | null | undefined) {
+  return value == null ? "—" : `${(value / 10_000_000).toFixed(2)} Cr`;
+}
+
+export function cleanReasonText(reason: string | null | undefined) {
+  if (!reason) return "";
+  return reason.replace(/^Agreement Compliance Index:\s*\d+(\.\d+)?(\/\d+)?\.\s*/i, "").trim();
 }

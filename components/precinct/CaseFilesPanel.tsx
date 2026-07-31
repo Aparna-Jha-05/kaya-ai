@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, FileSearch, Mail, RefreshCw } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
+import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type BidRecord } from "@/lib/api";
 import { displayCheckName } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
@@ -88,26 +89,20 @@ export default function CaseFilesPanel() {
     <Card>
       <CardHeader
         title="Action queue"
-        caption={
-          source === "error"
-            ? "Action items unavailable while service is offline."
-            : source === "empty"
-            ? "No bids uploaded yet. Upload a bid PDF to generate action items."
-            : "Items that need reviewer attention before a purchase order can progress."
-        }
+        caption="Reviewer tasks requiring verification"
       />
-      <ul className="divide-y divide-white/5">
+      <ul className="divide-y divide-line/40 max-h-[320px] overflow-y-auto">
         {source === "loading" && (
-          <li className="px-4 py-6 text-sm text-text/50">Loading action queue…</li>
+          <li className="px-5 py-6 sm:px-6 text-sm font-medium text-text/50">Loading action queue…</li>
         )}
 
         {source === "error" && (
-          <li className="p-4 space-y-3">
-            <p className="text-xs text-rose">{errorMessage}</p>
+          <li className="p-5 sm:p-6 space-y-3">
+            <p className="text-xs font-medium text-rose">{errorMessage}</p>
             <button
               type="button"
               onClick={loadData}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-3 py-1.5 text-xs font-semibold text-cyan hover:bg-cyan/25"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-cyan/15 px-3 py-1.5 text-xs font-bold text-cyan hover:bg-cyan/25 tactile-press shadow-xs"
             >
               <RefreshCw className="h-3.5 w-3.5" /> Retry
             </button>
@@ -120,30 +115,31 @@ export default function CaseFilesPanel() {
               <li key={item.id}>
                 <Link
                   href={`/bids/${item.bidId}`}
-                  className="flex gap-3 px-4 py-3 transition-colors hover:bg-white/[0.03]"
+                  className="flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6 transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10"
                 >
-                  <span
-                    className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
-                    style={{ backgroundColor: `${item.color}1a` }}
-                  >
-                    <item.icon className="h-3.5 w-3.5" style={{ color: item.color }} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-xs leading-snug text-text/85">{item.title}</span>
-                    <span className="mt-1 flex items-center gap-2">
-                      <span className="text-[11px] text-text/40">{item.meta}</span>
-                      {item.action && (
-                        <span className="rounded bg-violet/15 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-violet">
-                          action needed
-                        </span>
-                      )}
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <span
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border shadow-xs"
+                      style={{ backgroundColor: `${item.color}1a`, borderColor: `${item.color}40` }}
+                    >
+                      <item.icon className="h-4 w-4" style={{ color: item.color }} />
                     </span>
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-sm font-extrabold leading-snug text-text truncate">{item.title}</span>
+                      <span className="mt-0.5 block text-xs font-medium text-text/50 truncate">{item.meta}</span>
+                    </div>
+                  </div>
+                  <span
+                    className="shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs"
+                    style={{ color: item.color, backgroundColor: `${item.color}1a`, borderColor: `${item.color}40` }}
+                  >
+                    Review
                   </span>
                 </Link>
               </li>
             ))
           ) : (
-            <li className="px-4 py-6 text-sm text-text/50">No actions need review.</li>
+            <li className="px-5 py-6 sm:px-6 text-sm font-medium text-text/50">No actions need review.</li>
           ))}
       </ul>
     </Card>

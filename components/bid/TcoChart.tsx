@@ -1,4 +1,6 @@
 "use client";
+
+import { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -14,18 +16,37 @@ import {
 interface Row {
   vendor: string;
   Upfront: number;
-  "5-year cost": number;
+  "5-year TCO²": number;
 }
 
 export default function TcoChart({ data }: { data: Row[] }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="rounded-xl border border-line bg-surface p-4 shadow-xs">
+        <div className="mb-3 text-xs font-bold text-text/70">
+          Upfront cost vs 5-year TCO² (INR) — lower is better
+        </div>
+        <div className="flex h-[260px] items-center justify-center text-xs font-medium text-text/40">
+          Loading cost comparison…
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="rounded-lg border border-white/10 bg-inset p-4">
-      <div className="mb-3 text-xs font-medium text-text/60">
-        Upfront cost vs 5-year risk-adjusted cost (₹ Cr) — lower is better
+    <div className="rounded-xl border border-line bg-surface p-4 shadow-xs">
+      <div className="mb-3 text-xs font-bold text-text/70">
+        Upfront cost vs 5-year TCO² (INR) — lower is better
       </div>
       <ResponsiveContainer width="100%" height={260}>
-        <BarChart data={data} barGap={6} barCategoryGap="28%">
-          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--color-line) / 0.72)" vertical={false} />
+        <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--color-line) / 0.5)" vertical={false} />
           <XAxis
             dataKey="vendor"
             stroke="rgb(var(--color-muted))"
@@ -52,12 +73,12 @@ export default function TcoChart({ data }: { data: Row[] }) {
             labelStyle={{ color: "rgb(var(--color-text))" }}
             formatter={(value) => {
               const amount = typeof value === "number" ? value : Number(value ?? 0);
-              return [`₹${amount.toFixed(1)} Cr`, ""];
+              return [`${amount.toFixed(2)} Cr`, ""];
             }}
           />
           <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
           <Bar dataKey="Upfront" fill="rgb(var(--color-blue))" radius={[3, 3, 0, 0]} />
-          <Bar dataKey="5-year cost" radius={[3, 3, 0, 0]}>
+          <Bar dataKey="5-year TCO²" radius={[3, 3, 0, 0]}>
             {data.map((row, i) => (
               <Cell
                 key={i}

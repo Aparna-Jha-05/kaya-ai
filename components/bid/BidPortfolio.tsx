@@ -6,9 +6,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowRight, RefreshCw, Search, SlidersHorizontal, X } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
+import Tooltip from "@/components/ui/Tooltip";
 import TCOSlider from "@/components/tco-slider";
 import { procurementApi, type BidRecord, type CheckStatus } from "@/lib/api";
-import { displayCheckName, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
+import { cleanReasonText, displayCheckName, formatCroreValue, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
 
 const TcoChart = dynamic(() => import("@/components/bid/TcoChart"), {
@@ -161,42 +162,42 @@ export default function BidPortfolio() {
       <Card>
         <CardHeader
           title="Comparison setup"
-          caption="Filter bids, then select up to three to compare."
-          right={<span className="font-mono text-xs text-cyan">{filtered.length} available · {selectedIds.length}/3 selected</span>}
+          caption="Filter and select up to 3 bids for side-by-side analysis"
+          right={<span className="font-mono text-xs font-extrabold text-cyan">{selectedIds.length}/3 selected</span>}
         />
-        <div className="space-y-4 p-4">
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_190px_210px_auto]">
-            <label className="relative block">
+        <div className="p-5 sm:p-6 space-y-4 min-w-0 max-w-full">
+          <div className="grid gap-3.5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_170px_180px_auto] min-w-0 max-w-full">
+            <label className="relative min-w-0 max-w-full block">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text/40" />
               <span className="sr-only">Find a bid</span>
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Find vendor, model, or equipment"
-                className="h-10 w-full rounded-lg border border-white/10 bg-inset pl-9 pr-3 text-sm text-text placeholder:text-text/35 focus:border-cyan/50 focus:outline-none"
+                className="h-10 w-full min-w-0 max-w-full rounded-xl border border-line bg-surface pl-9 pr-3.5 text-sm font-medium text-text placeholder:text-text/40 focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs truncate"
               />
             </label>
-            <label>
-              <span className="sr-only">Review state</span>
+            <label className="min-w-0 max-w-full block">
+              <span className="sr-only">Status filter</span>
               <select
                 value={stateFilter}
                 onChange={(event) => setStateFilter(event.target.value as StateFilter)}
-                className="h-10 w-full rounded-lg border border-white/10 bg-inset px-3 text-sm text-text focus:border-cyan/50 focus:outline-none"
+                className="h-10 w-full min-w-0 max-w-full rounded-xl border border-line bg-surface px-3.5 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs truncate"
               >
-                <option value="all">Any review state</option>
+                <option value="all">Any status</option>
                 <option value="RECOMMENDED">Ready for decision</option>
                 <option value="REVIEW_REQUIRED">Needs review</option>
                 <option value="REJECT">Do not select</option>
               </select>
             </label>
-            <label>
-              <span className="sr-only">Compliance result</span>
+            <label className="min-w-0 max-w-full block">
+              <span className="sr-only">Patrol filter</span>
               <select
                 value={compliance}
                 onChange={(event) => setCompliance(event.target.value as ComplianceFilter)}
-                className="h-10 w-full rounded-lg border border-white/10 bg-inset px-3 text-sm text-text focus:border-cyan/50 focus:outline-none"
+                className="h-10 w-full min-w-0 max-w-full rounded-xl border border-line bg-surface px-3.5 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs truncate"
               >
-                <option value="all">Any compliance result</option>
+                <option value="all">Any patrol result</option>
                 <option value="eligible">Hard checks passed</option>
                 <option value="has-failure">Hard failure present</option>
               </select>
@@ -205,24 +206,24 @@ export default function BidPortfolio() {
               type="button"
               onClick={reset}
               disabled={!resetNeeded}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-white/10 px-3 text-xs text-text/60 hover:border-white/25 hover:text-text disabled:cursor-not-allowed disabled:opacity-35"
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-line px-3.5 text-xs font-bold text-text/70 hover:border-cyan/40 hover:text-text tactile-press disabled:cursor-not-allowed disabled:opacity-35 shadow-xs"
             >
               <X className="h-3.5 w-3.5" /> Clear filters
             </button>
           </div>
 
-          <div className="flex flex-wrap gap-2" aria-label="Bids available for comparison">
+          <div className="pt-1.5 flex flex-wrap gap-2.5" aria-label="Bids available for comparison">
             {filtered.map((bid) => {
               const selectedItem = selectedIds.includes(bid.id);
               const disabled = !selectedItem && selectedIds.length >= 3;
               return (
                 <label
                   key={bid.id}
-                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs ${
+                  className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition-all ${
                     selectedItem
-                      ? "border-cyan/50 bg-cyan/10 text-cyan"
-                      : "border-white/10 text-text/60 hover:border-white/25 hover:text-text"
-                  } ${disabled ? "cursor-not-allowed opacity-45" : "cursor-pointer"}`}
+                      ? "border-cyan bg-cyan/15 text-cyan ring-1 ring-cyan/40 shadow-xs"
+                      : "border-line text-text/70 hover:border-cyan/40 hover:text-text shadow-xs"
+                  } ${disabled ? "cursor-not-allowed opacity-45" : "cursor-pointer tactile-press"}`}
                 >
                   <input
                     type="checkbox"
@@ -232,7 +233,6 @@ export default function BidPortfolio() {
                     className="accent-[#38BDF8]"
                   />
                   <span>{bid.vendor}</span>
-                  <span className="text-text/40">· {bid.model}</span>
                 </label>
               );
             })}
@@ -246,31 +246,57 @@ export default function BidPortfolio() {
           <Card>
             <CardHeader
               title="Bid comparison"
-              caption={`Showing ${selected.length} selected bid${selected.length === 1 ? "" : "s"}. Select a row to inspect it.`}
+              caption="Side-by-side compliance checks and TCO² scenario analysis"
               right={
-                <span className="inline-flex items-center gap-1.5 text-xs text-text/50">
+                <span className="inline-flex items-center gap-1.5 text-xs text-text/50 font-medium">
                   <SlidersHorizontal className="h-3.5 w-3.5 text-blue" /> {label(compliance)}
                 </span>
               }
             />
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[880px] text-sm">
-                <thead>
-                  <tr className="border-b border-white/10 text-left text-[11px] uppercase tracking-wide text-text/40">
-                    <th className="px-4 py-3 font-medium">Bid</th>
-                    <th className="px-4 py-3 font-medium">Upfront cost</th>
-                    <th className="px-4 py-3 font-medium">Engineering</th>
-                    <th className="px-4 py-3 font-medium">Carbon</th>
-                    <th className="px-4 py-3 font-medium">Vendor reliability</th>
-                    <th className="px-4 py-3 font-medium">Schedule impact</th>
-                    <th className="px-4 py-3 font-medium">5-year cost</th>
-                    <th className="px-4 py-3 font-medium">Review state</th>
+            <div className="overflow-x-auto overflow-y-auto max-h-[320px]">
+              <table className="w-full min-w-[720px] text-sm border-collapse table-fixed">
+                <colgroup>
+                  <col className="w-[20%]" />
+                  <col className="w-[13%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[11%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[12%]" />
+                </colgroup>
+                <thead className="sticky top-0 z-10 bg-surface">
+                  <tr className="border-b-2 border-line table-header">
+                    <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
+                    <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
+                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                      <Tooltip text="Hard limit check. Validates physical floor load capacity against equipment weight.">
+                        <span>Engineering</span>
+                      </Tooltip>
+                    </th>
+                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                      <Tooltip text="Hard limit check. Validates embodied carbon emissions factor against project carbon cap.">
+                        <span>Carbon</span>
+                      </Tooltip>
+                    </th>
+                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                      <Tooltip text="Vendor risk score (0-10) calculated from historical performance metrics.">
+                        <span>Reliability</span>
+                      </Tooltip>
+                    </th>
+                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
+                      <Tooltip text="Schedule impact estimation calculating late delivery risk in days.">
+                        <span>Schedule</span>
+                      </Tooltip>
+                    </th>
+                    <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO² (INR)</th>
+                    <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {selected.map((bid) => {
                     const activeRow = bid.id === active?.id;
-                    const risk = check(bid, "Vendor reliability")?.risk;
+                    const risk = check(bid, "Reliability")?.risk;
                     const tone = recommendationTone(bid.recommendation);
                     const color = tone === "rose" ? COLORS.rose : tone === "amber" ? COLORS.amber : COLORS.cyan;
                     return (
@@ -290,30 +316,49 @@ export default function BidPortfolio() {
                         role="button"
                         tabIndex={0}
                         aria-label={`Inspect ${bid.vendor}`}
-                        className={`cursor-pointer border-b border-white/5 ${activeRow ? "bg-cyan/[0.06]" : "hover:bg-white/[0.025]"}`}
+                        className={`cursor-pointer border-b border-line/40 transition-colors duration-150 ${activeRow ? "bg-cyan/10 font-medium" : "hover:bg-cyan/5 dark:hover:bg-cyan/10"}`}
                       >
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-text">{bid.vendor}</p>
-                          <p className="mt-0.5 text-xs text-text/40">{bid.model}</p>
+                        <td className="px-4 py-3 text-left">
+                          <p className="font-semibold text-text truncate">{bid.vendor}</p>
+                          <p className="mt-0.5 text-xs text-text/45 truncate">{bid.model}</p>
                         </td>
-                        <td className="px-4 py-3 font-mono text-text/80">{inCrore(bid.upfront)}</td>
-                        <td className="px-4 py-3">
-                          <PatrolBadge status={status(bid, "Engineering")} size="sm" />
+                        <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">{formatCroreValue(bid.upfront)}</td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex justify-center">
+                            <PatrolBadge status={status(bid, "Engineering")} size="sm" />
+                          </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <PatrolBadge status={status(bid, "Carbon")} size="sm" />
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex justify-center">
+                            <PatrolBadge status={status(bid, "Carbon")} size="sm" />
+                          </div>
                         </td>
-                        <td className="px-4 py-3 font-mono" style={{ color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan }}>
-                          {risk == null ? "—" : `${risk}/10`}
+                        <td className="px-4 py-3 text-center font-mono">
+                          <div className="flex justify-center">
+                            <span
+                              className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-extrabold font-mono tabular-nums border shadow-xs"
+                              style={{
+                                color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan,
+                                backgroundColor: risk != null && risk > 6 ? `${COLORS.rose}1f` : `${COLORS.cyan}1f`,
+                                borderColor: risk != null && risk > 6 ? `${COLORS.rose}50` : `${COLORS.cyan}50`,
+                              }}
+                            >
+                              {risk == null ? "—" : `${risk}/10`}
+                            </span>
+                          </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <PatrolBadge status={status(bid, "Schedule impact")} size="sm" />
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex justify-center">
+                            <PatrolBadge status={status(bid, "Schedule")} size="sm" />
+                          </div>
                         </td>
-                        <td className="px-4 py-3 font-mono text-text/80">{inCrore(shownCost(bid))}</td>
-                        <td className="px-4 py-3">
-                          <span className="rounded px-2 py-1 text-[10px] font-bold uppercase" style={{ color, backgroundColor: `${color}18` }}>
-                            {recommendationLabel(bid.recommendation)}
-                          </span>
+                        <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">{formatCroreValue(shownCost(bid))}</td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex justify-center">
+                            <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs" style={{ color, backgroundColor: `${color}20`, borderColor: `${color}50` }}>
+                              {recommendationLabel(bid.recommendation)}
+                            </span>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -323,12 +368,11 @@ export default function BidPortfolio() {
             </div>
 
             {active && active.upfront != null && (
-              <div className="border-t border-white/10 p-4">
-                <p className="font-mono text-[10px] uppercase tracking-wider text-cyan">Cost scenario</p>
-                <p className="mt-1 text-xs text-text/55">Adjust commercial assumptions; the bid service recalculates the result.</p>
-                <div className="mt-3">
-                  <TCOSlider key={active.id} baseCapexCr={(active.upfront ?? 0) / 10_000_000} onTCOChange={updateScenario} />
+              <div className="border-t border-line p-4">
+                <div className="mb-3">
+                  <p className="ui-label text-cyan">Interactive cost scenario</p>
                 </div>
+                <TCOSlider key={active.id} baseCapexCr={(active.upfront ?? 0) / 10_000_000} onTCOChange={updateScenario} />
               </div>
             )}
 
@@ -337,7 +381,7 @@ export default function BidPortfolio() {
                 data={selected.map((bid) => ({
                   vendor: bid.vendor,
                   Upfront: (bid.upfront ?? 0) / 10_000_000,
-                  "5-year cost": (shownCost(bid) ?? 0) / 10_000_000,
+                  "5-year TCO²": (shownCost(bid) ?? 0) / 10_000_000,
                 }))}
               />
             </div>
@@ -368,22 +412,29 @@ export default function BidPortfolio() {
 function Inspector({ bid }: { bid: Comparable }) {
   const color = recommendationTone(bid.recommendation) === "rose" ? COLORS.rose : recommendationTone(bid.recommendation) === "amber" ? COLORS.amber : COLORS.cyan;
   return (
-    <Card accent={color} className="h-fit p-5 xl:sticky xl:top-5">
-      <p className="font-mono text-[10px] uppercase tracking-wider text-text/40">Selected bid</p>
-      <h2 className="mt-1 text-lg font-semibold text-text">{bid.vendor}</h2>
-      <p className="mt-1 text-sm text-text/55">{bid.model}</p>
-      <div className="mt-5 grid grid-cols-2 gap-3 border-y border-white/10 py-4 text-xs">
-        <Metric label="Review state" value={recommendationLabel(bid.recommendation)} />
-        <Metric label="5-year cost" value={inCrore(bid.cost)} />
-        <Metric label="Vendor reliability" value={check(bid, "Vendor reliability")?.risk == null ? "Not provided" : `${check(bid, "Vendor reliability")?.risk}/10`} />
-        <Metric label="Schedule impact" value={check(bid, "Schedule impact")?.status ?? "Review"} />
+    <Card accent={color} className="h-fit p-5 xl:sticky xl:top-5 space-y-4">
+      <div>
+        <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-cyan">Selected bid inspector</p>
+        <h2 className="mt-1 text-lg font-extrabold text-text">{bid.vendor}</h2>
+        <p className="mt-0.5 text-xs font-medium text-text/50">{bid.equipment} · {bid.model}</p>
       </div>
-      <p className="mt-4 text-xs leading-relaxed text-text/60">
-        {bid.checks.map((value) => value.reason).join(" ")}
+
+      <div className="grid grid-cols-2 gap-3 border-y border-line py-3.5 text-xs">
+        <Metric label="Status" value={recommendationLabel(bid.recommendation)} />
+        <Metric label="5-year TCO²" value={inCrore(bid.cost)} />
+        <Metric label="Reliability" value={check(bid, "Reliability")?.risk == null ? "Not provided" : `${check(bid, "Reliability")?.risk}/10`} />
+        <Metric label="Schedule" value={check(bid, "Schedule")?.status ?? "Review"} />
+      </div>
+
+      <p className="text-xs leading-relaxed text-text/60">
+        {bid.checks.map((value) => cleanReasonText(value.reason)).filter(Boolean).join(" ")}
       </p>
-      <Link href={`/bids/${bid.id}`} className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-cyan hover:underline">
-        Open bid review <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
+
+      <div>
+        <Link href={`/bids/${bid.id}`} className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan hover:underline tactile-press">
+          Open bid review <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
     </Card>
   );
 }
@@ -391,8 +442,8 @@ function Inspector({ bid }: { bid: Comparable }) {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-wide text-text/40">{label}</p>
-      <p className="mt-1 font-mono text-xs font-semibold text-text">{value}</p>
+      <p className="text-[10px] font-extrabold uppercase tracking-wide text-text/40">{label}</p>
+      <p className="mt-1 font-mono text-xs font-bold text-text">{value}</p>
     </div>
   );
 }
