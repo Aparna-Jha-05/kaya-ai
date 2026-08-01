@@ -54,3 +54,9 @@ export function cleanReasonText(reason: string | null | undefined) {
   if (!reason) return "";
   return reason.replace(/^Agreement Compliance Index:\s*\d+(\.\d+)?(\/\d+)?\.\s*/i, "").trim();
 }
+
+export function formatLabelTitleCase(key: string): string {
+  return key
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}

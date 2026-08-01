@@ -130,8 +130,16 @@ function Header({
         {title}
         {badge && (
           <span
-            className="rounded-md px-2 py-0.5 text-[11px] font-bold uppercase"
-            style={{ color, backgroundColor: `${color}1a` }}
+            className="rounded-md px-2 py-0.5 text-[11px] font-bold uppercase border shadow-xs"
+            style={{
+              color,
+              backgroundColor: color.includes("var")
+                ? `rgba(var(--color-cyan), 0.15)`
+                : `${color}1a`,
+              borderColor: color.includes("var")
+                ? `rgba(var(--color-cyan), 0.4)`
+                : `${color}40`,
+            }}
           >
             {badge}
           </span>

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import type { BidRecord } from "@/lib/api";
 import { COLORS } from "@/lib/constants";
 import Card, { CardHeader } from "@/components/ui/Card";
-import { displayCheckName } from "@/lib/recordUtils";
+import { displayCheckName, formatLabelTitleCase } from "@/lib/recordUtils";
 
 // Deterministic directed-graph renderer: fixed node geometry + hand-drawn SVG
 // connectors. Kept off React Flow; layout is computed from patrol_results so
@@ -63,7 +63,7 @@ function buildGraph(record: BidRecord): { nodes: GNode[]; edges: GEdge[] } {
     const color = patrolColor(patrol.patrol_name);
     const meta = PATROL_META[patrol.patrol_name] ?? { impact: "Compliance review required", action: "Reviewer action needed" };
     const evidenceDetails: GNode["details"] = patrol.evidence
-      ? Object.entries(patrol.evidence).map(([k, v]) => ({ label: k.replaceAll("_", " "), value: String(v) }))
+      ? Object.entries(patrol.evidence).map(([k, v]) => ({ label: formatLabelTitleCase(k), value: String(v) }))
       : undefined;
     const consequenceColor = patrol.status === "FAIL" ? COLORS.rose : COLORS.amber;
 
@@ -120,7 +120,7 @@ export default function EvidenceBoard({ record }: { record: BidRecord }) {
               return (
                 <path key={i} d={edgePath(s, t)} fill="none" stroke={ed.color} strokeWidth={2} strokeDasharray="6 6"
                   markerEnd={`url(#arrow-${colors.indexOf(ed.color)})`}
-                  className="animate-flowDash" style={{ filter: `drop-shadow(0 0 3px ${ed.color}66)` }}
+                  className="animate-flowDash"
                 />
               );
             })}
@@ -129,7 +129,7 @@ export default function EvidenceBoard({ record }: { record: BidRecord }) {
             <button key={nd.id} type="button" onClick={() => setSelectedId(nd.id === selectedId ? null : nd.id)}
               className={`absolute flex cursor-pointer flex-col justify-center rounded-xl border bg-surface px-3.5 py-2.5 text-left shadow-xs transition-all hover:bg-card tactile-press ${selectedId === nd.id ? "border-cyan ring-2 ring-cyan/40" : "border-line"}`}
               style={{ left: nd.x, top: nd.y, width: NODE_W, height: NODE_H, borderLeft: `3.5px solid ${nd.color}` }}>
-              <div className="mb-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.08em]" style={{ color: nd.color }}>{nd.kind}</div>
+              <div className="mb-0.5 ui-label" style={{ color: nd.color }}>{nd.kind}</div>
               <div className="text-xs font-semibold leading-snug text-text">{nd.label}</div>
             </button>
           ))}
@@ -139,7 +139,7 @@ export default function EvidenceBoard({ record }: { record: BidRecord }) {
         <div className="border-t border-line bg-surface/50 px-4 py-3.5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="font-mono text-[10px] font-bold uppercase tracking-wider" style={{ color: selected.color }}>{selected.kind} details</p>
+              <p className="ui-label" style={{ color: selected.color }}>{selected.kind} details</p>
               <p className="mt-1 text-xs font-medium text-text/70">{selected.label}</p>
             </div>
             <button type="button" onClick={() => setSelectedId(null)} className="text-xs font-semibold text-text/50 hover:text-text">Close</button>
@@ -147,7 +147,7 @@ export default function EvidenceBoard({ record }: { record: BidRecord }) {
           <dl className="mt-3 grid gap-2 sm:grid-cols-2">
             {selected.details.map((d) => (
               <div key={d.label} className="rounded-xl border border-line bg-card px-3 py-2 shadow-xs">
-                <dt className="font-mono text-[9px] font-bold uppercase tracking-wider text-text/45">{d.label}</dt>
+                <dt className="ui-label text-text/50">{formatLabelTitleCase(d.label)}</dt>
                 <dd className="mt-1 font-mono text-xs text-text/80">{d.value}</dd>
               </div>
             ))}

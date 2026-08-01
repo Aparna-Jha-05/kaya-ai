@@ -1,13 +1,28 @@
 "use client";
 
-import Image from "next/image";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import LogoIcon from "@/components/ui/LogoIcon";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FilePlus2 } from "lucide-react";
+import { Menu, X, LayoutList, Scale, ScrollText, FilePlus2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
+
+const NAV = [
+  { href: "/", label: "Queue", Icon: LayoutList },
+  { href: "/bids", label: "Compare", Icon: Scale },
+  { href: "/audit", label: "Activity", Icon: ScrollText },
+];
 
 export default function TopHeader() {
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isUploadActive = pathname === "/bids/new";
 
@@ -17,61 +32,163 @@ export default function TopHeader() {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   return (
-    <header className="sticky top-0 z-40 shrink-0 border-b border-line bg-bg/90 backdrop-blur lg:hidden">
-      <div className="mx-auto flex items-center justify-between gap-x-3 px-4 py-2.5">
-        <Link href="/" title="Purchase Order Liability, Intelligence & Compliance Engine" className="flex items-center gap-2.5 shrink-0 group">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-cyan shadow-[0_4px_12px_rgba(56,189,248,0.35)] group-hover:shadow-[0_4px_18px_rgba(56,189,248,0.55)] group-hover:scale-105 transition-all duration-200">
-            <Image src="/icon.svg" alt="PO-LICE" width={22} height={22} priority />
-          </span>
-          <span className="text-lg font-extrabold tracking-tight text-text group-hover:text-cyan transition-colors duration-200 leading-none">
-            PO-LICE
-          </span>
-        </Link>
+    <>
+      <header className="sticky top-0 z-50 shrink-0 border-b border-line bg-bg">
+        <div className="mx-auto flex items-center justify-between gap-x-3 px-4 py-3">
+          {/* Brand Logo */}
+          <Link
+            href="/"
+            title="Purchase Order Liability, Intelligence & Compliance Engine"
+            className="flex items-center gap-3 group shrink-0"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-line border-b-2 bg-surface shadow-xs group-hover:border-cyan/40 group-hover:scale-105 transition-all duration-200">
+              <LogoIcon className="h-5.5 w-5.5" />
+            </span>
+            <span className="text-xl font-extrabold tracking-tight text-text group-hover:text-cyan transition-colors duration-200 leading-none">
+              PO-LICE
+            </span>
+          </Link>
 
-        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto py-0.5">
-          <nav aria-label="Primary navigation" className="flex items-center gap-1 text-xs">
-            <NavLink href="/" active={isNavActive("/")}>
-              Queue
-            </NavLink>
-            <NavLink href="/bids" active={isNavActive("/bids")}>
-              Compare
-            </NavLink>
-            <NavLink href="/audit" active={isNavActive("/audit")}>
-              Activity
-            </NavLink>
-          </nav>
+          {/* Adaptive Inline Navigation for Tablet View (sm:flex) */}
+          <div className="hidden sm:flex items-center gap-3">
+            <nav aria-label="Primary navigation" className="flex items-center gap-1 text-xs">
+              {NAV.map(({ href, label }) => {
+                const active = isNavActive(href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`rounded-xl px-3 py-2 transition-all ${
+                      active
+                        ? "bg-cyan/15 font-bold text-cyan ring-1 ring-cyan/30 shadow-xs"
+                        : "text-text/60 font-semibold hover:bg-surface hover:text-text"
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </nav>
 
-          <div className="flex shrink-0 items-center gap-1.5 border-l border-line pl-2">
-            <ThemeToggle compact />
-            <Link
-              href="/bids/new"
-              title="Upload bid"
-              aria-label="Upload bid"
-              className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line transition-all ${isUploadActive
-                ? "bg-cyan/25 ring-1 ring-cyan/50 text-cyan"
-                : "bg-surface text-text/80 hover:border-cyan/40 hover:text-cyan tactile-press"
+            <div className="flex items-center gap-2 border-l border-line pl-3">
+              <ThemeToggle compact />
+              <Link
+                href="/bids/new"
+                className={`flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+                  isUploadActive
+                    ? "bg-cyan/25 ring-1 ring-cyan/50 text-cyan"
+                    : "bg-cyan text-on-accent hover:bg-cyan/90 tactile-press shadow-xs"
                 }`}
-            >
-              <FilePlus2 className="h-4 w-4" />
-            </Link>
+              >
+                <FilePlus2 className="h-3.5 w-3.5" />
+                <span>Upload</span>
+              </Link>
+            </div>
           </div>
-        </div>
-      </div>
-    </header>
-  );
-}
 
-function NavLink({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className={`rounded-md px-3 py-1.5 transition-colors ${active
-        ? "bg-cyan/10 font-medium text-cyan"
-        : "text-text/60 hover:bg-white/5 hover:text-text"
-        }`}
-    >
-      {children}
-    </Link>
+          {/* Mobile Hamburger Button (sm:hidden) */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            title="Toggle navigation menu"
+            aria-label="Toggle navigation menu"
+            className="inline-flex sm:hidden h-10 w-10 items-center justify-center rounded-xl border border-line bg-surface text-text hover:border-cyan/40 hover:text-cyan tactile-press transition-colors shadow-xs"
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              {mobileMenuOpen ? (
+                <motion.div
+                  key="close"
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <X className="h-5 w-5" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="menu"
+                  initial={{ rotate: 90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: -90, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <Menu className="h-5 w-5" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </button>
+        </div>
+      </header>
+
+      {/* Portal Mobile Overlay Drawer - Only active on Mobile (< sm:) */}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                className="fixed top-[65px] left-0 right-0 bottom-0 z-[9999] flex flex-col bg-bg px-4 py-6 overflow-y-auto sm:hidden"
+              >
+                {/* Nav Links */}
+                <nav aria-label="Mobile navigation" className="space-y-1.5 flex-1">
+                  {NAV.map(({ href, label, Icon }) => {
+                    const active = isNavActive(href);
+                    return (
+                      <Link
+                        key={href}
+                        href={href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm transition-all duration-150 ${
+                          active
+                            ? "bg-cyan/15 font-bold text-cyan ring-1 ring-cyan/30 shadow-xs"
+                            : "text-text/60 font-semibold hover:bg-surface hover:text-text"
+                        }`}
+                      >
+                        <Icon className="h-4.5 w-4.5" />
+                        {label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+
+                {/* Bottom Actions */}
+                <div className="mt-auto space-y-3 pt-4 border-t border-line">
+                  <Link
+                    href="/bids/new"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition-all ${
+                      isUploadActive
+                        ? "bg-cyan/25 ring-1 ring-cyan/50 text-cyan"
+                        : "bg-cyan text-on-accent hover:bg-cyan/90 tactile-press shadow-xs"
+                    }`}
+                  >
+                    <FilePlus2 className="h-4 w-4" />
+                    Upload
+                  </Link>
+
+                  <ThemeToggle />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
+    </>
   );
 }

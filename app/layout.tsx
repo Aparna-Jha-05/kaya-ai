@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "PO-LICE · Purchase Order Liability, Intelligence & Compliance Engine",
   description:
     "LLM extracts and explains, deterministic SQL and math validate procurement compliance.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -29,12 +32,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="h-full overflow-x-hidden bg-bg text-text font-sans antialiased">
-        <div className="flex h-screen flex-col lg:flex-row max-w-[1600px] mx-auto overflow-hidden">
+        <div className="flex h-screen flex-col max-w-[1600px] mx-auto overflow-hidden">
           <TopHeader />
-          <AppSidebar />
           <div className="flex min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
-            <main className="flex-1 min-w-0 max-w-full px-4 py-6 sm:px-6 lg:px-8 overflow-x-hidden">{children}</main>
-            <footer className="mx-auto max-w-[1400px] px-6 py-8 text-center text-[11px] font-medium text-text/40">
+            <main className="flex-1 min-w-0 max-w-full px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+            <footer className="mt-auto shrink-0 border-t border-line/40 px-6 py-8 text-center text-[11px] font-medium text-text/40">
               ©2026 PO-LICE. Catching bid bandits before budget breaks.
             </footer>
           </div>

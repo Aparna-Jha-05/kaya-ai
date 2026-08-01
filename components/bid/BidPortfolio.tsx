@@ -50,7 +50,23 @@ function fromRecord(record: BidRecord): Comparable {
 }
 
 function check(bid: Comparable, name: string) {
-  return bid.checks.find((value) => value.name === name);
+  const query = name.toLowerCase();
+  return bid.checks.find((value) => {
+    const vName = value.name.toLowerCase();
+    if (query.includes("relia") || query.includes("vice")) {
+      return vName.includes("relia") || vName.includes("vice");
+    }
+    if (query.includes("sched") || query.includes("traff")) {
+      return vName.includes("sched") || vName.includes("traff");
+    }
+    if (query.includes("eng") || query.includes("build")) {
+      return vName.includes("eng") || vName.includes("build");
+    }
+    if (query.includes("carb") || query.includes("green")) {
+      return vName.includes("carb") || vName.includes("green");
+    }
+    return vName === query;
+  });
 }
 function hasFailure(bid: Comparable) {
   return bid.checks.some((value) => value.status === "FAIL" && (value.name === "Engineering" || value.name === "Carbon"));
@@ -229,8 +245,12 @@ export default function BidPortfolio() {
                     type="checkbox"
                     checked={selectedItem}
                     disabled={disabled}
-                    onChange={() => toggle(bid.id)}
-                    className="accent-[#38BDF8]"
+                    onChange={() => {
+                      toggle(bid.id);
+                      setActiveId(bid.id);
+                      setScenario(null);
+                    }}
+                    className="accent-cyan"
                   />
                   <span>{bid.vendor}</span>
                 </label>
@@ -354,11 +374,23 @@ export default function BidPortfolio() {
                         </td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">{formatCroreValue(shownCost(bid))}</td>
                         <td className="px-4 py-3 text-center">
-                          <div className="flex justify-center">
-                            <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs" style={{ color, backgroundColor: `${color}20`, borderColor: `${color}50` }}>
-                              {recommendationLabel(bid.recommendation)}
-                            </span>
-                          </div>
+                          {(() => {
+                            const varName = recommendationTone(bid.recommendation) === "rose" ? "--color-rose" : recommendationTone(bid.recommendation) === "amber" ? "--color-amber" : "--color-cyan";
+                            return (
+                              <div className="flex justify-center">
+                                <span
+                                  className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs"
+                                  style={{
+                                    color: `rgb(var(${varName}))`,
+                                    backgroundColor: `rgba(var(${varName}), 0.15)`,
+                                    borderColor: `rgba(var(${varName}), 0.45)`,
+                                  }}
+                                >
+                                  {recommendationLabel(bid.recommendation)}
+                                </span>
+                              </div>
+                            );
+                          })()}
                         </td>
                       </tr>
                     );
@@ -382,6 +414,7 @@ export default function BidPortfolio() {
                   vendor: bid.vendor,
                   Upfront: (bid.upfront ?? 0) / 10_000_000,
                   "5-year TCO²": (shownCost(bid) ?? 0) / 10_000_000,
+                  recommendation: bid.recommendation,
                 }))}
               />
             </div>
@@ -399,7 +432,7 @@ export default function BidPortfolio() {
               : "Clear filters or select an available bid to restore the comparison."}
           </p>
           {filtered.length === 0 && !resetNeeded ? (
-            <Link href="/bids/new" className="mt-5 inline-flex items-center rounded-lg bg-cyan/15 px-4 py-2 text-sm font-semibold text-cyan transition-colors hover:bg-cyan/25">
+            <Link href="/bids/new" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-cyan px-4 py-2.5 text-sm font-bold text-on-accent hover:bg-cyan/90 tactile-press shadow-xs">
               Upload first bid
             </Link>
           ) : null}
@@ -422,8 +455,24 @@ function Inspector({ bid }: { bid: Comparable }) {
       <div className="grid grid-cols-2 gap-3 border-y border-line py-3.5 text-xs">
         <Metric label="Status" value={recommendationLabel(bid.recommendation)} />
         <Metric label="5-year TCO²" value={inCrore(bid.cost)} />
-        <Metric label="Reliability" value={check(bid, "Reliability")?.risk == null ? "Not provided" : `${check(bid, "Reliability")?.risk}/10`} />
-        <Metric label="Schedule" value={check(bid, "Schedule")?.status ?? "Review"} />
+        <Metric
+          label="Reliability"
+          value={
+            check(bid, "vice")?.risk != null
+              ? `${check(bid, "vice")?.risk}/10 Risk`
+              : "Audit Active"
+          }
+        />
+        <Metric
+          label="Schedule"
+          value={
+            check(bid, "traffic")?.status === "FAIL"
+              ? "Critical Delay"
+              : check(bid, "traffic")?.status === "FLAG"
+              ? "Schedule Flag"
+              : "On Schedule"
+          }
+        />
       </div>
 
       <p className="text-xs leading-relaxed text-text/60">

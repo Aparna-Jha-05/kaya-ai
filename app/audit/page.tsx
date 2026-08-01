@@ -40,15 +40,15 @@ function passFailCell(value: "PASS" | "FAIL" | "FLAG") {
 }
 
 function riskCell(value: "Low" | "Med" | "High" | "Unknown") {
-  const color = value === "High" ? COLORS.rose : value === "Low" ? COLORS.cyan : COLORS.amber;
+  const varName = value === "High" ? "--color-rose" : value === "Low" ? "--color-cyan" : "--color-amber";
   return (
     <div className="flex justify-center">
       <span
         className="inline-flex items-center rounded-md px-2 py-0.5 font-mono text-xs font-extrabold tabular-nums border shadow-xs"
         style={{
-          color,
-          backgroundColor: `${color}1f`,
-          borderColor: `${color}50`,
+          color: `rgb(var(${varName}))`,
+          backgroundColor: `rgba(var(${varName}), 0.15)`,
+          borderColor: `rgba(var(${varName}), 0.45)`,
         }}
       >
         {value}
@@ -58,11 +58,18 @@ function riskCell(value: "Low" | "Med" | "High" | "Unknown") {
 }
 
 function decisionCell(value: ScorecardRow["decision"]) {
-  const color = value === "REJECT" ? COLORS.rose : value === "RECOMMENDED" ? COLORS.cyan : COLORS.amber;
+  const varName = value === "REJECT" ? "--color-rose" : value === "RECOMMENDED" ? "--color-cyan" : "--color-amber";
   const label = value === "REJECT" ? "Do not select" : value === "RECOMMENDED" ? "Ready" : "Needs review";
   return (
     <div className="flex justify-center">
-      <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs" style={{ color, backgroundColor: `${color}20`, borderColor: `${color}50` }}>
+      <span
+        className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs"
+        style={{
+          color: `rgb(var(${varName}))`,
+          backgroundColor: `rgba(var(${varName}), 0.15)`,
+          borderColor: `rgba(var(${varName}), 0.45)`,
+        }}
+      >
         {label}
       </span>
     </div>
@@ -114,18 +121,18 @@ export default function AuditPage() {
             <button
               type="button"
               onClick={loadData}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-amber/30 bg-amber/10 px-3 py-2 text-sm font-semibold text-amber hover:bg-amber/20"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber/30 bg-amber/15 px-3.5 py-2 text-xs font-bold text-amber hover:bg-amber/25 tactile-press shadow-xs transition-all"
             >
-              <RefreshCw className="h-4 w-4" /> Retry connection
+              <RefreshCw className="h-3.5 w-3.5" /> Retry connection
             </button>
           )}
           <button
             type="button"
             onClick={() => exportCsv(events)}
             disabled={evState !== "ready" || events.length === 0}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-cyan/15 px-4 py-2 text-sm font-semibold text-cyan transition-colors hover:bg-cyan/25 disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-surface px-3.5 py-2 text-xs font-bold text-text hover:border-cyan/40 hover:text-cyan tactile-press shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            <Download className="h-4 w-4" /> Export CSV
+            <Download className="h-3.5 w-3.5 text-cyan" /> Export CSV
           </button>
         </div>
       </div>

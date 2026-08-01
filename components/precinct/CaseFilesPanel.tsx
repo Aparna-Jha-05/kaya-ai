@@ -115,12 +115,15 @@ export default function CaseFilesPanel() {
               <li key={item.id}>
                 <Link
                   href={`/bids/${item.bidId}`}
-                  className="flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6 transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10"
+                  className="flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6 transition-colors duration-150 hover:bg-cyan/5"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <span
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border shadow-xs"
-                      style={{ backgroundColor: `${item.color}1a`, borderColor: `${item.color}40` }}
+                      style={{
+                        backgroundColor: item.color.includes("var") ? `rgba(var(--color-cyan), 0.15)` : `${item.color}1a`,
+                        borderColor: item.color.includes("var") ? `rgba(var(--color-cyan), 0.4)` : `${item.color}40`,
+                      }}
                     >
                       <item.icon className="h-4 w-4" style={{ color: item.color }} />
                     </span>
@@ -131,7 +134,11 @@ export default function CaseFilesPanel() {
                   </div>
                   <span
                     className="shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs"
-                    style={{ color: item.color, backgroundColor: `${item.color}1a`, borderColor: `${item.color}40` }}
+                    style={{
+                      color: item.color,
+                      backgroundColor: item.color.includes("var") ? `rgba(var(--color-cyan), 0.15)` : `${item.color}1a`,
+                      borderColor: item.color.includes("var") ? `rgba(var(--color-cyan), 0.4)` : `${item.color}40`,
+                    }}
                   >
                     Review
                   </span>

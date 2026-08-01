@@ -79,7 +79,7 @@ export default function ActiveBidsTable() {
           <button
             type="button"
             onClick={loadData}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-3 py-1.5 text-xs font-semibold text-cyan hover:bg-cyan/25"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-3 py-1.5 text-xs font-semibold text-cyan hover:bg-cyan/25 tactile-press transition-colors"
           >
             <RefreshCw className="h-3.5 w-3.5" /> Retry loading bids
           </button>
@@ -176,8 +176,8 @@ export default function ActiveBidsTable() {
                             className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-extrabold tabular-nums border shadow-xs"
                             style={{
                               color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan,
-                              backgroundColor: risk != null && risk > 6 ? `${COLORS.rose}1f` : `${COLORS.cyan}1f`,
-                              borderColor: risk != null && risk > 6 ? `${COLORS.rose}50` : `${COLORS.cyan}50`,
+                              backgroundColor: risk != null && risk > 6 ? "rgba(var(--color-rose), 0.15)" : "rgba(var(--color-cyan), 0.15)",
+                              borderColor: risk != null && risk > 6 ? "rgba(var(--color-rose), 0.4)" : "rgba(var(--color-cyan), 0.4)",
                             }}
                           >
                             {risk == null ? "—" : `${risk}/10`}

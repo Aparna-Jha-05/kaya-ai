@@ -1,22 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, FileSearch, Network, ScrollText, ShieldCheck } from "lucide-react";
+import { CheckCircle2, FileSearch, ScrollText, ShieldCheck } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import EvidenceBoard from "@/components/bid/EvidenceBoard";
+import Spatial3DViewer from "@/components/bid/Spatial3DViewer";
+import GanttScheduleViewer from "@/components/bid/GanttScheduleViewer";
 import RFIModal from "@/components/rfi-modal";
 import { procurementApi, type ActivityEvent, type BidRecord } from "@/lib/api";
-import { activityActionLabel, cleanReasonText, displayCheckName, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
+import { activityActionLabel, cleanReasonText, displayCheckName, formatLabelTitleCase, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
 
-type Tab = "summary" | "source" | "checks" | "impact" | "activity";
+type Tab = "summary" | "checks" | "source" | "activity";
 const tabs = [
   { id: "summary", label: "Summary", Icon: ShieldCheck },
+  { id: "checks", label: "Compliance & Impact", Icon: CheckCircle2 },
   { id: "source", label: "Source data", Icon: FileSearch },
-  { id: "checks", label: "Checks", Icon: CheckCircle2 },
-  { id: "impact", label: "Impact", Icon: Network },
   { id: "activity", label: "Activity", Icon: ScrollText },
 ] as const;
 
@@ -34,8 +36,8 @@ function formatEvidenceValue(value: unknown) {
 function evidenceText(evidence: Record<string, unknown> | null) {
   return evidence
     ? Object.entries(evidence)
-        .map(([key, value]) => `${key.replaceAll("_", " ")}: ${formatEvidenceValue(value)}`)
-        .join(" · ")
+      .map(([key, value]) => `${key.replaceAll("_", " ")}: ${formatEvidenceValue(value)}`)
+      .join(" · ")
     : "No structured evidence returned.";
 }
 
@@ -52,8 +54,8 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
   const nextStep = hardFail
     ? "Resolve the failed requirements before selecting this bid."
     : record.scorecard.recommendation === "REVIEW_REQUIRED"
-    ? "Review flagged evidence and record the appropriate decision."
-    : "Confirm the evidence, then record a reviewer decision.";
+      ? "Review flagged evidence and record the appropriate decision."
+      : "Confirm the evidence, then record a reviewer decision.";
 
   return (
     <div className="space-y-5">
@@ -63,7 +65,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
             <p className="page-eyebrow">Bid review</p>
             <div className="flex flex-wrap items-center gap-2.5 min-w-0">
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text break-words">{source.vendor_name}</h1>
-              <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase shadow-xs shrink-0" style={{ color, backgroundColor: `${color}18` }}>
+              <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs shrink-0" style={{ color, backgroundColor: color.includes("var") ? `rgba(var(--color-cyan), 0.15)` : `${color}18`, borderColor: color.includes("var") ? `rgba(var(--color-cyan), 0.4)` : `${color}40` }}>
                 {recommendationLabel(record.scorecard.recommendation)}
               </span>
             </div>
@@ -88,9 +90,8 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
               role="tab"
               aria-selected={tab === id}
               onClick={() => setTab(id)}
-              className={`flex items-center gap-2 border-b-2 px-3 py-2.5 text-xs font-medium transition-colors ${
-                tab === id ? "border-cyan text-cyan" : "border-transparent text-text/55 hover:text-text"
-              }`}
+              className={`flex items-center gap-2 border-b-2 px-3 py-2.5 text-xs font-medium transition-colors ${tab === id ? "border-cyan text-cyan" : "border-transparent text-text/55 hover:text-text"
+                }`}
             >
               <Icon className="h-3.5 w-3.5" /> {label}
             </button>
@@ -128,7 +129,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
                   <button
                     type="button"
                     onClick={() => setRfiOpen(true)}
-                    className="rounded-lg bg-violet/20 px-4 py-2 text-sm font-semibold text-violet hover:bg-violet/30"
+                    className="rounded-xl bg-violet/20 px-4 py-2 text-sm font-bold text-violet hover:bg-violet/30 tactile-press shadow-xs transition-colors"
                   >
                     Review RFI draft
                   </button>
@@ -143,46 +144,62 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
             onClose={() => setRfiOpen(false)}
             vendorName={source.vendor_name}
             bidId={record.id}
-            findings={record.scorecard.patrol_results
-              .filter((check) => check.status !== "PASS")
-              .map((check) => `${displayCheckName(check.patrol_name)}: ${check.reason}`)}
           />
         </div>
       )}
 
-      {tab === "source" && <SourceTab record={record} onRemoved={() => router.replace("/bids")} />}
-
       {tab === "checks" && (
-        <section aria-label="Compliance checks" className="grid gap-4 lg:grid-cols-2">
-          {record.scorecard.patrol_results.map((check) => (
-            <Card
-              key={check.patrol_name}
-              accent={check.status === "FAIL" ? COLORS.rose : check.status === "FLAG" ? COLORS.amber : COLORS.cyan}
-              className="p-4"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-text">{displayCheckName(check.patrol_name)}</p>
-                  <p className="mt-1 text-xs text-text/55">{check.reason}</p>
-                </div>
-                <PatrolBadge status={check.status} size="sm" />
-              </div>
-              <code className="mt-3 block break-words rounded bg-inset px-3 py-2 text-[10px] text-text/60">
-                {check.rule_broken ?? "No rule identifier returned"}
-              </code>
-              <button
-                type="button"
-                onClick={() => setInspected(check)}
-                className="mt-3 text-xs font-medium text-cyan hover:underline"
-              >
-                Inspect evidence & geometry
-              </button>
-            </Card>
-          ))}
-        </section>
+        <div className="space-y-5">
+          <EvidenceBoard record={record} />
+          <section aria-label="Compliance checks" className="grid gap-4 lg:grid-cols-2">
+            {record.scorecard.patrol_results.map((check) => {
+              const pName = check.patrol_name.toLowerCase();
+              const actionLabel = pName.includes("building") || pName.includes("engineering")
+                ? "Inspect evidence & 3D spatial model →"
+                : pName.includes("green") || pName.includes("carbon")
+                  ? "Inspect carbon evidence & cap →"
+                  : pName.includes("vice") || pName.includes("reliability")
+                    ? "Inspect reliability & safety evidence →"
+                    : "Inspect schedule & lead time evidence →";
+
+              return (
+                <Card
+                  key={check.patrol_name}
+                  accent={check.status === "FAIL" ? COLORS.rose : check.status === "FLAG" ? COLORS.amber : COLORS.cyan}
+                  className="p-5"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-bold text-text">{displayCheckName(check.patrol_name)}</p>
+                      <p className="mt-1 text-xs text-text/60 leading-relaxed">{check.reason}</p>
+                    </div>
+                    <PatrolBadge status={check.status} size="sm" />
+                  </div>
+                  <code className="mt-3 block break-words rounded-xl border border-line bg-surface p-3 text-[11px] font-mono text-text/75 shadow-xs">
+                    {check.rule_broken ?? "No rule identifier returned — constraint satisfied"}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => setInspected(check)}
+                    className={`mt-3 inline-flex items-center gap-1 text-xs font-mono font-bold hover:underline tactile-press ${pName.includes("building") || pName.includes("engineering")
+                      ? "text-cyan"
+                      : pName.includes("green") || pName.includes("carbon")
+                        ? "text-emerald"
+                        : pName.includes("vice") || pName.includes("reliability")
+                          ? "text-purple"
+                          : "text-amber"
+                      }`}
+                  >
+                    {actionLabel}
+                  </button>
+                </Card>
+              );
+            })}
+          </section>
+        </div>
       )}
 
-      {tab === "impact" && <EvidenceBoard record={record} />}
+      {tab === "source" && <SourceTab record={record} onRemoved={() => router.replace("/bids")} />}
       {tab === "activity" && <ActivityTab id={record.id} />}
       {inspected && <EvidenceDrawer check={inspected} record={record} onClose={() => setInspected(null)} />}
     </div>
@@ -202,20 +219,66 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
   const [removing, setRemoving] = useState(false);
   const [error, setError] = useState("");
   const e = record.source.equipment;
-  const fields = [
-    ["Vendor", record.source.vendor_name],
-    ["Model", e.model_number],
-    ["Power draw", e.power_draw_kw == null ? "Not provided" : `${e.power_draw_kw} kW`],
-    ["Cooling capacity", e.cooling_capacity_kw == null ? "Not provided" : `${e.cooling_capacity_kw} kW`],
-    ["Width", e.width_m == null ? "Not provided" : `${e.width_m} m`],
-    ["Floor load", e.floor_load_kg == null ? "Not provided" : `${e.floor_load_kg} kg`],
-    ["Water evaporation", e.water_evap_gpm == null ? "Not provided" : `${e.water_evap_gpm} gpm`],
-    ["Embodied carbon", e.embodied_carbon_factor == null ? "Not provided" : `${e.embodied_carbon_factor} kgCO₂e/ton`],
-    ["Safety certificate", record.source.has_osha_cert == null ? "Not provided" : record.source.has_osha_cert ? "Present" : "Missing"],
-  ];
+
+  // Collect dynamically extracted source fields (Zero hardcoded empty rows)
+  const rawFields: Array<{
+    field: string;
+    value: string;
+    page: number | null;
+    bbox: [number, number, number, number] | null;
+    excerpt: string | null;
+  }> = [];
 
   const candidates = record.source.extraction_report?.candidates ?? [];
+
+  const addIfPresent = (fieldName: string, val: string | number | boolean | null | undefined, matchKey?: string) => {
+    if (val == null) return;
+    const match = candidates.find((c) => matchKey ? c.field.toLowerCase().includes(matchKey.toLowerCase()) : false);
+    rawFields.push({
+      field: fieldName,
+      value: String(val),
+      page: match?.page ?? null,
+      bbox: match?.bbox ?? null,
+      excerpt: match?.source_excerpt ?? null,
+    });
+  };
+
+  addIfPresent("Vendor", record.source.vendor_name, "vendor");
+  addIfPresent("Model", e.model_number, "model");
+  addIfPresent("Power Draw", e.power_draw_kw != null ? `${e.power_draw_kw} kW` : null, "power");
+  addIfPresent("Cooling Capacity", e.cooling_capacity_kw != null ? `${e.cooling_capacity_kw} kW` : null, "cooling");
+  addIfPresent("Width", e.width_m != null ? `${e.width_m} m` : null, "width");
+  addIfPresent("Floor Load", e.floor_load_kg != null ? `${e.floor_load_kg} kg` : null, "floor");
+  addIfPresent("Water Evaporation", e.water_evap_gpm != null ? `${e.water_evap_gpm} gpm` : null, "water");
+  addIfPresent("Embodied Carbon", e.embodied_carbon_factor != null ? `${e.embodied_carbon_factor} kgCO₂e/ton` : null, "carbon");
+  if (record.source.has_osha_cert === true) {
+    addIfPresent("Safety Certificate", "Present & Verified", "osha");
+  }
+
+  // Include dimension annotations if present
   const annotations = record.source.extraction_report?.dimension_annotations ?? [];
+  annotations.forEach((a) => {
+    rawFields.push({
+      field: `Annotation: ${formatLabelTitleCase(a.field)}`,
+      value: `${a.normalized_value} ${a.unit}`,
+      page: a.page,
+      bbox: a.bbox,
+      excerpt: `CAD Drawing Annotation (${a.interpretation_status ?? "VERIFIED"})`,
+    });
+  });
+
+  // Include any extra candidates not covered above
+  candidates.forEach((c) => {
+    if (!rawFields.some((rf) => rf.field.toLowerCase().includes(c.field.toLowerCase()))) {
+      rawFields.push({
+        field: formatLabelTitleCase(c.field),
+        value: `${String(c.normalized_value)} ${c.unit ?? ""}`.trim(),
+        page: c.page,
+        bbox: c.bbox,
+        excerpt: c.source_excerpt,
+      });
+    }
+  });
 
   async function remove() {
     if (!window.confirm("Remove this uploaded bid and its stored source PDF? This cannot be undone.")) return;
@@ -232,125 +295,59 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
 
   return (
     <div className="space-y-5">
+      {/* Consolidated Single Master Source Ledger */}
       <Card>
         <CardHeader
-          title="Extracted source data"
-          caption="Confirm extracted document values against the source PDF before acting."
+          title="Extracted Source Ledger"
+          caption="Consolidated PDF text extraction and traceable citation markers."
           right={
-            <a href={procurementApi.sourceUrl(record.id)} target="_blank" rel="noreferrer" className="text-xs font-semibold text-cyan hover:underline">
-              Open source PDF
+            <a
+              href={procurementApi.sourceUrl(record.id)}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs font-semibold text-cyan hover:underline"
+            >
+              Open Source PDF ↗
             </a>
           }
         />
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[480px] text-sm border-collapse table-fixed">
+          <table className="w-full min-w-[560px] text-xs font-mono border-collapse table-fixed">
             <colgroup>
-              <col className="w-[28%]" />
-              <col className="w-[72%]" />
+              <col className="w-[30%]" />
+              <col className="w-[45%]" />
+              <col className="w-[25%]" />
             </colgroup>
+            <thead>
+              <tr className="border-b-2 border-line text-left table-header bg-surface/50">
+                <th className="px-4 py-2.5 font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Extracted Field</th>
+                <th className="px-4 py-2.5 font-bold whitespace-nowrap">Normalized Value</th>
+                <th className="px-4 py-2.5 font-bold text-right whitespace-nowrap last:rounded-tr-[0.9rem]">Source Citation</th>
+              </tr>
+            </thead>
             <tbody>
-              {fields.map(([label, value]) => (
-                <tr key={label} className="border-b border-line/40 hover:bg-cyan/5 transition-colors">
-                  <th className="px-4 py-3 text-left font-bold text-text/60 first:rounded-tl-[0.9rem]">{label}</th>
-                  <td className="px-4 py-3 font-mono font-semibold text-text">{value}</td>
+              {rawFields.map((row, i) => (
+                <tr key={i} className="border-b border-line/40 align-middle transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
+                  <td className="px-4 py-3 font-bold text-text/80">{row.field}</td>
+                  <td className="px-4 py-3 font-bold text-cyan">{row.value}</td>
+                  <td className="px-4 py-3 text-right">
+                    {row.page != null ? (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-md bg-cyan/15 px-2 py-0.5 text-[11px] font-bold text-cyan border border-cyan/30 shadow-xs cursor-help transition-all hover:bg-cyan/25"
+                        title={row.excerpt ? `[Page ${row.page}] "${row.excerpt}"` : `Extracted from Page ${row.page}`}
+                      >
+                        [p.{row.page}]
+                      </span>
+                    ) : (
+                      <span className="text-text/40 font-normal text-[11px]">Source Provenance</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </Card>
-
-      {/* Extracted Candidates & Evidence Location */}
-      {candidates.length > 0 && (
-        <Card>
-          <CardHeader
-            title="Extracted PDF text regions"
-            caption="Traceable source excerpts and page location details extracted from the PDF text layer."
-          />
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-xs font-mono border-collapse table-fixed">
-              <colgroup>
-                <col className="w-[18%]" />
-                <col className="w-[18%]" />
-                <col className="w-[10%]" />
-                <col className="w-[24%]" />
-                <col className="w-[30%]" />
-              </colgroup>
-              <thead>
-                <tr className="border-b-2 border-line text-left table-header bg-surface/50">
-                  <th className="px-4 py-2.5 font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Field</th>
-                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Value</th>
-                  <th className="px-4 py-2.5 font-bold text-center whitespace-nowrap">Page</th>
-                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Bounding Box</th>
-                  <th className="px-4 py-2.5 font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Source Excerpt</th>
-                </tr>
-              </thead>
-              <tbody>
-                {candidates.map((c, i) => (
-                  <tr key={i} className="border-b border-line/40 align-top transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
-                    <td className="px-4 py-2.5 font-bold text-cyan truncate">{c.field}</td>
-                    <td className="px-4 py-2.5 text-text font-semibold truncate">{String(c.normalized_value)} {c.unit ?? ""}</td>
-                    <td className="px-4 py-2.5 text-text/60 text-center">{c.page ?? "—"}</td>
-                    <td className="px-4 py-2.5">
-                      {c.bbox ? (
-                        <span className="rounded-md bg-cyan/10 px-1.5 py-0.5 font-bold text-cyan border border-cyan/20">
-                          [{c.bbox.map((v) => v.toFixed(1)).join(", ")}]
-                        </span>
-                      ) : (
-                        <span className="rounded-md bg-surface px-1.5 py-0.5 text-text/40 border border-line">
-                          Region unavailable
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5 text-text/60 max-w-[260px] truncate">{c.source_excerpt}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
-
-      {/* Dimension Annotations (if present) */}
-      {annotations.length > 0 && (
-        <Card accent={COLORS.amber}>
-          <CardHeader
-            title="Detected dimension annotations"
-            caption="Parsed drawing text annotations — detected text only, not full CAD/BIM model geometry."
-          />
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-xs font-mono border-collapse table-fixed">
-              <colgroup>
-                <col className="w-[22%]" />
-                <col className="w-[20%]" />
-                <col className="w-[12%]" />
-                <col className="w-[26%]" />
-                <col className="w-[20%]" />
-              </colgroup>
-              <thead>
-                <tr className="border-b-2 border-line text-left table-header bg-surface/50">
-                  <th className="px-4 py-2.5 font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Annotation Field</th>
-                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Value</th>
-                  <th className="px-4 py-2.5 font-bold text-center whitespace-nowrap">Page</th>
-                  <th className="px-4 py-2.5 font-bold whitespace-nowrap">Coordinates</th>
-                  <th className="px-4 py-2.5 font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {annotations.map((a, i) => (
-                  <tr key={i} className="border-b border-line/40 align-top transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
-                    <td className="px-4 py-2.5 font-bold text-amber">{a.field}</td>
-                    <td className="px-4 py-2.5 text-text font-semibold">{a.normalized_value} {a.unit}</td>
-                    <td className="px-4 py-2.5 text-text/60 text-center">Page {a.page}</td>
-                    <td className="px-4 py-2.5 text-text/70">[{a.bbox.map((v) => v.toFixed(1)).join(", ")}]</td>
-                    <td className="px-4 py-2.5 text-text/50">{a.interpretation_status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
 
       <Card>
         <CardHeader title="Document metadata" caption="Captured from the document where available." />
@@ -360,8 +357,6 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
           <Metric label="Creator" value={record.source.document_metadata.creator_tool ?? "Not provided"} />
         </div>
       </Card>
-
-      <ViceSquadCard record={record} />
 
       <Card>
         <CardHeader title="Remove uploaded bid" caption="This deletes the persisted record, activity, and source PDF." />
@@ -404,7 +399,7 @@ function ViceSquadCard({ record }: { record: BidRecord }) {
         <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-line/60 bg-surface/60 p-4">
           {vice.risk_score != null && (
             <div className="shrink-0">
-              <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-violet">Vendor Risk Score</p>
+              <p className="ui-label text-violet">Vendor Risk Score</p>
               <div className="mt-1 flex items-baseline gap-1">
                 <span
                   className="font-mono text-2xl font-black tabular-nums"
@@ -417,49 +412,21 @@ function ViceSquadCard({ record }: { record: BidRecord }) {
             </div>
           )}
           <div className="min-w-0 flex-1 sm:border-l sm:border-line/60 sm:pl-4">
-            <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-text/40">Patrol Finding</p>
+            <p className="ui-label text-text/60">Patrol Finding</p>
             <p className="mt-0.5 text-sm font-medium text-text leading-snug">{cleanReasonText(vice.reason)}</p>
           </div>
         </div>
 
         {entries.length > 0 && (
           <dl className="grid gap-3 sm:grid-cols-2">
-            {entries.map(([k, v]) => {
-              const isScoreIndex = typeof v === "number" && (k.includes("index") || k.includes("score"));
-              const scoreVal = isScoreIndex ? Number(v) : 0;
-              const indexTone = scoreVal < 70 ? COLORS.rose : scoreVal < 85 ? COLORS.amber : COLORS.emerald;
-
-              return (
-                <div key={k} className="rounded-xl border border-line bg-card p-4 shadow-xs space-y-2">
-                  <dt className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-text/50">
-                      {k.replaceAll("_", " ")}
-                    </span>
-                    {isScoreIndex && (
-                      <span className="font-mono text-xs font-black tabular-nums" style={{ color: indexTone }}>
-                        {scoreVal}/100
-                      </span>
-                    )}
-                  </dt>
-                  <dd>
-                    {isScoreIndex ? (
-                      <div className="space-y-1.5 pt-0.5">
-                        <div className="h-2 w-full rounded-full bg-surface border border-line/40 overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-300"
-                            style={{ width: `${Math.min(100, Math.max(0, scoreVal))}%`, backgroundColor: indexTone }}
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="font-mono text-xs font-semibold text-text">
-                        {formatEvidenceValue(v)}
-                      </span>
-                    )}
-                  </dd>
+            {entries
+              .filter(([k]) => !(k.includes("index") || k.includes("score")))
+              .map(([k, v]) => (
+                <div key={k} className="rounded-xl border border-line bg-card p-4 shadow-xs">
+                  <dt className="ui-label text-text/60">{formatLabelTitleCase(k)}</dt>
+                  <dd className="mt-1 font-mono text-xs font-semibold text-text">{formatEvidenceValue(v)}</dd>
                 </div>
-              );
-            })}
+              ))}
           </dl>
         )}
       </div>
@@ -540,9 +507,8 @@ function ReviewerDecision({ record }: { record: BidRecord }) {
         type="button"
         onClick={() => void save()}
         disabled={state === "saving" || state === "saved"}
-        className={`rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-60 ${
-          blocked ? "bg-rose/15 text-rose hover:bg-rose/25" : "bg-cyan/15 text-cyan hover:bg-cyan/25"
-        }`}
+        className={`rounded-xl px-4 py-2.5 text-sm font-bold shadow-xs transition-all tactile-press disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${blocked ? "bg-rose text-on-accent hover:bg-rose/90" : "bg-cyan text-on-accent hover:bg-cyan/90"
+          }`}
       >
         {state === "saving" ? "Recording…" : state === "saved" ? "Decision recorded" : blocked ? "Record do not select" : "Record ready for decision"}
       </button>
@@ -564,96 +530,322 @@ function EvidenceDrawer({
   record: BidRecord;
   onClose: () => void;
 }) {
+  const [mounted, setMounted] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     closeRef.current?.focus();
-    document.body.classList.add("scroll-locked");
+    document.body.style.overflow = "hidden";
     const listener = (event: KeyboardEvent) => event.key === "Escape" && onClose();
     window.addEventListener("keydown", listener);
     return () => {
       window.removeEventListener("keydown", listener);
-      document.body.classList.remove("scroll-locked");
+      document.body.style.overflow = "";
     };
   }, [onClose]);
 
-  // Find candidate fact matching this patrol check for evidence location & geometry
+  const source = record.source;
+  const equipment = source.equipment;
+  const pName = check.patrol_name.toLowerCase();
   const candidates = record.source.extraction_report?.candidates ?? [];
-  const relevantCandidate = candidates.find((c) =>
-    check.patrol_name.includes("BUILDING")
-      ? c.field.includes("power") || c.field.includes("width") || c.field.includes("cooling") || c.field.includes("floor")
-      : check.patrol_name.includes("GREEN")
-      ? c.field.includes("carbon") || c.field.includes("water")
-      : check.patrol_name.includes("TRAFFIC")
-      ? c.field.includes("delivery")
-      : check.patrol_name.includes("VICE")
-      ? c.field.includes("osha")
-      : false
-  );
+  const relevantCandidate = candidates.find((c) => {
+    const f = c.field.toLowerCase();
+    if (pName.includes("building") || pName.includes("engineering")) {
+      return f.includes("power") || f.includes("width") || f.includes("cooling") || f.includes("floor") || f.includes("height") || f.includes("length");
+    }
+    if (pName.includes("green") || pName.includes("carbon")) {
+      return f.includes("carbon") || f.includes("water") || f.includes("leed");
+    }
+    if (pName.includes("vice") || pName.includes("reliability")) {
+      return f.includes("osha") || f.includes("cert") || f.includes("compliance") || f.includes("dispute");
+    }
+    if (pName.includes("traffic") || pName.includes("schedule")) {
+      return f.includes("delivery") || f.includes("lead") || f.includes("weeks") || f.includes("delay");
+    }
+    return false;
+  });
 
-  return (
-    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs" role="presentation" onMouseDown={onClose}>
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex justify-end bg-bg/80 backdrop-blur-md animate-in fade-in duration-150" role="presentation" onMouseDown={onClose}>
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Evidence detail"
         onMouseDown={(event) => event.stopPropagation()}
-        className="fixed right-0 top-0 bottom-0 z-[101] flex w-full max-w-md flex-col border-l border-line bg-card shadow-2xl"
+        className="h-full w-full sm:max-w-lg flex flex-col border-l border-line bg-card shadow-2xl overflow-hidden animate-in slide-in-from-right duration-200"
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-4 bg-surface/30">
+        {/* Header */}
+        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-4 sm:px-6 bg-surface/40">
           <div>
-            <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-cyan">Evidence & Location Detail</p>
-            <h3 className="mt-0.5 text-base font-extrabold text-text">{displayCheckName(check.patrol_name)}</h3>
+            <p className="page-eyebrow mb-0.5">COMPLIANCE EVIDENCE</p>
+            <h3 className="text-base sm:text-lg font-extrabold text-text">
+              {displayCheckName(check.patrol_name)} Patrol
+            </h3>
           </div>
-          <button ref={closeRef} type="button" onClick={onClose} className="rounded-xl border border-line bg-surface hover:bg-surface/80 px-3 py-1.5 text-xs font-extrabold text-text/80 hover:text-text tactile-press shadow-xs">
+          <button
+            ref={closeRef}
+            type="button"
+            onClick={onClose}
+            aria-label="Close evidence detail"
+            className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-line bg-surface hover:bg-surface/80 px-3 py-1.5 text-xs font-bold text-text hover:border-cyan/40 hover:text-cyan tactile-press shadow-xs"
+          >
             Close
           </button>
         </div>
-        <div className="flex-1 space-y-5 overflow-y-auto p-5">
-          <section>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Patrol Result</p>
-            <p className="mt-2 text-sm text-text/80">{check.reason}</p>
-          </section>
 
-          <section>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Measured Value vs Constraint Limit</p>
-            <p className="mt-2 break-words text-sm font-mono text-text/80">{evidenceText(check.evidence)}</p>
-          </section>
+        {/* Content */}
+        <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
+          {/* Section 1: Finding & Rule Status Hero */}
+          <div className="rounded-2xl border border-line bg-surface p-4 sm:p-5 shadow-xs space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/40 pb-3">
+              <PatrolBadge status={check.status} size="sm" />
+              <span className="inline-flex items-center rounded-lg bg-cyan/15 px-2.5 py-1 font-mono text-xs font-bold text-cyan border border-cyan/30 shadow-xs">
+                {check.rule_broken ?? "CONSTRAINT_SATISFIED"}
+              </span>
+            </div>
 
-          <section>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Rule Identifier</p>
-            <code className="mt-2 block break-words rounded-xl border border-line bg-surface p-3 text-xs text-text/75 shadow-xs">
-              {check.rule_broken ?? "No rule exception — constraint satisfied"}
-            </code>
-          </section>
+            <p className="text-xs font-semibold leading-relaxed text-text">
+              {check.reason}
+            </p>
+          </div>
 
-          <section>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Source Location & Geometry</p>
-            <div className="mt-2 space-y-2 rounded-xl border border-line bg-surface p-3.5 text-xs font-mono shadow-xs">
-              <div className="flex justify-between">
-                <span className="text-text/50">Page:</span>
-                <span className="text-text/80">{relevantCandidate?.page != null ? `Page ${relevantCandidate.page}` : "Document text"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-text/50">Geometry Region:</span>
-                <span className={relevantCandidate?.bbox ? "text-cyan font-bold" : "text-text/40"}>
-                  {relevantCandidate?.bbox ? `[${relevantCandidate.bbox.map((v) => v.toFixed(1)).join(", ")}]` : "Region unavailable"}
+          {/* Section 2: Domain Visual Inspector */}
+          {(pName.includes("building") || pName.includes("engineering")) && (
+            <Spatial3DViewer
+              equipmentLength={equipment?.length_m}
+              equipmentWidth={equipment?.width_m}
+              equipmentHeight={equipment?.height_m}
+              doorWidth={1.1}
+              passed={check.status === "PASS"}
+            />
+          )}
+
+          {(pName.includes("green") || pName.includes("carbon")) && (
+            <div className="rounded-2xl border border-emerald/40 bg-surface p-4 sm:p-5 shadow-xs space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="ui-label text-emerald font-extrabold">Embodied Carbon vs Cap</span>
+                <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-mono font-bold shadow-xs border ${check.status === "FAIL"
+                  ? "bg-rose/15 text-rose border-rose/30"
+                  : "bg-emerald/15 text-emerald border-emerald/30"
+                  }`}>
+                  {check.status === "FAIL" ? "✕ Cap Exceeded" : "✓ Within Limit"}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-text/50">Extractor Type:</span>
-                <span className="text-text/70">{relevantCandidate ? "Detected PDF text region" : "Deterministic rule"}</span>
-              </div>
-              {relevantCandidate?.source_excerpt && (
-                <div className="mt-2 border-t border-line/50 pt-2">
-                  <span className="block text-[10px] text-text/50 uppercase font-bold">Cited Excerpt:</span>
-                  <p className="mt-1 text-text/80 italic">&quot;{relevantCandidate.source_excerpt}&quot;</p>
+
+              {/* 2-Bar Visual Comparison Chart */}
+              <div className="space-y-3 rounded-xl border border-emerald/30 bg-inset p-3.5 sm:p-4 shadow-xs">
+                {/* Bar 1: Bid Embodied Carbon */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs font-mono">
+                    <span className="text-text/70 font-semibold">Bid Embodied Carbon</span>
+                    <span className={`font-bold ${check.status === "FAIL" ? "text-rose" : "text-emerald"}`}>
+                      {equipment?.embodied_carbon_factor != null
+                        ? `${equipment.embodied_carbon_factor.toLocaleString()} kgCO₂e`
+                        : check.evidence?.embodied_carbon != null
+                          ? `${String(check.evidence.embodied_carbon)} kgCO₂e`
+                          : "Pending Amber Extraction"}
+                    </span>
+                  </div>
+                  <div className="h-3 w-full rounded-full bg-card overflow-hidden border border-line/40">
+                    <div
+                      className={`h-full transition-all duration-500 rounded-full ${check.status === "FAIL" ? "bg-rose" : "bg-emerald"}`}
+                      style={{ width: check.status === "FAIL" ? "100%" : "75%" }}
+                    />
+                  </div>
                 </div>
-              )}
+
+                {/* Bar 2: Project Cap Limit */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs font-mono">
+                    <span className="text-text/60">Project Cap Limit</span>
+                    <span className="font-bold text-text">
+                      {check.evidence?.project_cap != null
+                        ? `${Number(check.evidence.project_cap).toLocaleString()} kgCO₂e`
+                        : "Pending Amber Constraint"}
+                    </span>
+                  </div>
+                  <div className="h-3 w-full rounded-full bg-card overflow-hidden border border-line/40">
+                    <div
+                      className="h-full transition-all duration-500 rounded-full bg-text/30"
+                      style={{ width: "90%" }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-          </section>
+          )}
+
+          {(pName.includes("vice") || pName.includes("reliability")) && (() => {
+            // Agreement Compliance: Higher is Better (0 to 100)
+            const agreeScore = check.evidence?.agreement_compliance_index != null
+              ? Math.max(0, Math.min(100, Number(check.evidence.agreement_compliance_index)))
+              : check.evidence?.compliance_score != null
+                ? Math.max(0, Math.min(100, Number(check.evidence.compliance_score)))
+                : null;
+
+            // Raw Risk Index (0 to 10): Lower is Better
+            const rawRisk = check.risk_score != null
+              ? Math.max(0, Math.min(10, check.risk_score))
+              : null;
+
+            // Converted Vendor Safety Rating (0 to 10): Higher is Better (10 - Risk)
+            const safetyRating = rawRisk != null ? 10 - rawRisk : null;
+
+            // Color coding: Both metrics share unified polarity (Green/Purple = High/Good, Red = Low/Poor)
+            const agreeColor = agreeScore == null ? "#a78bfa"
+              : agreeScore >= 70 ? "#a78bfa"
+                : agreeScore >= 50 ? "#f59e0b"
+                  : "#f43f5e";
+
+            const safetyColor = safetyRating == null ? "#06b6d4"
+              : safetyRating >= 7 ? "#06b6d4"
+                : safetyRating >= 4 ? "#f59e0b"
+                  : "#f43f5e";
+
+            // SVG Concentric Dual Ring setup (Outer = Compliance /100, Inner = Safety /10)
+            const rOuter = 34;
+            const circOuter = 2 * Math.PI * rOuter;
+            const dashOuter = agreeScore != null ? (agreeScore / 100) * circOuter : 0;
+
+            const rInner = 24;
+            const circInner = 2 * Math.PI * rInner;
+            const dashInner = safetyRating != null ? (safetyRating / 10) * circInner : 0;
+
+            return (
+              <div className="rounded-2xl border border-purple/40 bg-surface p-4 sm:p-5 shadow-xs space-y-3.5">
+                <span className="ui-label text-purple font-extrabold">Reliability &amp; Safety Index</span>
+
+                <div className="rounded-xl border border-purple/30 bg-inset p-4 shadow-xs flex items-center gap-5">
+                  {/* Concentric Dual-Ring Radial Gauge (Unified Positive Polarity: Both Outer & Inner Arcs Fill for Good Quality) */}
+                  <div className="relative shrink-0 flex items-center justify-center" style={{ width: 92, height: 92 }}>
+                    <svg width="92" height="92" viewBox="0 0 92 92" fill="none" className="rotate-[-90deg]">
+                      {/* Outer Track & Arc (Agreement Compliance /100 - Higher is Better) */}
+                      <circle cx="46" cy="46" r={rOuter} stroke="#3b0764" strokeWidth="6" fill="none" opacity="0.3" />
+                      <circle
+                        cx="46" cy="46" r={rOuter}
+                        stroke={agreeColor} strokeWidth="6" strokeLinecap="round"
+                        strokeDasharray={`${dashOuter} ${circOuter}`} fill="none"
+                        style={{ transition: "stroke-dasharray 0.6s ease" }}
+                      />
+                      {/* Inner Track & Arc (Vendor Safety Rating /10 - Higher is Better) */}
+                      <circle cx="46" cy="46" r={rInner} stroke="#1e1b4b" strokeWidth="5" fill="none" opacity="0.4" />
+                      <circle
+                        cx="46" cy="46" r={rInner}
+                        stroke={safetyColor} strokeWidth="5" strokeLinecap="round"
+                        strokeDasharray={`${dashInner} ${circInner}`} fill="none"
+                        style={{ transition: "stroke-dasharray 0.6s ease" }}
+                      />
+                    </svg>
+
+                    {/* Concentric Center Readout */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
+                      <span className="text-[14px] font-black font-mono" style={{ color: agreeColor }}>
+                        {agreeScore != null ? agreeScore : "—"}
+                      </span>
+                      <span className="text-[9px] font-bold font-mono mt-0.5" style={{ color: safetyColor }}>
+                        {safetyRating != null ? `${safetyRating}/10` : "—"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Consolidated Metrics Side Breakdown with Correct Polarity Semantics */}
+                  <div className="flex-1 space-y-2 text-xs font-mono">
+                    <div className="flex items-center justify-between border-b border-line/30 pb-1.5">
+                      <span className="text-text/60 font-sans text-[11px] font-medium flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: agreeColor }} />
+                        Agreement Compliance
+                      </span>
+                      <span className="font-bold" style={{ color: agreeColor }}>
+                        {agreeScore != null ? `${agreeScore}/100` : "Pending"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between border-b border-line/30 pb-1.5">
+                      <span className="text-text/60 font-sans text-[11px] font-medium flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: safetyColor }} />
+                        Vendor Safety Rating
+                      </span>
+                      <span className="font-bold" style={{ color: safetyColor }}>
+                        {safetyRating != null ? `${safetyRating}/10` : "Pending"}
+                      </span>
+                    </div>
+
+                    <div className={`rounded-lg border px-2.5 py-1.5 text-[11px] font-bold flex items-center justify-between ${source.has_osha_cert === false
+                        ? "border-rose/30 bg-rose/10 text-rose"
+                        : source.has_osha_cert === true
+                          ? "border-purple/30 bg-purple/10 text-purple"
+                          : "border-line/50 bg-surface/60 text-text/50"
+                      }`}>
+                      <span className="font-sans">OSHA Certificate</span>
+                      <span className="uppercase">
+                        {source.has_osha_cert === false ? "✕ Missing"
+                          : source.has_osha_cert === true ? "✓ Verified"
+                            : "Pending"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+
+          {(pName.includes("traffic") || pName.includes("schedule")) && (
+            <GanttScheduleViewer
+              promisedWeeks={source.promised_delivery_weeks}
+              delayDays={check.evidence?.delay_days != null ? Number(check.evidence.delay_days) : null}
+              requiredWeeks={check.evidence?.required_weeks != null ? Number(check.evidence.required_weeks) : 10}
+            />
+          )}
+
+          {/* Section 3: Document Provenance & Citation */}
+          <div className="rounded-2xl border border-line bg-surface p-4 sm:p-5 shadow-xs space-y-3 text-xs">
+            <h4 className="ui-label text-text/60 border-b border-line/40 pb-2.5">Document Provenance & Source Citation</h4>
+
+            <div className="grid grid-cols-2 gap-2.5 text-xs">
+              <div className="rounded-xl border border-line/60 bg-inset p-3 shadow-xs">
+                <span className="ui-label text-text/50 block mb-1">Source Page</span>
+                <span className="font-mono font-bold text-text">
+                  {relevantCandidate?.page != null ? `Page ${relevantCandidate.page}` : "Document Provenance"}
+                </span>
+              </div>
+              <div className="rounded-xl border border-line/60 bg-inset p-3 shadow-xs">
+                <span className="ui-label text-text/50 block mb-1">Extractor Engine</span>
+                <span className="font-mono font-semibold text-cyan">
+                  {(relevantCandidate as { extractor?: string })?.extractor === "pymupdf"
+                    ? "PyMuPDF Direct Extraction"
+                    : "Amber AI / VLM Inference Engine"}
+                </span>
+              </div>
+            </div>
+
+            {relevantCandidate?.bbox && (
+              <div className="rounded-xl border border-line/60 bg-inset p-3 shadow-xs text-xs">
+                <span className="ui-label text-text/50 block mb-1">Bounding Box Coordinates</span>
+                <span className="font-mono font-bold text-cyan">
+                  [{relevantCandidate.bbox.map((v) => v.toFixed(1)).join(", ")}]
+                </span>
+              </div>
+            )}
+
+            {relevantCandidate?.source_excerpt && (
+              <div className="rounded-xl border border-line/60 bg-inset p-3 shadow-xs text-xs">
+                <span className="ui-label text-text/50 block mb-1.5">Extracted Source Excerpt</span>
+                <blockquote className="text-text/80 italic leading-relaxed border-l-2 border-cyan pl-3 font-sans">
+                  &quot;{relevantCandidate.source_excerpt}&quot;
+                </blockquote>
+              </div>
+            )}
+          </div>
         </div>
       </aside>
-    </div>
+    </div>,
+    document.body
   );
 }

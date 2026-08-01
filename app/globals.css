@@ -165,7 +165,7 @@ h4, h5, h6 {
 }
 
 .tactile-press {
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .tactile-press:active {
