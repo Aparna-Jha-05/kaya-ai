@@ -3,7 +3,6 @@
 import ActiveBidsTable from "@/components/precinct/ActiveBidsTable";
 import CaseFilesPanel from "@/components/precinct/CaseFilesPanel";
 import SummaryRow from "@/components/precinct/SummaryRow";
-import Tooltip from "@/components/ui/Tooltip";
 import Link from "next/link";
 import { FilePlus2 } from "lucide-react";
 
