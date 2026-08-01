@@ -15,6 +15,12 @@ class ConstraintGraph:
     contractual_warranty_min_years: int = 5
     market_benchmark_inr: float = 50_000_000.0
     maximum_delivery_weeks: int = 12
+    # Cooling-load energy balance: total imposed load must not exceed plant capacity
+    cooling_plant_max_kw: float = 1100.0
+    # Water system limits
+    water_evap_cap_gpm: float | None = None
+    # Structural floor tolerance
+    floor_load_limit_kg_m2: float | None = None
     constraint_source: str = "local project configuration"
     constraint_version: int = 1
 
@@ -32,6 +38,8 @@ class PatrolEngineService:
             substation_limit_kw=record.max_substation_kw,
             door_limit_m=record.max_door_width_m,
             carbon_cap_kgco2e=record.max_embodied_carbon_kg,
+            water_evap_cap_gpm=record.max_water_evap_gpm,
+            floor_load_limit_kg_m2=record.max_floor_load_kg_m2,
             constraint_source=f"v{record.version} by {record.actor}",
             constraint_version=record.version,
         )
@@ -62,26 +70,113 @@ class PatrolEngineService:
             graph = cls.load_constraints_from_repository()
         equipment, results = bid.equipment, []
         warranty = cls._warranty_years(bid.extracted_clauses)
-        building_gaps = [name for name, value in (("power draw", equipment.power_draw_kw), ("equipment width", equipment.width_m), ("warranty term", warranty)) if value is None]
+
+        # ── Patrol 1: Building Patrol ─────────────────────────────────────
+        building_gaps = [name for name, value in (
+            ("power draw", equipment.power_draw_kw),
+            ("equipment width", equipment.width_m),
+            ("warranty term", warranty),
+        ) if value is None]
         building_breaches = []
-        if equipment.power_draw_kw is not None and equipment.power_draw_kw > graph.substation_limit_kw: building_breaches.append("power draw exceeds the substation limit")
-        if equipment.width_m is not None and equipment.width_m > graph.door_limit_m: building_breaches.append("equipment width exceeds the access clearance")
-        if warranty is not None and warranty < graph.contractual_warranty_min_years: building_breaches.append("warranty is below the contractual minimum")
+
+        if equipment.power_draw_kw is not None and equipment.power_draw_kw > graph.substation_limit_kw:
+            building_breaches.append("power draw exceeds the substation limit")
+
+        # Cooling-load energy balance: Q_load (cooling capacity) must not exceed Q_plant_max
+        if equipment.cooling_capacity_kw is not None and equipment.cooling_capacity_kw > graph.cooling_plant_max_kw:
+            building_breaches.append(
+                f"cooling capacity {equipment.cooling_capacity_kw:.0f} kW exceeds plant maximum "
+                f"{graph.cooling_plant_max_kw:.0f} kW (Q_load ≤ Q_plant_max)"
+            )
+
+        if equipment.width_m is not None and equipment.width_m > graph.door_limit_m:
+            building_breaches.append("equipment width exceeds the access clearance")
+
+        if warranty is not None and warranty < graph.contractual_warranty_min_years:
+            building_breaches.append("warranty is below the contractual minimum")
+
+        # Floor load structural tolerance check
+        if graph.floor_load_limit_kg_m2 is not None:
+            if equipment.floor_load_kg is None:
+                building_gaps.append("floor load")
+            elif equipment.floor_load_kg > graph.floor_load_limit_kg_m2:
+                building_breaches.append(
+                    f"equipment floor load {equipment.floor_load_kg:.0f} kg exceeds structural "
+                    f"tolerance {graph.floor_load_limit_kg_m2:.0f} kg/m²"
+                )
+
         building_status = "FAIL" if building_breaches else "FLAG" if building_gaps else "PASS"
         results.append(PatrolResult(patrol_name="BUILDING_PATROL", status=building_status,
-            reason=("; ".join(building_breaches).capitalize() + "." if building_breaches else f"Review required: no extracted {', '.join(building_gaps)}." if building_gaps else "Extracted dimensions and contractual warranty are within the approved constraint envelope."),
+            reason=("; ".join(building_breaches).capitalize() + "." if building_breaches
+                    else f"Review required: no extracted {', '.join(building_gaps)}." if building_gaps
+                    else "Extracted dimensions and contractual warranty are within the approved constraint envelope."),
             rule_broken="CONSTRAINT_ENVELOPE_BREACH" if building_breaches else "INSUFFICIENT_EVIDENCE" if building_gaps else None,
-            evidence={"power_draw_kw": equipment.power_draw_kw, "substation_limit_kw": graph.substation_limit_kw, "width_m": equipment.width_m, "door_limit_m": graph.door_limit_m, "warranty_years": warranty, "contractual_warranty_min_years": graph.contractual_warranty_min_years, "constraint_source": graph.constraint_source, "constraint_version": graph.constraint_version}))
+            evidence={
+                "power_draw_kw": equipment.power_draw_kw,
+                "substation_limit_kw": graph.substation_limit_kw,
+                "cooling_capacity_kw": equipment.cooling_capacity_kw,
+                "cooling_plant_max_kw": graph.cooling_plant_max_kw,
+                "width_m": equipment.width_m,
+                "door_limit_m": graph.door_limit_m,
+                "floor_load_kg": equipment.floor_load_kg,
+                "floor_load_limit_kg_m2": graph.floor_load_limit_kg_m2,
+                "warranty_years": warranty,
+                "contractual_warranty_min_years": graph.contractual_warranty_min_years,
+                "constraint_source": graph.constraint_source,
+                "constraint_version": graph.constraint_version,
+            }))
 
+        # ── Patrol 2: Green Patrol ────────────────────────────────────────
         market_floor = graph.market_benchmark_inr * .8
         carbon_fail = equipment.embodied_carbon_factor is not None and equipment.embodied_carbon_factor > graph.carbon_cap_kgco2e
         price_flag = bid.bid_amount_inr is not None and bid.bid_amount_inr < market_floor
-        green_status = "FAIL" if carbon_fail else "FLAG" if equipment.embodied_carbon_factor is None or bid.bid_amount_inr is None or price_flag else "PASS"
-        green_reason = ("Embodied carbon exceeds the project cap." if carbon_fail else "Review required: carbon factor or bid amount was not extracted." if equipment.embodied_carbon_factor is None or bid.bid_amount_inr is None else "Bid is more than 20% below the market benchmark; validate the proposed specification." if price_flag else "Carbon evidence and market benchmark are within the configured envelope.")
-        results.append(PatrolResult(patrol_name="GREEN_PATROL", status=green_status, reason=green_reason,
-            rule_broken="LEED_CARBON_FACTOR_BREACH" if carbon_fail else "INSUFFICIENT_EVIDENCE" if equipment.embodied_carbon_factor is None or bid.bid_amount_inr is None else "MARKET_BENCHMARK_ANOMALY" if price_flag else None,
-            evidence={"embodied_carbon_factor": equipment.embodied_carbon_factor, "carbon_cap_kgco2e": graph.carbon_cap_kgco2e, "market_benchmark_inr": graph.market_benchmark_inr, "minimum_expected_bid_inr": market_floor, "bid_amount_inr": bid.bid_amount_inr}))
 
+        # Water evaporation capacity check
+        water_fail = (
+            graph.water_evap_cap_gpm is not None
+            and equipment.water_evap_gpm is not None
+            and equipment.water_evap_gpm > graph.water_evap_cap_gpm
+        )
+        water_gap = graph.water_evap_cap_gpm is not None and equipment.water_evap_gpm is None
+
+        green_fails = []
+        if carbon_fail:
+            green_fails.append("embodied carbon exceeds the project cap")
+        if water_fail:
+            green_fails.append(
+                f"water evaporation {equipment.water_evap_gpm:.1f} gpm exceeds site cap "
+                f"{graph.water_evap_cap_gpm:.1f} gpm"
+            )
+
+        green_status = (
+            "FAIL" if green_fails
+            else "FLAG" if (equipment.embodied_carbon_factor is None or bid.bid_amount_inr is None or price_flag or water_gap)
+            else "PASS"
+        )
+        if green_fails:
+            green_reason = "; ".join(green_fails).capitalize() + "."
+        elif equipment.embodied_carbon_factor is None or bid.bid_amount_inr is None or water_gap:
+            green_reason = "Review required: carbon factor, bid amount, or water evaporation data was not extracted."
+        elif price_flag:
+            green_reason = "Bid is more than 20% below the market benchmark; validate the proposed specification."
+        else:
+            green_reason = "Carbon evidence, water usage, and market benchmark are within the configured envelope."
+
+        results.append(PatrolResult(patrol_name="GREEN_PATROL", status=green_status, reason=green_reason,
+            rule_broken=("LEED_CARBON_WATER_BREACH" if green_fails
+                         else "INSUFFICIENT_EVIDENCE" if (equipment.embodied_carbon_factor is None or bid.bid_amount_inr is None or water_gap)
+                         else "MARKET_BENCHMARK_ANOMALY" if price_flag else None),
+            evidence={
+                "embodied_carbon_factor": equipment.embodied_carbon_factor,
+                "carbon_cap_kgco2e": graph.carbon_cap_kgco2e,
+                "water_evap_gpm": equipment.water_evap_gpm,
+                "water_evap_cap_gpm": graph.water_evap_cap_gpm,
+                "market_benchmark_inr": graph.market_benchmark_inr,
+                "minimum_expected_bid_inr": market_floor,
+                "bid_amount_inr": bid.bid_amount_inr,
+            }))
+
+        # ── Patrol 3: Vice Squad ──────────────────────────────────────────
         aci, factors = 0, []
         if bid.has_osha_cert is False: aci, factors = aci + 40, factors + ["safety certificate is missing"]
         if warranty is not None and warranty < graph.contractual_warranty_min_years: aci, factors = aci + 25, factors + ["warranty is below the contract minimum"]
@@ -94,6 +189,7 @@ class PatrolEngineService:
             rule_broken="AGREEMENT_OR_INTEGRITY_REVIEW" if factors else "INSUFFICIENT_EVIDENCE" if bid.has_osha_cert is None else None,
             evidence={"agreement_compliance_index": aci, "bid_integrity_signals": correlations, "predictive_reliability_index": max(0, 100 - aci - min(10, 2 + (aci + 9) // 10) * 3)}))
 
+        # ── Patrol 4: Traffic Control ─────────────────────────────────────
         delay_days = max(0, (bid.promised_delivery_weeks - graph.maximum_delivery_weeks) * 7) if bid.promised_delivery_weeks is not None else None
         simulation = cls.simulate(SimulationRequest(base_capex_inr=bid.bid_amount_inr or 0.01, delay_days=delay_days or 0, lifecycle_mode=bid.lifecycle_mode)) if bid.bid_amount_inr is not None else None
         post_award = bid.lifecycle_mode == LifecycleMode.POST_AWARD

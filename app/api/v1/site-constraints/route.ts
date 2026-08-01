@@ -9,18 +9,22 @@ export async function GET() {
     max_substation_kw: constraints.max_substation_kw,
     max_door_width_m: constraints.max_door_width_m,
     max_embodied_carbon_kg: constraints.max_embodied_carbon_kg,
+    max_water_evap_gpm: constraints.max_water_evap_gpm,
+    max_floor_load_kg_m2: constraints.max_floor_load_kg_m2,
   });
 }
 
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { expected_version, max_substation_kw, max_door_width_m, max_embodied_carbon_kg } = body;
+    const { expected_version, max_substation_kw, max_door_width_m, max_embodied_carbon_kg, max_water_evap_gpm, max_floor_load_kg_m2 } = body;
     const updated = backendStore.updateConstraints(
       expected_version,
       max_substation_kw,
       max_door_width_m,
-      max_embodied_carbon_kg
+      max_embodied_carbon_kg,
+      max_water_evap_gpm ?? null,
+      max_floor_load_kg_m2 ?? null,
     );
 
     return NextResponse.json({
@@ -32,6 +36,8 @@ export async function PUT(request: NextRequest) {
         max_substation_kw: updated.max_substation_kw,
         max_door_width_m: updated.max_door_width_m,
         max_embodied_carbon_kg: updated.max_embodied_carbon_kg,
+        max_water_evap_gpm: updated.max_water_evap_gpm,
+        max_floor_load_kg_m2: updated.max_floor_load_kg_m2,
       },
     });
   } catch (error) {

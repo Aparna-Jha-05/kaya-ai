@@ -90,6 +90,71 @@ class TestPatrolEngineBoundaries(unittest.TestCase):
         self.assertEqual(green.status, "FAIL")
         self.assertEqual(scorecard.recommendation, "REJECT")
 
+    def test_cooling_load_energy_balance_inequality_breach(self):
+        """Cooling capacity exceeding plant maximum (Q_load <= Q_plant_max) MUST fail Building Patrol."""
+        bid = VendorBidExtract(
+            vendor_id="VENDOR-COOLING-BREACH",
+            vendor_name="Overpower Chiller Ltd",
+            bid_amount_inr=50_000_000.0,
+            promised_delivery_weeks=10,
+            has_osha_cert=True,
+            equipment=EquipmentSpec(
+                equipment_type="Chiller",
+                manufacturer="Overpower Vendor",
+                model_number="COOL-1400",
+                power_draw_kw=1000.0,
+                cooling_capacity_kw=1400.0,  # Exceeds cooling_plant_max_kw (1100 kW)
+                width_m=1.8,
+                embodied_carbon_factor=400.0,
+            ),
+        )
+        scorecard = PatrolEngineService.run_all_patrols(bid, graph=self.graph)
+        building = next(p for p in scorecard.patrol_results if p.patrol_name == "BUILDING_PATROL")
+
+        self.assertEqual(building.status, "FAIL")
+        self.assertIn("cooling capacity 1400 kw exceeds plant maximum 1100 kw", building.reason.lower())
+        self.assertIn("q_load ≤ q_plant_max", building.reason.lower())
+
+    def test_floor_load_and_water_evap_breaches(self):
+        """Floor load and water evaporation rate exceeding site limits MUST fail Building and Green Patrols."""
+        graph_with_limits = ConstraintGraph(
+            substation_limit_kw=1200.0,
+            door_limit_m=1.9,
+            carbon_cap_kgco2e=450.0,
+            contractual_warranty_min_years=5,
+            market_benchmark_inr=50_000_000.0,
+            maximum_delivery_weeks=12,
+            cooling_plant_max_kw=1100.0,
+            water_evap_cap_gpm=25.0,
+            floor_load_limit_kg_m2=2000.0,
+        )
+        bid = VendorBidExtract(
+            vendor_id="VENDOR-STRUCTURAL-BREACH",
+            vendor_name="Heavy Evap Vendor",
+            bid_amount_inr=50_000_000.0,
+            promised_delivery_weeks=10,
+            has_osha_cert=True,
+            equipment=EquipmentSpec(
+                equipment_type="Chiller",
+                manufacturer="Heavy Vendor",
+                model_number="HEAVY-1",
+                power_draw_kw=1000.0,
+                cooling_capacity_kw=1000.0,
+                width_m=1.8,
+                embodied_carbon_factor=400.0,
+                water_evap_gpm=35.0,     # Exceeds 25.0 gpm
+                floor_load_kg=2500.0,    # Exceeds 2000.0 kg/m2
+            ),
+        )
+        scorecard = PatrolEngineService.run_all_patrols(bid, graph=graph_with_limits)
+        building = next(p for p in scorecard.patrol_results if p.patrol_name == "BUILDING_PATROL")
+        green = next(p for p in scorecard.patrol_results if p.patrol_name == "GREEN_PATROL")
+
+        self.assertEqual(building.status, "FAIL")
+        self.assertIn("equipment floor load 2500 kg exceeds structural tolerance 2000 kg/m²", building.reason.lower())
+        self.assertEqual(green.status, "FAIL")
+        self.assertIn("water evaporation 35.0 gpm exceeds site cap 25.0 gpm", green.reason.lower())
+
 
 if __name__ == "__main__":
     unittest.main()

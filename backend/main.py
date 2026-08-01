@@ -184,6 +184,19 @@ async def upload_and_audit_bid(request: Request, file: UploadFile = File(...)) -
             integrity_signals=integrity_signals,
         )
         bid_integrity_matrix.record(extracted_bid)
+        # Auto-generate RFI draft if OSHA cert is provably missing (no manual click needed)
+        if extracted_bid.has_osha_cert is False:
+            try:
+                draft_data = RFIService.generate_rfi_draft(scorecard)
+                bid_repository.save_rfi_draft(
+                    bid_id=record.id,
+                    vendor_name=draft_data["vendor_name"],
+                    rfi_text=draft_data["rfi_text"],
+                    protected_facts=draft_data["protected_facts"],
+                )
+                logger.info("Auto-generated RFI draft for bid %s: OSHA certificate missing.", record.id)
+            except Exception as rfi_error:
+                logger.warning("Auto-RFI generation failed for bid %s: %s", record.id, rfi_error)
         return record
     except (ValueError, RuntimeError) as error:
         logger.info("Bid extraction rejected: %s", error)
@@ -349,6 +362,8 @@ def update_site_constraints(payload: ConstraintUpdateRequest) -> Dict[str, Any]:
             substation_limit_kw=payload.max_substation_kw,
             door_limit_m=payload.max_door_width_m,
             carbon_cap_kgco2e=payload.max_embodied_carbon_kg,
+            water_evap_cap_gpm=payload.max_water_evap_gpm,
+            floor_load_limit_kg_m2=payload.max_floor_load_kg_m2,
             constraint_source=f"v{next_version} by DEMO_ADMIN",
             constraint_version=next_version,
         )
@@ -361,6 +376,8 @@ def update_site_constraints(payload: ConstraintUpdateRequest) -> Dict[str, Any]:
             max_substation_kw=payload.max_substation_kw,
             max_door_width_m=payload.max_door_width_m,
             max_embodied_carbon_kg=payload.max_embodied_carbon_kg,
+            max_water_evap_gpm=payload.max_water_evap_gpm,
+            max_floor_load_kg_m2=payload.max_floor_load_kg_m2,
             actor="DEMO_ADMIN",
             reason=payload.reason,
             project_id=PROJECT_ID,
@@ -375,6 +392,8 @@ def update_site_constraints(payload: ConstraintUpdateRequest) -> Dict[str, Any]:
                 "max_substation_kw": record.max_substation_kw,
                 "max_door_width_m": record.max_door_width_m,
                 "max_embodied_carbon_kg": record.max_embodied_carbon_kg,
+                "max_water_evap_gpm": record.max_water_evap_gpm,
+                "max_floor_load_kg_m2": record.max_floor_load_kg_m2,
             },
         }
     except KeyError:

@@ -71,10 +71,13 @@ Warranty: 7 Years
 TECHNICAL SPECIFICATIONS:
 --------------------------------------------------
 1. Equipment Model: TR-1100 (Standard Centrifugal Chiller)
-2. Cooling Capacity: 1,200 kW
+2. Cooling Capacity: 900 kW
 3. Substation Power Draw: 1,100 kW
 4. Equipment Width: 1.8 m
 5. Embodied Carbon Factor: 380 kgCO2e/ton
+6. Water Evaporation Rate: 18 gpm
+7. Floor Load: 2200 kg
+8. Warranty: 7 Years
 """, fontsize=11)
     pdfs["SyntheticBid_Trane_Compliant.pdf"] = doc.tobytes()
     doc.close()
@@ -95,7 +98,7 @@ OSHA Form 300 Certified: Yes
 TECHNICAL SPECIFICATIONS:
 --------------------------------------------------
 1. Equipment Model: CR-1180
-2. Cooling Capacity: 1,250 kW
+2. Cooling Capacity: 1,050 kW
 3. Substation Power Draw: 1,180 kW
 4. Embodied Carbon Factor: 410 kgCO2e/ton
 """, fontsize=11)
@@ -121,6 +124,8 @@ TECHNICAL SPECIFICATIONS:
 3. Substation Power Draw: 1,400 kW
 4. Equipment Width: 2.1 m
 5. Embodied Carbon Factor: 540 kgCO2e/ton
+6. Water Evaporation Rate: 38 gpm
+7. Floor Load: 3800 kg
 
 COMMERCIAL & SLA TERMS:
 --------------------------------------------------
@@ -152,11 +157,13 @@ OSHA Form 300 Certified: Yes
 TECHNICAL SPECIFICATIONS:
 --------------------------------------------------
 1. Equipment Model: ACME-900
-2. Cooling Capacity: 1,100 kW
+2. Cooling Capacity: 1,000 kW
 3. Substation Power Draw: 1,050 kW
 4. Equipment Width: 1.7 m
 5. Embodied Carbon Factor: 420 kgCO2e/ton
-6. Warranty: 6 Years
+6. Water Evaporation Rate: 22 gpm
+7. Floor Load: 2400 kg
+8. Warranty: 6 Years
 """, fontsize=11)
     content = doc.tobytes()
     doc.close()

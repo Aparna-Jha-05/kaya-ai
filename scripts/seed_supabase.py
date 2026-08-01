@@ -37,11 +37,13 @@ async def seed_database(explicit_url: str | None = None) -> None:
                 INSERT INTO site_constraints (
                     id, project_id, version, is_current, max_substation_kw,
                     max_door_width_m, max_embodied_carbon_kg,
+                    max_water_evap_gpm, max_floor_load_kg_m2,
                     daily_delay_penalty_inr, actor, reason, is_synthetic
                 )
                 VALUES (
                     '00000000-0000-0000-0000-000000000001',
                     'PRJ-AMBER-01', 1, TRUE, 1200.0, 1.9, 450.0,
+                    NULL, NULL,
                     200000.0, 'SYSTEM_SEEDER',
                     'Synthetic baseline for the PO-LICE demo.', TRUE
                 )

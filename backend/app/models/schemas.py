@@ -33,6 +33,8 @@ class FactField(str, Enum):
     COOLING_CAPACITY_KW = "equipment.cooling_capacity_kw"
     WIDTH_M = "equipment.width_m"
     EMBODIED_CARBON = "equipment.embodied_carbon_factor"
+    WATER_EVAP_GPM = "equipment.water_evap_gpm"
+    FLOOR_LOAD_KG = "equipment.floor_load_kg"
 
 
 class ExtractionProvider(str, Enum):
@@ -51,6 +53,8 @@ CANONICAL_FACT_UNITS: dict[FactField, str | None] = {
     FactField.COOLING_CAPACITY_KW: "kW",
     FactField.WIDTH_M: "m",
     FactField.EMBODIED_CARBON: "kgCO2e/ton",
+    FactField.WATER_EVAP_GPM: "gpm",
+    FactField.FLOOR_LOAD_KG: "kg",
 }
 
 
@@ -296,6 +300,8 @@ class SiteConstraintRecord(StrictModel):
     max_substation_kw: float
     max_door_width_m: float
     max_embodied_carbon_kg: float
+    max_water_evap_gpm: Optional[float] = Field(default=None, gt=0)
+    max_floor_load_kg_m2: Optional[float] = Field(default=None, gt=0)
     actor: str = "SYSTEM"
     reason: str = "Initial baseline"
     created_at: str
@@ -307,6 +313,8 @@ class ConstraintUpdateRequest(StrictModel):
     max_substation_kw: float = Field(gt=0)
     max_door_width_m: float = Field(gt=0)
     max_embodied_carbon_kg: float = Field(gt=0)
+    max_water_evap_gpm: Optional[float] = Field(default=None, gt=0)
+    max_floor_load_kg_m2: Optional[float] = Field(default=None, gt=0)
     reason: str = Field(default="Updated site operational requirements", min_length=3, max_length=2_000)
 
 

@@ -6,6 +6,8 @@ export interface SiteConstraintsState {
   max_substation_kw: number;
   max_door_width_m: number;
   max_embodied_carbon_kg: number;
+  max_water_evap_gpm: number | null;
+  max_floor_load_kg_m2: number | null;
   project_id: string;
 }
 
@@ -68,6 +70,8 @@ let siteConstraints: SiteConstraintsState = {
   max_substation_kw: 1200,
   max_door_width_m: 2.2,
   max_embodied_carbon_kg: 850000,
+  max_water_evap_gpm: null,
+  max_floor_load_kg_m2: null,
   project_id: "PRJ-POLICE-01",
 };
 
@@ -171,7 +175,14 @@ export const backendStore = {
     return store.__policeConstraints!;
   },
 
-  updateConstraints(expectedVersion: number, max_substation_kw: number, max_door_width_m: number, max_embodied_carbon_kg: number): SiteConstraintsState {
+  updateConstraints(
+    expectedVersion: number,
+    max_substation_kw: number,
+    max_door_width_m: number,
+    max_embodied_carbon_kg: number,
+    max_water_evap_gpm?: number | null,
+    max_floor_load_kg_m2?: number | null,
+  ): SiteConstraintsState {
     const cur = store.__policeConstraints!;
     if (cur.version !== expectedVersion) {
       throw new Error(`Stale version: expected ${expectedVersion}, current version is ${cur.version}`);
@@ -180,29 +191,46 @@ export const backendStore = {
     cur.max_substation_kw = max_substation_kw;
     cur.max_door_width_m = max_door_width_m;
     cur.max_embodied_carbon_kg = max_embodied_carbon_kg;
+    if (max_water_evap_gpm !== undefined) cur.max_water_evap_gpm = max_water_evap_gpm ?? null;
+    if (max_floor_load_kg_m2 !== undefined) cur.max_floor_load_kg_m2 = max_floor_load_kg_m2 ?? null;
 
-    // Dynamic re-evaluation of bids
+    // Dynamic re-evaluation of bids against updated constraints
     for (const bid of store.__policeBids!) {
       const power = bid.source.equipment.power_draw_kw ?? 0;
+      const cooling = bid.source.equipment.cooling_capacity_kw ?? 0;
       const carbon = bid.source.equipment.embodied_carbon_factor ?? 0;
+      const waterEvap = bid.source.equipment.water_evap_gpm ?? null;
+      const floorLoad = bid.source.equipment.floor_load_kg ?? null;
 
       for (const patrol of bid.scorecard.patrol_results) {
         if (patrol.patrol_name === "BUILDING_PATROL") {
-          if (power > max_substation_kw) {
+          const powerBreach = power > max_substation_kw;
+          const coolingBreach = cooling > 1100;
+          const floorBreach = cur.max_floor_load_kg_m2 != null && floorLoad != null && floorLoad > cur.max_floor_load_kg_m2;
+          if (powerBreach || coolingBreach || floorBreach) {
             patrol.status = "FAIL";
-            patrol.reason = `Power draw exceeds updated substation limit (${power} kW > ${max_substation_kw} kW).`;
+            patrol.reason = [
+              powerBreach && `Power draw exceeds updated substation limit (${power} kW > ${max_substation_kw} kW).`,
+              coolingBreach && `Cooling capacity exceeds plant maximum (${cooling} kW > 1100 kW).`,
+              floorBreach && `Floor load exceeds structural tolerance (${floorLoad} kg > ${cur.max_floor_load_kg_m2} kg/m²).`,
+            ].filter(Boolean).join(" ");
           } else {
             patrol.status = "PASS";
-            patrol.reason = `Power draw within updated substation limit (${power} kW <= ${max_substation_kw} kW).`;
+            patrol.reason = `Dimensions within updated constraint envelope.`;
           }
         }
         if (patrol.patrol_name === "GREEN_PATROL") {
-          if (carbon > max_embodied_carbon_kg) {
+          const carbonBreach = carbon > max_embodied_carbon_kg;
+          const waterBreach = cur.max_water_evap_gpm != null && waterEvap != null && waterEvap > cur.max_water_evap_gpm;
+          if (carbonBreach || waterBreach) {
             patrol.status = "FAIL";
-            patrol.reason = `Embodied carbon exceeds updated budget (${carbon} kgCO2e > ${max_embodied_carbon_kg} kgCO2e).`;
+            patrol.reason = [
+              carbonBreach && `Embodied carbon exceeds updated budget (${carbon} kgCO2e > ${max_embodied_carbon_kg} kgCO2e).`,
+              waterBreach && `Water evaporation exceeds site cap (${waterEvap} gpm > ${cur.max_water_evap_gpm} gpm).`,
+            ].filter(Boolean).join(" ");
           } else {
             patrol.status = "PASS";
-            patrol.reason = `Embodied carbon within updated budget (${carbon} kgCO2e <= ${max_embodied_carbon_kg} kgCO2e).`;
+            patrol.reason = `Carbon and water usage within updated constraint envelope.`;
           }
         }
       }

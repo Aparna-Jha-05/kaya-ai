@@ -208,6 +208,8 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
     ["Power draw", e.power_draw_kw == null ? "Not provided" : `${e.power_draw_kw} kW`],
     ["Cooling capacity", e.cooling_capacity_kw == null ? "Not provided" : `${e.cooling_capacity_kw} kW`],
     ["Width", e.width_m == null ? "Not provided" : `${e.width_m} m`],
+    ["Floor load", e.floor_load_kg == null ? "Not provided" : `${e.floor_load_kg} kg`],
+    ["Water evaporation", e.water_evap_gpm == null ? "Not provided" : `${e.water_evap_gpm} gpm`],
     ["Embodied carbon", e.embodied_carbon_factor == null ? "Not provided" : `${e.embodied_carbon_factor} kgCO₂e/ton`],
     ["Safety certificate", record.source.has_osha_cert == null ? "Not provided" : record.source.has_osha_cert ? "Present" : "Missing"],
   ];
@@ -579,11 +581,13 @@ function EvidenceDrawer({
   const candidates = record.source.extraction_report?.candidates ?? [];
   const relevantCandidate = candidates.find((c) =>
     check.patrol_name.includes("BUILDING")
-      ? c.field.includes("power") || c.field.includes("width")
+      ? c.field.includes("power") || c.field.includes("width") || c.field.includes("cooling") || c.field.includes("floor")
       : check.patrol_name.includes("GREEN")
-      ? c.field.includes("carbon")
+      ? c.field.includes("carbon") || c.field.includes("water")
       : check.patrol_name.includes("TRAFFIC")
       ? c.field.includes("delivery")
+      : check.patrol_name.includes("VICE")
+      ? c.field.includes("osha")
       : false
   );
 

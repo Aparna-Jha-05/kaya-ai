@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS site_constraints (
     max_substation_kw DOUBLE PRECISION NOT NULL DEFAULT 1200.0,
     max_door_width_m DOUBLE PRECISION NOT NULL DEFAULT 1.9,
     max_embodied_carbon_kg DOUBLE PRECISION NOT NULL DEFAULT 450.0,
+    max_water_evap_gpm DOUBLE PRECISION,
+    max_floor_load_kg_m2 DOUBLE PRECISION,
     daily_delay_penalty_inr DOUBLE PRECISION NOT NULL DEFAULT 200000.0,
     actor VARCHAR(64) NOT NULL DEFAULT 'SYSTEM',
     reason TEXT NOT NULL DEFAULT 'Initial baseline constraint version',

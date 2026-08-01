@@ -104,12 +104,12 @@ export default function ActiveBidsTable() {
                 <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
                 <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
-                  <Tooltip text="Hard limit check. Validates physical floor load capacity against equipment weight.">
+                  <Tooltip text="Hard limit check. Validates power draw, cooling plant capacity balance, door clearance, warranty, and structural floor load tolerance.">
                     <span>Engineering</span>
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
-                  <Tooltip text="Hard limit check. Validates embodied carbon emissions factor against project carbon cap.">
+                  <Tooltip text="Hard limit check. Validates embodied carbon emissions factor and water evaporation rate against site environmental caps.">
                     <span>Carbon</span>
                   </Tooltip>
                 </th>

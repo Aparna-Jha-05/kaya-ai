@@ -1,5 +1,7 @@
 -- PO-LICE Enriched Constraint Graph. Apply with: psql "$DATABASE_URL" -f scripts/postgres_schema.sql
 ALTER TABLE site_constraints ADD COLUMN IF NOT EXISTS contractual_warranty_min_years SMALLINT;
+ALTER TABLE site_constraints ADD COLUMN IF NOT EXISTS max_water_evap_gpm DOUBLE PRECISION;
+ALTER TABLE site_constraints ADD COLUMN IF NOT EXISTS max_floor_load_kg_m2 DOUBLE PRECISION;
 ALTER TABLE site_constraints ADD COLUMN IF NOT EXISTS mcp_sync_source VARCHAR(32);
 CREATE TABLE IF NOT EXISTS commodity_benchmarks (
   material_type VARCHAR(64) NOT NULL, benchmark_index VARCHAR(64) NOT NULL,

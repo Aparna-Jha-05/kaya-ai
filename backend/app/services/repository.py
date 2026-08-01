@@ -105,6 +105,8 @@ class BidRepository:
                   max_substation_kw REAL NOT NULL DEFAULT 1200.0,
                   max_door_width_m REAL NOT NULL DEFAULT 1.9,
                   max_embodied_carbon_kg REAL NOT NULL DEFAULT 450.0,
+                  max_water_evap_gpm REAL,
+                  max_floor_load_kg_m2 REAL,
                   actor TEXT NOT NULL DEFAULT 'SYSTEM',
                   reason TEXT NOT NULL DEFAULT 'Initial baseline',
                   created_at TEXT NOT NULL,
@@ -121,6 +123,18 @@ class BidRepository:
                   trigger TEXT NOT NULL,
                   UNIQUE (bid_id, version),
                   FOREIGN KEY (bid_id) REFERENCES bids(id)
+                );
+
+                CREATE TABLE IF NOT EXISTS vendor_docs (
+                  id TEXT PRIMARY KEY,
+                  vendor_id TEXT NOT NULL,
+                  vendor_name TEXT NOT NULL,
+                  project_id TEXT NOT NULL DEFAULT 'PRJ-AMBER-01',
+                  doc_type TEXT NOT NULL DEFAULT 'SUBMISSION',
+                  sha256 TEXT NOT NULL,
+                  stored_file TEXT NOT NULL,
+                  ingested_at TEXT NOT NULL,
+                  notes TEXT NOT NULL DEFAULT ''
                 );
             """)
             columns = {
@@ -167,10 +181,11 @@ class BidRepository:
             ).fetchone()
             if row["cnt"] == 0:
                 connection.execute(
-                    "INSERT INTO site_constraints VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO site_constraints VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (
                         str(uuid4()), "PRJ-AMBER-01", 1, 1,
                         1200.0, 1.9, 450.0,
+                        None, None,
                         "SYSTEM", "Initial baseline constraint version",
                         datetime.now(timezone.utc).isoformat(),
                     ),
@@ -665,6 +680,8 @@ class BidRepository:
             max_substation_kw=row["max_substation_kw"],
             max_door_width_m=row["max_door_width_m"],
             max_embodied_carbon_kg=row["max_embodied_carbon_kg"],
+            max_water_evap_gpm=row["max_water_evap_gpm"],
+            max_floor_load_kg_m2=row["max_floor_load_kg_m2"],
             actor=row["actor"], reason=row["reason"],
             created_at=row["created_at"],
         )
@@ -679,6 +696,8 @@ class BidRepository:
         reason: str,
         project_id: str = "PRJ-POLICE-01",
         reassessments: dict[str, DocketScorecard] | None = None,
+        max_water_evap_gpm: float | None = None,
+        max_floor_load_kg_m2: float | None = None,
     ) -> SiteConstraintRecord:
         """Create a new constraint version with optimistic concurrency.
 
@@ -710,10 +729,11 @@ class BidRepository:
             )
             # Insert new version
             connection.execute(
-                "INSERT INTO site_constraints VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO site_constraints VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     new_id, project_id, new_version, 1,
                     max_substation_kw, max_door_width_m, max_embodied_carbon_kg,
+                    max_water_evap_gpm, max_floor_load_kg_m2,
                     actor, reason, created_at,
                 ),
             )

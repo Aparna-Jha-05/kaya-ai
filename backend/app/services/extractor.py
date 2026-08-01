@@ -58,6 +58,14 @@ class PDFExtractorService:
             FactField.EMBODIED_CARBON,
             r"Embodied\s*Carbon(?:\s*Factor)?\s*:\s*(?P<value>[\d,.]+)\s*(?P<unit>kgCO2e(?:/ton)?|tCO2e(?:/ton)?)",
         ),
+        (
+            FactField.WATER_EVAP_GPM,
+            r"(?:Water\s*Evaporation|Water\s*Consumption|Evap(?:oration)?\s*Rate)\s*:\s*(?P<value>[\d,.]+)\s*(?P<unit>gpm|l/hr|lph)",
+        ),
+        (
+            FactField.FLOOR_LOAD_KG,
+            r"(?:Floor\s*Load|Equipment\s*Weight|Operating\s*Weight)\s*:\s*(?P<value>[\d,.]+)\s*(?P<unit>kg|tonnes?|ton)",
+        ),
     )
 
     @staticmethod

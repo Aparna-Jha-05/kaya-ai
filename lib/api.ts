@@ -105,6 +105,21 @@ export type SimulationResponse = { adjusted_capex_inr: number; delay_penalty_inr
 
 export type SupplierProfile = { vendor_id: string; name: string; lat: number; lng: number; distance_km: number; risk_score: number; disputes: number };
 export type AuditLogEntry = { id: string; actor: string; action: string; target_id: string; details: Record<string, unknown>; timestamp: string };
+export type SiteConstraintRecord = {
+  id: string;
+  project_id: string;
+  version: number;
+  is_current: boolean;
+  max_substation_kw: number;
+  max_door_width_m: number;
+  max_embodied_carbon_kg: number;
+  max_water_evap_gpm: number | null;
+  max_floor_load_kg_m2: number | null;
+  actor: string;
+  reason: string;
+  created_at: string;
+};
+
 export type RFIDraftResponse = {
   rfi_id: string;
   bid_id: string;
@@ -156,7 +171,20 @@ export const procurementApi = {
   rfiDraft: (bid_id: string) => request<RFIDraftResponse>("/api/v1/agent/rfi-draft", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ bid_id }) }),
   approveRfi: (rfi_id: string, edited_text: string) => request<RFIDraftResponse>(`/api/v1/rfis/${rfi_id}/approve`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ edited_text, note: "Approved after human review" }) }),
   updateOfficerDecision: (bid_id: string, decision: BidRecord["officer_decision"], expected_version: number, reason: string) => request<BidRecord>(`/api/v1/bids/${bid_id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision, expected_version, reason }) }),
-  updateConstraints: (expected_version: number, max_substation_kw: number, max_door_width_m: number, max_embodied_carbon_kg: number) => request<{ status: string }>("/api/v1/site-constraints", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ expected_version, max_substation_kw, max_door_width_m, max_embodied_carbon_kg }) }),
+  updateConstraints: (
+    expected_version: number,
+    max_substation_kw: number,
+    max_door_width_m: number,
+    max_embodied_carbon_kg: number,
+    max_water_evap_gpm?: number | null,
+    max_floor_load_kg_m2?: number | null,
+  ) => request<{ status: string; new_version: number; constraints: Partial<SiteConstraintRecord> }>("/api/v1/site-constraints", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ expected_version, max_substation_kw, max_door_width_m, max_embodied_carbon_kg, max_water_evap_gpm, max_floor_load_kg_m2 }),
+  }),
+  siteConstraints: () => request<SiteConstraintRecord>("/api/v1/site-constraints"),
+  listRfis: (bid_id?: string) => request<RFIDraftResponse[]>(`/api/v1/rfis${bid_id ? `?bid_id=${encodeURIComponent(bid_id)}` : ""}`),
   suppliers: () => request<SupplierProfile[]>("/api/v1/suppliers"),
   auditLogs: () => request<AuditLogEntry[]>("/api/v1/audit/logs"),
   readiness: () => request<{ status: string; demo_mode: boolean; persistence: "sqlite" | "unavailable"; postgresql: { status: string; connected: boolean } }>("/api/v1/readiness"),
