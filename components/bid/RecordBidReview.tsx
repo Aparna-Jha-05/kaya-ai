@@ -623,6 +623,10 @@ function EvidenceDrawer({
               equipmentHeight={equipment?.height_m}
               doorWidth={1.1}
               passed={check.status === "PASS"}
+              powerDrawKw={equipment?.power_draw_kw}
+              maxPowerKw={1200}
+              floorLoadKg={equipment?.floor_load_kg}
+              maxFloorLoadKg={1500}
             />
           )}
 

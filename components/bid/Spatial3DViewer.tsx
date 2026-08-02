@@ -9,7 +9,13 @@ interface Spatial3DViewerProps {
   equipmentHeight?: number | null;
   doorWidth?: number | null;
   passed?: boolean;
+  powerDrawKw?: number | null;
+  maxPowerKw?: number;
+  floorLoadKg?: number | null;
+  maxFloorLoadKg?: number;
 }
+
+type SubPartId = "all" | "power" | "compressor" | "coils" | "base";
 
 export default function Spatial3DViewer({
   equipmentLength = 2.4,
@@ -17,6 +23,10 @@ export default function Spatial3DViewer({
   equipmentHeight = 1.8,
   doorWidth = 1.1,
   passed = true,
+  powerDrawKw,
+  maxPowerKw = 1200,
+  floorLoadKg,
+  maxFloorLoadKg = 1500,
 }: Spatial3DViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [rotation, setRotation] = useState({ x: 22, y: -35 });
@@ -24,6 +34,7 @@ export default function Spatial3DViewer({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isAutoOrbiting, setIsAutoOrbiting] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [selectedPart, setSelectedPart] = useState<SubPartId>("all");
 
   const isDraggingRef = useRef(false);
   const isPanningRef = useRef(false);
@@ -36,6 +47,39 @@ export default function Spatial3DViewer({
   const maxDoor = doorWidth ?? 1.1;
 
   const fitsDoor = eqW <= maxDoor;
+  const powerBreach = powerDrawKw != null && powerDrawKw > maxPowerKw;
+  const floorBreach = floorLoadKg != null && floorLoadKg > maxFloorLoadKg;
+
+  const subParts = [
+    {
+      id: "power" as const,
+      name: "Power & Electrical Substation Module",
+      status: powerBreach ? "FAIL" : "PASS",
+      details: powerDrawKw != null ? `${powerDrawKw} kW (Max: ${maxPowerKw} kW)` : "Standard Electrical Rating",
+      flagged: powerBreach,
+    },
+    {
+      id: "compressor" as const,
+      name: "Centrifugal Compressor & Drive Assembly",
+      status: "PASS",
+      details: "Hermetic Dual Stage Motor",
+      flagged: false,
+    },
+    {
+      id: "coils" as const,
+      name: "Cooling Coils & Heat Exchanger Bundle",
+      status: "PASS",
+      details: "High-Efficiency Shell & Tube",
+      flagged: false,
+    },
+    {
+      id: "base" as const,
+      name: "Structural Chassis & Floor Load Footprint",
+      status: floorBreach ? "FAIL" : "PASS",
+      details: floorLoadKg != null ? `${floorLoadKg} kg/m² (Max: ${maxFloorLoadKg} kg/m²)` : "Vibration Isolated Skid",
+      flagged: floorBreach,
+    },
+  ];
 
   // Non-passive wheel event listener for zooming
   useEffect(() => {
@@ -125,6 +169,60 @@ export default function Spatial3DViewer({
         };
       };
 
+      // Helper to draw 3D Box
+      const drawBox = (
+        minX: number, minY: number, minZ: number,
+        maxX: number, maxY: number, maxZ: number,
+        colorRgb: string, alpha: number, isDashed = false, labelText?: string
+      ) => {
+        const v = [
+          project(minX, minY, minZ), project(maxX, minY, minZ),
+          project(maxX, minY, maxZ), project(minX, minY, maxZ),
+          project(minX, maxY, minZ), project(maxX, maxY, minZ),
+          project(maxX, maxY, maxZ), project(minX, maxY, maxZ),
+        ];
+
+        const f = [
+          [0, 1, 2, 3], [4, 5, 6, 7],
+          [0, 1, 5, 4], [2, 3, 7, 6],
+          [0, 3, 7, 4], [1, 2, 6, 5],
+        ];
+
+        f.forEach((face) => {
+          ctx.fillStyle = `rgba(${colorRgb}, ${alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(v[face[0]].px, v[face[0]].py);
+          for (let i = 1; i < face.length; i++) ctx.lineTo(v[face[i]].px, v[face[i]].py);
+          ctx.closePath();
+          ctx.fill();
+        });
+
+        const e = [
+          [0, 1], [1, 2], [2, 3], [3, 0],
+          [4, 5], [5, 6], [6, 7], [7, 4],
+          [0, 4], [1, 5], [2, 6], [3, 7],
+        ];
+
+        ctx.strokeStyle = `rgb(${colorRgb})`;
+        ctx.lineWidth = isDashed ? 1.5 : 2;
+        if (isDashed) ctx.setLineDash([3, 3]);
+        e.forEach(([v1, v2]) => {
+          ctx.beginPath();
+          ctx.moveTo(v[v1].px, v[v1].py);
+          ctx.lineTo(v[v2].px, v[v2].py);
+          ctx.stroke();
+        });
+        if (isDashed) ctx.setLineDash([]);
+
+        if (labelText) {
+          const topC = project((minX + maxX) / 2, maxY + 0.15, (minZ + maxZ) / 2);
+          ctx.font = "bold 9px monospace";
+          ctx.fillStyle = `rgb(${colorRgb})`;
+          ctx.textAlign = "center";
+          ctx.fillText(labelText, topC.px, topC.py);
+        }
+      };
+
       // 1. Draw Grid Ground Plane
       ctx.strokeStyle = "rgba(148, 163, 184, 0.15)";
       ctx.lineWidth = 1;
@@ -178,62 +276,56 @@ export default function Spatial3DViewer({
       ctx.textAlign = "center";
       ctx.fillText(`Door Width Limit: ${maxDoor}m`, doorCenter.px, doorCenter.py);
 
-      // 3. Draw Equipment Bounding Box
+      // 3. Draw Equipment Outer Bounding Wireframe
       const hw = eqW / 2;
       const hl = eqL / 2;
       const hh = eqH;
 
-      const vertices = [
-        project(-hw, 0, -hl),
-        project(hw, 0, -hl),
-        project(hw, 0, hl),
-        project(-hw, 0, hl),
-        project(-hw, hh, -hl),
-        project(hw, hh, -hl),
-        project(hw, hh, hl),
-        project(-hw, hh, hl),
-      ];
+      const mainBoxColor = fitsDoor ? "0, 168, 232" : "244, 63, 94";
+      drawBox(-hw, 0, -hl, hw, hh, hl, mainBoxColor, selectedPart === "all" ? 0.15 : 0.05, false, `${eqL}m × ${eqW}m × ${eqH}m`);
 
-      const faces = [
-        [0, 1, 2, 3],
-        [4, 5, 6, 7],
-        [0, 1, 5, 4],
-        [2, 3, 7, 6],
-        [0, 3, 7, 4],
-        [1, 2, 6, 5],
-      ];
+      // 4. Render Internal Sub-Component Assembly Parts
+      // A) Power & Electrical Substation Module (Flagged if power breach)
+      if (selectedPart === "all" || selectedPart === "power") {
+        const pColor = powerBreach ? "244, 63, 94" : "0, 168, 232";
+        drawBox(
+          -hw * 0.85, hh * 0.5, -hl * 0.8,
+          -hw * 0.1, hh * 0.95, hl * 0.1,
+          pColor, powerBreach ? 0.45 : 0.25, false,
+          powerBreach ? "⚠ FLAGGED POWER MODULE" : "POWER MODULE"
+        );
+      }
 
-      const boxColor = fitsDoor ? "0, 168, 232" : "244, 63, 94";
+      // B) Centrifugal Compressor & Motor Assembly
+      if (selectedPart === "all" || selectedPart === "compressor") {
+        drawBox(
+          hw * 0.1, hh * 0.2, -hl * 0.8,
+          hw * 0.85, hh * 0.75, -hl * 0.1,
+          "168, 85, 247", 0.25, false,
+          "COMPRESSOR"
+        );
+      }
 
-      faces.forEach((face) => {
-        ctx.fillStyle = `rgba(${boxColor}, 0.25)`;
-        ctx.beginPath();
-        ctx.moveTo(vertices[face[0]].px, vertices[face[0]].py);
-        for (let i = 1; i < face.length; i++) ctx.lineTo(vertices[face[i]].px, vertices[face[i]].py);
-        ctx.closePath();
-        ctx.fill();
-      });
+      // C) Cooling Coils & Heat Exchanger Bundle
+      if (selectedPart === "all" || selectedPart === "coils") {
+        drawBox(
+          hw * 0.1, hh * 0.1, 0,
+          hw * 0.85, hh * 0.85, hl * 0.8,
+          "16, 185, 129", 0.25, false,
+          "COOLING COILS"
+        );
+      }
 
-      const edges = [
-        [0,1],[1,2],[2,3],[3,0],
-        [4,5],[5,6],[6,7],[7,4],
-        [0,4],[1,5],[2,6],[3,7]
-      ];
-
-      ctx.strokeStyle = `rgb(${boxColor})`;
-      ctx.lineWidth = 2;
-      edges.forEach(([v1, v2]) => {
-        ctx.beginPath();
-        ctx.moveTo(vertices[v1].px, vertices[v1].py);
-        ctx.lineTo(vertices[v2].px, vertices[v2].py);
-        ctx.stroke();
-      });
-
-      // Dimension callout label
-      const topCenter = project(0, hh + 0.3, 0);
-      ctx.font = "bold 11px monospace";
-      ctx.fillStyle = `rgb(${boxColor})`;
-      ctx.fillText(`${eqL}m × ${eqW}m × ${eqH}m`, topCenter.px, topCenter.py);
+      // D) Structural Chassis & Floor Load Footprint
+      if (selectedPart === "all" || selectedPart === "base") {
+        const bColor = floorBreach ? "244, 63, 94" : "245, 158, 11";
+        drawBox(
+          -hw * 0.95, 0, -hl * 0.95,
+          hw * 0.95, hh * 0.12, hl * 0.95,
+          bColor, floorBreach ? 0.5 : 0.2, false,
+          floorBreach ? "⚠ FLAGGED BASE LOAD" : "CHASSIS FOOTPRINT"
+        );
+      }
 
       if (isAutoOrbiting && !isDraggingRef.current && !isPanningRef.current) {
         autoAngle += 0.4;
@@ -245,7 +337,7 @@ export default function Spatial3DViewer({
     render();
 
     return () => cancelAnimationFrame(animationFrameId);
-  }, [eqH, eqL, eqW, fitsDoor, isAutoOrbiting, maxDoor, pan, rotation, zoom]);
+  }, [eqH, eqL, eqW, fitsDoor, floorBreach, isAutoOrbiting, maxDoor, pan, powerBreach, rotation, selectedPart, zoom]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     movedRef.current = false;
@@ -271,6 +363,7 @@ export default function Spatial3DViewer({
     setZoom(1.15);
     setPan({ x: 0, y: 0 });
     setIsAutoOrbiting(true);
+    setSelectedPart("all");
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -314,7 +407,7 @@ export default function Spatial3DViewer({
     <div className="relative rounded-2xl border border-line bg-surface p-4 shadow-xs space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="ui-label text-cyan font-bold truncate">3D Spatial Geometry</span>
+          <span className="ui-label text-cyan font-bold truncate">3D Spatial Geometry & Component Diagram</span>
           <div
             className="relative shrink-0"
             onMouseEnter={() => setShowTooltip(true)}
@@ -343,9 +436,23 @@ export default function Spatial3DViewer({
           </div>
         </div>
 
-        <span className={`text-xs font-mono font-bold shrink-0 ${fitsDoor ? "text-cyan" : "text-rose"}`}>
-          {fitsDoor ? "✓ Fits Gateway" : "✕ Exceeds Limit"}
-        </span>
+        <div className="flex items-center gap-2">
+          {!fitsDoor && (
+            <span className="text-xs font-mono font-bold text-rose">
+              ✕ Exceeds Door Gateway
+            </span>
+          )}
+          {powerBreach && (
+            <span className="text-xs font-mono font-bold text-rose">
+              ⚠ Power Module Breach
+            </span>
+          )}
+          {fitsDoor && !powerBreach && !floorBreach && (
+            <span className="text-xs font-mono font-bold text-cyan">
+              ✓ All Geometry Constraints Satisfied
+            </span>
+          )}
+        </div>
       </div>
 
       <div
@@ -367,6 +474,54 @@ export default function Spatial3DViewer({
           height={210}
           className="w-full h-[210px] rounded-xl bg-inset/60 border border-line/40"
         />
+      </div>
+
+      {/* Component Part Filter & Inspector Legend */}
+      <div className="pt-1 space-y-2 border-t border-line/40">
+        <div className="flex items-center justify-between text-[11px] font-mono text-text/60">
+          <span className="font-bold uppercase tracking-wider text-text/50">Component Breakdown Inspector</span>
+          <button
+            type="button"
+            onClick={() => setSelectedPart("all")}
+            className={`hover:underline ${selectedPart === "all" ? "text-cyan font-bold" : "text-text/40"}`}
+          >
+            Show All Parts
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+          {subParts.map((part) => {
+            const isSelected = selectedPart === part.id;
+            return (
+              <button
+                key={part.id}
+                type="button"
+                onClick={() => setSelectedPart(isSelected ? "all" : part.id)}
+                className={`flex items-center justify-between rounded-lg border p-2 text-left text-xs transition-all tactile-press ${
+                  isSelected
+                    ? "border-cyan bg-cyan/15 text-cyan ring-1 ring-cyan/40"
+                    : part.flagged
+                    ? "border-rose/40 bg-rose/10 text-rose hover:bg-rose/20"
+                    : "border-line bg-surface/50 text-text/75 hover:border-line/80 hover:text-text"
+                }`}
+              >
+                <div className="min-w-0 pr-2">
+                  <p className="font-semibold text-[11px] truncate">{part.name}</p>
+                  <p className="text-[10px] font-mono text-text/50 truncate">{part.details}</p>
+                </div>
+                <span
+                  className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase border ${
+                    part.flagged
+                      ? "bg-rose/20 text-rose border-rose/40"
+                      : "bg-cyan/15 text-cyan border-cyan/30"
+                  }`}
+                >
+                  {part.status}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

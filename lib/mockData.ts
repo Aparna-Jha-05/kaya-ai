@@ -183,9 +183,10 @@ export const CAD_DIMS: Record<string, { footprint_m: string; weight_kg_m2: numbe
 
 export function createFallbackBidRecord(filename?: string, customVendor?: string) {
   const name = (filename || customVendor || "Uploaded Bid").replace(/\.pdf$/i, "").replaceAll("_", " ");
-  const isB = name.toLowerCase().includes("b") || name.toLowerCase().includes("cooltech");
-  const isC = name.toLowerCase().includes("c") || name.toLowerCase().includes("carrier");
-  const vendorName = customVendor || (isB ? "Vendor B (CoolTech)" : isC ? "Vendor C (Carrier)" : name.toLowerCase().includes("vendor") ? name : `Vendor (${name})`);
+  const clean = name.toLowerCase().replaceAll(" ", "");
+  const isB = clean.includes("cooltech") || clean.includes("vendorb");
+  const isC = clean.includes("carrier") || clean.includes("vendorc");
+  const vendorName = customVendor || (isB ? "CoolTech Global Solutions" : isC ? "Carrier HVAC India Ltd" : "Trane Solutions Pvt Ltd");
   const id = `uploaded-${Date.now()}`;
 
   return {
