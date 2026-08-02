@@ -9,7 +9,7 @@ import PatrolBadge from "@/components/bid/PatrolBadge";
 import Tooltip from "@/components/ui/Tooltip";
 import TCOSlider from "@/components/tco-slider";
 import { procurementApi, type BidRecord, type CheckStatus } from "@/lib/api";
-import { cleanReasonText, displayCheckName, formatCroreValue, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
+import { cleanReasonText, displayCheckName, formatCroreValue, getPatrolCategory, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
 
 const TcoChart = dynamic(() => import("@/components/bid/TcoChart"), {
