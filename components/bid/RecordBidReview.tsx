@@ -74,9 +74,9 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line/40 pt-3.5 lg:border-t-0 lg:pt-0 text-xs">
-            <Metric label="Upfront cost" value={inCrore(source.bid_amount_inr)} />
-            <Metric label="5-year TCO²" value={inCrore(record.scorecard.calculated_tco2_inr)} />
-            <Metric label="Delivery" value={source.promised_delivery_weeks == null ? "Not provided" : `${source.promised_delivery_weeks} weeks`} />
+            <Metric label="Upfront" value={inCrore(source.bid_amount_inr)} />
+            <Metric label="5-yr TCO²" value={inCrore(record.scorecard.calculated_tco2_inr)} />
+            <Metric label="Lead Time" value={source.promised_delivery_weeks == null ? "Not provided" : `${source.promised_delivery_weeks} weeks`} />
           </div>
         </div>
       </section>
@@ -101,40 +101,37 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
 
       {tab === "summary" && (
         <div className="space-y-5">
-          <Card accent={color} className="p-5">
-            <p className="font-mono text-[10px] uppercase tracking-wider" style={{ color }}>
-              Status
-            </p>
-            <h3 className="mt-1 text-lg font-semibold text-text">{nextStep}</h3>
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-text/60">
-              The result is produced by deterministic checks. LLMs extract and explain; code decides.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {record.scorecard.patrol_results.map((check) => (
-                <PatrolBadge key={check.patrol_name} status={check.status} />
-              ))}
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader title="Reviewer action" caption="Human review is required before any procurement action is recorded." />
-            <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-text/65">
-                {source.has_osha_cert === false
-                  ? "A required safety certificate is missing. Review the RFI draft."
-                  : "Confirm the cited evidence before recording the review."}
-              </p>
-              <div className="flex flex-wrap gap-2">
+          <Card accent={color} className="p-5 sm:p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-line/40 pb-4">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-wider" style={{ color }}>
+                  Status &amp; Recommendation
+                </p>
+                <h3 className="mt-1 text-lg font-bold text-text">{nextStep}</h3>
+                <p className="mt-1 text-xs text-text/60">
+                  Deterministic check results. LLMs extract evidence; rules decide.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 shrink-0">
                 {source.has_osha_cert === false && (
                   <button
                     type="button"
                     onClick={() => setRfiOpen(true)}
                     className="rounded-xl bg-violet/20 px-4 py-2 text-sm font-bold text-violet hover:bg-violet/30 tactile-press shadow-xs transition-colors"
                   >
-                    Review RFI draft
+                    RFI Draft
                   </button>
                 )}
                 <ReviewerDecision record={record} />
+              </div>
+            </div>
+
+            <div>
+              <p className="ui-label text-text/50 mb-2">Patrol Findings Breakdown</p>
+              <div className="flex flex-wrap gap-2">
+                {record.scorecard.patrol_results.map((check) => (
+                  <PatrolBadge key={check.patrol_name} status={check.status} />
+                ))}
               </div>
             </div>
           </Card>
@@ -155,12 +152,12 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
             {record.scorecard.patrol_results.map((check) => {
               const pName = check.patrol_name.toLowerCase();
               const actionLabel = pName.includes("building") || pName.includes("engineering")
-                ? "Inspect evidence & 3D spatial model →"
+                ? "Inspect 3D model & evidence →"
                 : pName.includes("green") || pName.includes("carbon")
-                  ? "Inspect carbon evidence & cap →"
+                  ? "Inspect carbon evidence →"
                   : pName.includes("vice") || pName.includes("reliability")
-                    ? "Inspect reliability & safety evidence →"
-                    : "Inspect schedule & lead time evidence →";
+                    ? "Inspect reliability & safety →"
+                    : "Inspect schedule evidence →";
 
               return (
                 <Card
@@ -298,8 +295,8 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
       {/* Consolidated Single Master Source Ledger */}
       <Card>
         <CardHeader
-          title="Extracted Source Ledger"
-          caption="Consolidated PDF text extraction and traceable citation markers."
+          title="Source Ledger"
+          caption="PDF text extraction and citation markers."
           right={
             <a
               href={procurementApi.sourceUrl(record.id)}
@@ -307,7 +304,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
               rel="noreferrer"
               className="text-xs font-semibold text-cyan hover:underline"
             >
-              Open Source PDF ↗
+              Source PDF ↗
             </a>
           }
         />
@@ -320,9 +317,9 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
             </colgroup>
             <thead>
               <tr className="border-b-2 border-line text-left table-header bg-surface/50">
-                <th className="px-4 py-2.5 font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Extracted Field</th>
-                <th className="px-4 py-2.5 font-bold whitespace-nowrap">Normalized Value</th>
-                <th className="px-4 py-2.5 font-bold text-right whitespace-nowrap last:rounded-tr-[0.9rem]">Source Citation</th>
+                <th className="px-4 py-2.5 font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Field</th>
+                <th className="px-4 py-2.5 font-bold whitespace-nowrap">Value</th>
+                <th className="px-4 py-2.5 font-bold text-right whitespace-nowrap last:rounded-tr-[0.9rem]">Citation</th>
               </tr>
             </thead>
             <tbody>
@@ -339,7 +336,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
                         [p.{row.page}]
                       </span>
                     ) : (
-                      <span className="text-text/40 font-normal text-[11px]">Source Provenance</span>
+                      <span className="text-text/40 font-normal text-[11px]">Provenance</span>
                     )}
                   </td>
                 </tr>
@@ -350,7 +347,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
       </Card>
 
       <Card>
-        <CardHeader title="Document metadata" caption="Captured from the document where available." />
+        <CardHeader title="Document Metadata" caption="Extracted file properties." />
         <div className="grid gap-3 p-4 text-sm sm:grid-cols-3">
           <Metric label="Author" value={record.source.document_metadata.author ?? "Not provided"} />
           <Metric label="Created" value={record.source.document_metadata.creation_date ?? "Not provided"} />
@@ -359,7 +356,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
       </Card>
 
       <Card>
-        <CardHeader title="Remove uploaded bid" caption="This deletes the persisted record, activity, and source PDF." />
+        <CardHeader title="Delete Bid" caption="Permanently delete bid record and stored PDF." />
         <div className="flex flex-wrap items-center justify-between gap-3 p-4">
           <p className="text-xs text-text/55">Use only when this upload was submitted in error.</p>
           <div>
@@ -369,7 +366,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
               disabled={removing}
               className="rounded-lg border border-rose/30 px-4 py-2 text-sm font-semibold text-rose hover:bg-rose/10 disabled:opacity-60"
             >
-              {removing ? "Removing…" : "Remove bid"}
+              {removing ? "Deleting…" : "Delete"}
             </button>
             {error && (
               <p role="alert" className="mt-1 text-xs text-rose">
@@ -383,56 +380,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
   );
 }
 
-function ViceSquadCard({ record }: { record: BidRecord }) {
-  const vice = record.scorecard.patrol_results.find((p) => p.patrol_name.toLowerCase().includes("vice") || p.patrol_name.toLowerCase().includes("reliability"));
-  if (!vice || vice.status === "PASS") return null;
-  const entries = vice.evidence ? Object.entries(vice.evidence) : [];
-  const riskColor = vice.risk_score != null && vice.risk_score >= 7 ? COLORS.rose : vice.risk_score != null && vice.risk_score >= 4 ? COLORS.amber : COLORS.cyan;
 
-  return (
-    <Card accent={COLORS.violet}>
-      <CardHeader
-        title="Reliability Patrol — Vendor integrity signals"
-        caption="Deterministic vendor integrity and compliance index findings. Requires reviewer interpretation."
-      />
-      <div className="space-y-4 p-5">
-        <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-line/60 bg-surface/60 p-4">
-          {vice.risk_score != null && (
-            <div className="shrink-0">
-              <p className="ui-label text-violet">Vendor Risk Score</p>
-              <div className="mt-1 flex items-baseline gap-1">
-                <span
-                  className="font-mono text-2xl font-black tabular-nums"
-                  style={{ color: riskColor }}
-                >
-                  {vice.risk_score}
-                </span>
-                <span className="font-mono text-xs font-extrabold text-text/40">/10</span>
-              </div>
-            </div>
-          )}
-          <div className="min-w-0 flex-1 sm:border-l sm:border-line/60 sm:pl-4">
-            <p className="ui-label text-text/60">Patrol Finding</p>
-            <p className="mt-0.5 text-sm font-medium text-text leading-snug">{cleanReasonText(vice.reason)}</p>
-          </div>
-        </div>
-
-        {entries.length > 0 && (
-          <dl className="grid gap-3 sm:grid-cols-2">
-            {entries
-              .filter(([k]) => !(k.includes("index") || k.includes("score")))
-              .map(([k, v]) => (
-                <div key={k} className="rounded-xl border border-line bg-card p-4 shadow-xs">
-                  <dt className="ui-label text-text/60">{formatLabelTitleCase(k)}</dt>
-                  <dd className="mt-1 font-mono text-xs font-semibold text-text">{formatEvidenceValue(v)}</dd>
-                </div>
-              ))}
-          </dl>
-        )}
-      </div>
-    </Card>
-  );
-}
 
 function ActivityTab({ id }: { id: string }) {
   const [events, setEvents] = useState<ActivityEvent[]>([]);
@@ -456,11 +404,11 @@ function ActivityTab({ id }: { id: string }) {
 
   return (
     <Card>
-      <CardHeader title="Bid activity" caption="Recorded checks and reviewer actions for this bid." />
+      <CardHeader title="Bid Activity" caption="Audit log of checks and reviewer actions." />
       {state === "loading" ? (
         <p className="p-5 text-sm text-text/55">Loading activity…</p>
       ) : state === "error" ? (
-        <p className="p-5 text-sm text-amber">Activity is unavailable. No events are inferred.</p>
+        <p className="p-5 text-sm text-amber">Activity is unavailable.</p>
       ) : events.length ? (
         <ul className="divide-y divide-white/5">
           {events.map((event) => (
@@ -633,12 +581,12 @@ function EvidenceDrawer({
           {(pName.includes("green") || pName.includes("carbon")) && (
             <div className="rounded-2xl border border-emerald/40 bg-surface p-4 sm:p-5 shadow-xs space-y-3.5">
               <div className="flex items-center justify-between">
-                <span className="ui-label text-emerald font-extrabold">Embodied Carbon vs Cap</span>
+                <span className="ui-label text-emerald font-extrabold">Embodied Carbon</span>
                 <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-mono font-bold shadow-xs border ${check.status === "FAIL"
                   ? "bg-rose/15 text-rose border-rose/30"
                   : "bg-emerald/15 text-emerald border-emerald/30"
                   }`}>
-                  {check.status === "FAIL" ? "✕ Cap Exceeded" : "✓ Within Limit"}
+                  {check.status === "FAIL" ? "✕ Cap Exceeded" : "✓ Compliant"}
                 </span>
               </div>
 
@@ -647,13 +595,13 @@ function EvidenceDrawer({
                 {/* Bar 1: Bid Embodied Carbon */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs font-mono">
-                    <span className="text-text/70 font-semibold">Bid Embodied Carbon</span>
+                    <span className="text-text/70 font-semibold">Bid Carbon</span>
                     <span className={`font-bold ${check.status === "FAIL" ? "text-rose" : "text-emerald"}`}>
                       {equipment?.embodied_carbon_factor != null
                         ? `${equipment.embodied_carbon_factor.toLocaleString()} kgCO₂e`
                         : check.evidence?.embodied_carbon != null
                           ? `${String(check.evidence.embodied_carbon)} kgCO₂e`
-                          : "Pending Amber Extraction"}
+                          : "Pending"}
                     </span>
                   </div>
                   <div className="h-3 w-full rounded-full bg-card overflow-hidden border border-line/40">
@@ -667,11 +615,11 @@ function EvidenceDrawer({
                 {/* Bar 2: Project Cap Limit */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs font-mono">
-                    <span className="text-text/60">Project Cap Limit</span>
+                    <span className="text-text/60">Project Cap</span>
                     <span className="font-bold text-text">
                       {check.evidence?.project_cap != null
                         ? `${Number(check.evidence.project_cap).toLocaleString()} kgCO₂e`
-                        : "Pending Amber Constraint"}
+                        : "Pending"}
                     </span>
                   </div>
                   <div className="h-3 w-full rounded-full bg-card overflow-hidden border border-line/40">
@@ -723,13 +671,12 @@ function EvidenceDrawer({
 
             return (
               <div className="rounded-2xl border border-purple/40 bg-surface p-4 sm:p-5 shadow-xs space-y-3.5">
-                <span className="ui-label text-purple font-extrabold">Reliability &amp; Safety Index</span>
+                <span className="ui-label text-purple font-extrabold">Reliability &amp; Safety</span>
 
                 <div className="rounded-xl border border-purple/30 bg-inset p-4 shadow-xs flex items-center gap-5">
-                  {/* Concentric Dual-Ring Radial Gauge (Unified Positive Polarity: Both Outer & Inner Arcs Fill for Good Quality) */}
+                  {/* Concentric Dual-Ring Radial Gauge */}
                   <div className="relative shrink-0 flex items-center justify-center" style={{ width: 92, height: 92 }}>
                     <svg width="92" height="92" viewBox="0 0 92 92" fill="none" className="rotate-[-90deg]">
-                      {/* Outer Track & Arc (Agreement Compliance /100 - Higher is Better) */}
                       <circle cx="46" cy="46" r={rOuter} stroke="#3b0764" strokeWidth="6" fill="none" opacity="0.3" />
                       <circle
                         cx="46" cy="46" r={rOuter}
@@ -737,7 +684,6 @@ function EvidenceDrawer({
                         strokeDasharray={`${dashOuter} ${circOuter}`} fill="none"
                         style={{ transition: "stroke-dasharray 0.6s ease" }}
                       />
-                      {/* Inner Track & Arc (Vendor Safety Rating /10 - Higher is Better) */}
                       <circle cx="46" cy="46" r={rInner} stroke="#1e1b4b" strokeWidth="5" fill="none" opacity="0.4" />
                       <circle
                         cx="46" cy="46" r={rInner}
@@ -747,7 +693,6 @@ function EvidenceDrawer({
                       />
                     </svg>
 
-                    {/* Concentric Center Readout */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
                       <span className="text-[14px] font-black font-mono" style={{ color: agreeColor }}>
                         {agreeScore != null ? agreeScore : "—"}
@@ -758,12 +703,11 @@ function EvidenceDrawer({
                     </div>
                   </div>
 
-                  {/* Consolidated Metrics Side Breakdown with Correct Polarity Semantics */}
                   <div className="flex-1 space-y-2 text-xs font-mono">
                     <div className="flex items-center justify-between border-b border-line/30 pb-1.5">
                       <span className="text-text/60 font-sans text-[11px] font-medium flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: agreeColor }} />
-                        Agreement Compliance
+                        Agreement Score
                       </span>
                       <span className="font-bold" style={{ color: agreeColor }}>
                         {agreeScore != null ? `${agreeScore}/100` : "Pending"}
@@ -773,7 +717,7 @@ function EvidenceDrawer({
                     <div className="flex items-center justify-between border-b border-line/30 pb-1.5">
                       <span className="text-text/60 font-sans text-[11px] font-medium flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: safetyColor }} />
-                        Vendor Safety Rating
+                        Safety Rating
                       </span>
                       <span className="font-bold" style={{ color: safetyColor }}>
                         {safetyRating != null ? `${safetyRating}/10` : "Pending"}
@@ -786,7 +730,7 @@ function EvidenceDrawer({
                           ? "border-purple/30 bg-purple/10 text-purple"
                           : "border-line/50 bg-surface/60 text-text/50"
                       }`}>
-                      <span className="font-sans">OSHA Certificate</span>
+                      <span className="font-sans">OSHA Cert</span>
                       <span className="uppercase">
                         {source.has_osha_cert === false ? "✕ Missing"
                           : source.has_osha_cert === true ? "✓ Verified"
@@ -810,28 +754,28 @@ function EvidenceDrawer({
 
           {/* Section 3: Document Provenance & Citation */}
           <div className="rounded-2xl border border-line bg-surface p-4 sm:p-5 shadow-xs space-y-3 text-xs">
-            <h4 className="ui-label text-text/60 border-b border-line/40 pb-2.5">Document Provenance & Source Citation</h4>
+            <h4 className="ui-label text-text/60 border-b border-line/40 pb-2.5">Source Provenance</h4>
 
             <div className="grid grid-cols-2 gap-2.5 text-xs">
               <div className="rounded-xl border border-line/60 bg-inset p-3 shadow-xs">
-                <span className="ui-label text-text/50 block mb-1">Source Page</span>
+                <span className="ui-label text-text/50 block mb-1">Page</span>
                 <span className="font-mono font-bold text-text">
-                  {relevantCandidate?.page != null ? `Page ${relevantCandidate.page}` : "Document Provenance"}
+                  {relevantCandidate?.page != null ? `Page ${relevantCandidate.page}` : "Provenance Record"}
                 </span>
               </div>
               <div className="rounded-xl border border-line/60 bg-inset p-3 shadow-xs">
-                <span className="ui-label text-text/50 block mb-1">Extractor Engine</span>
+                <span className="ui-label text-text/50 block mb-1">Extractor</span>
                 <span className="font-mono font-semibold text-cyan">
                   {(relevantCandidate as { extractor?: string })?.extractor === "pymupdf"
-                    ? "PyMuPDF Direct Extraction"
-                    : "Amber AI / VLM Inference Engine"}
+                    ? "PyMuPDF"
+                    : "VLM Inference"}
                 </span>
               </div>
             </div>
 
             {relevantCandidate?.bbox && (
               <div className="rounded-xl border border-line/60 bg-inset p-3 shadow-xs text-xs">
-                <span className="ui-label text-text/50 block mb-1">Bounding Box Coordinates</span>
+                <span className="ui-label text-text/50 block mb-1">Bounding Box</span>
                 <span className="font-mono font-bold text-cyan">
                   [{relevantCandidate.bbox.map((v) => v.toFixed(1)).join(", ")}]
                 </span>
@@ -840,7 +784,7 @@ function EvidenceDrawer({
 
             {relevantCandidate?.source_excerpt && (
               <div className="rounded-xl border border-line/60 bg-inset p-3 shadow-xs text-xs">
-                <span className="ui-label text-text/50 block mb-1.5">Extracted Source Excerpt</span>
+                <span className="ui-label text-text/50 block mb-1.5">Source Excerpt</span>
                 <blockquote className="text-text/80 italic leading-relaxed border-l-2 border-cyan pl-3 font-sans">
                   &quot;{relevantCandidate.source_excerpt}&quot;
                 </blockquote>

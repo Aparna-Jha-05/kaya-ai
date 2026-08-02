@@ -50,23 +50,8 @@ function fromRecord(record: BidRecord): Comparable {
 }
 
 function check(bid: Comparable, name: string) {
-  const query = name.toLowerCase();
-  return bid.checks.find((value) => {
-    const vName = value.name.toLowerCase();
-    if (query.includes("relia") || query.includes("vice")) {
-      return vName.includes("relia") || vName.includes("vice");
-    }
-    if (query.includes("sched") || query.includes("traff")) {
-      return vName.includes("sched") || vName.includes("traff");
-    }
-    if (query.includes("eng") || query.includes("build")) {
-      return vName.includes("eng") || vName.includes("build");
-    }
-    if (query.includes("carb") || query.includes("green")) {
-      return vName.includes("carb") || vName.includes("green");
-    }
-    return vName === query;
-  });
+  const targetCategory = getPatrolCategory(name);
+  return bid.checks.find((value) => getPatrolCategory(value.name) === targetCategory);
 }
 function hasFailure(bid: Comparable) {
   return bid.checks.some((value) => value.status === "FAIL" && (value.name === "Engineering" || value.name === "Carbon"));

@@ -101,8 +101,8 @@ export default function EvidenceBoard({ record }: { record: BidRecord }) {
   return (
     <Card>
       <CardHeader
-        title="Downstream impact"
-        caption="Cascading failure analysis across engineering, carbon, vendor, and schedule constraints."
+        title="Cascading Impact"
+        caption="Dependency analysis across engineering, carbon, and schedule constraints."
       />
       <div className="terminal-grid overflow-x-auto rounded-b-xl p-4">
         <div className="relative mx-auto" style={{ width, height, minWidth: width }}>

@@ -42,13 +42,20 @@ export function activityActionLabel(action: string) {
   return statusText(action as CheckStatus);
 }
 
-export function inCrore(value: number | null | undefined) {
-  return value == null ? "Not provided" : `${(value / 10_000_000).toFixed(2)} Cr`;
+export function getPatrolCategory(name: string): "engineering" | "carbon" | "reliability" | "schedule" {
+  const normalized = name.toLowerCase();
+  if (normalized.includes("building") || normalized.includes("engineering")) return "engineering";
+  if (normalized.includes("green") || normalized.includes("carbon")) return "carbon";
+  if (normalized.includes("vice") || normalized.includes("reliability")) return "reliability";
+  return "schedule";
 }
 
-export function formatCroreValue(value: number | null | undefined) {
-  return value == null ? "—" : `${(value / 10_000_000).toFixed(2)} Cr`;
+export function formatCrore(value: number | null | undefined, fallback = "—") {
+  return value == null ? fallback : `${(value / 10_000_000).toFixed(2)} Cr`;
 }
+
+export const inCrore = (value: number | null | undefined) => formatCrore(value, "Not provided");
+export const formatCroreValue = (value: number | null | undefined) => formatCrore(value, "—");
 
 export function cleanReasonText(reason: string | null | undefined) {
   if (!reason) return "";

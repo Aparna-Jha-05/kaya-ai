@@ -98,9 +98,6 @@ export default function BidDetailClient({ id }: { id: string }) {
   if (record) {
     return (
       <div className="space-y-4">
-        <Link href="/bids" className="inline-flex items-center gap-1.5 text-xs font-semibold text-text/60 hover:text-text transition-colors">
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to comparison
-        </Link>
         <BidWorkspace initialRecord={record} />
       </div>
     );

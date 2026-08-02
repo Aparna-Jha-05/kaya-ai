@@ -125,7 +125,7 @@ export default function GanttScheduleViewer({
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="ui-label text-amber font-bold truncate">Delivery Schedule Gantt</span>
+          <span className="ui-label text-amber font-bold truncate">Schedule Gantt</span>
           <div
             className="relative shrink-0"
             onMouseEnter={() => setShowHelp(true)}
@@ -142,8 +142,8 @@ export default function GanttScheduleViewer({
               <div className="absolute left-0 top-full mt-1.5 z-[999] w-48 rounded-xl border border-line bg-card p-3 shadow-2xl text-[11px] font-mono space-y-1 animate-in fade-in zoom-in-95 duration-150">
                 <p className="font-sans font-bold text-text border-b border-line pb-1">Gantt Controls</p>
                 <div className="space-y-1 text-text/80">
-                  <p>• <span className="text-amber font-bold">Scroll</span>: Zoom week density</p>
-                  <p>• <span className="text-amber font-bold">Hover Bar</span>: WBS details below</p>
+                  <p>• <span className="text-amber font-bold">Scroll</span>: Zoom density</p>
+                  <p>• <span className="text-amber font-bold">Hover Bar</span>: Task details</p>
                 </div>
               </div>
             )}
@@ -154,11 +154,11 @@ export default function GanttScheduleViewer({
           !hasInference ? "text-text/60" : isLate ? "text-rose" : "text-emerald"
         }`}>
           {!hasInference
-            ? "Pending PDF Extraction"
+            ? "Pending Extraction"
             : isEarly
-            ? `✓ Float: +${floatDays} Days`
+            ? `✓ +${floatDays} Days Float`
             : isLate
-            ? `✕ Float: ${floatDays} Days`
+            ? `✕ ${Math.abs(floatDays)} Days Delay`
             : "✓ On Schedule"}
         </span>
       </div>

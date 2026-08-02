@@ -53,30 +53,30 @@ export default function Spatial3DViewer({
   const subParts = [
     {
       id: "power" as const,
-      name: "Power & Electrical Substation Module",
+      name: "Power Module",
       status: powerBreach ? "FAIL" : "PASS",
-      details: powerDrawKw != null ? `${powerDrawKw} kW (Max: ${maxPowerKw} kW)` : "Standard Electrical Rating",
+      details: powerDrawKw != null ? `${powerDrawKw} kW (Max ${maxPowerKw} kW)` : "Standard Rating",
       flagged: powerBreach,
     },
     {
       id: "compressor" as const,
-      name: "Centrifugal Compressor & Drive Assembly",
+      name: "Compressor",
       status: "PASS",
-      details: "Hermetic Dual Stage Motor",
+      details: "Hermetic Dual Stage",
       flagged: false,
     },
     {
       id: "coils" as const,
-      name: "Cooling Coils & Heat Exchanger Bundle",
+      name: "Cooling Coils",
       status: "PASS",
-      details: "High-Efficiency Shell & Tube",
+      details: "Shell & Tube",
       flagged: false,
     },
     {
       id: "base" as const,
-      name: "Structural Chassis & Floor Load Footprint",
+      name: "Base Footprint",
       status: floorBreach ? "FAIL" : "PASS",
-      details: floorLoadKg != null ? `${floorLoadKg} kg/m² (Max: ${maxFloorLoadKg} kg/m²)` : "Vibration Isolated Skid",
+      details: floorLoadKg != null ? `${floorLoadKg} kg/m² (Max ${maxFloorLoadKg} kg/m²)` : "Standard Chassis",
       flagged: floorBreach,
     },
   ];
@@ -407,7 +407,7 @@ export default function Spatial3DViewer({
     <div className="relative rounded-2xl border border-line bg-surface p-4 shadow-xs space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="ui-label text-cyan font-bold truncate">3D Spatial Geometry & Component Diagram</span>
+          <span className="ui-label text-cyan font-bold truncate">3D Geometry & Parts</span>
           <div
             className="relative shrink-0"
             onMouseEnter={() => setShowTooltip(true)}
@@ -439,17 +439,17 @@ export default function Spatial3DViewer({
         <div className="flex items-center gap-2">
           {!fitsDoor && (
             <span className="text-xs font-mono font-bold text-rose">
-              ✕ Exceeds Door Gateway
+              ✕ Door Overlimit
             </span>
           )}
           {powerBreach && (
             <span className="text-xs font-mono font-bold text-rose">
-              ⚠ Power Module Breach
+              ⚠ Power Overlimit
             </span>
           )}
           {fitsDoor && !powerBreach && !floorBreach && (
             <span className="text-xs font-mono font-bold text-cyan">
-              ✓ All Geometry Constraints Satisfied
+              ✓ Compliant
             </span>
           )}
         </div>
@@ -479,13 +479,13 @@ export default function Spatial3DViewer({
       {/* Component Part Filter & Inspector Legend */}
       <div className="pt-1 space-y-2 border-t border-line/40">
         <div className="flex items-center justify-between text-[11px] font-mono text-text/60">
-          <span className="font-bold uppercase tracking-wider text-text/50">Component Breakdown Inspector</span>
+          <span className="font-bold uppercase tracking-wider text-text/50">Components</span>
           <button
             type="button"
             onClick={() => setSelectedPart("all")}
             className={`hover:underline ${selectedPart === "all" ? "text-cyan font-bold" : "text-text/40"}`}
           >
-            Show All Parts
+            Show All
           </button>
         </div>
 
