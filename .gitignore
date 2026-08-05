@@ -27,4 +27,5 @@ onboarding.html
 /.codex/
 /.opencode/
 /.playwright-cli/
+/.playwright-mcp/
 /output/playwright/

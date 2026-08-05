@@ -171,5 +171,5 @@ export const procurementApi = {
   updateConstraints: (expected_version: number, max_substation_kw: number, max_door_width_m: number, max_embodied_carbon_kg: number) => request<{ status: string }>("/api/v1/site-constraints", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ expected_version, max_substation_kw, max_door_width_m, max_embodied_carbon_kg }) }),
   suppliers: () => request<SupplierProfile[]>("/api/v1/suppliers"),
   auditLogs: () => request<AuditLogEntry[]>("/api/v1/audit/logs"),
-  readiness: () => request<{ status: string; demo_mode: boolean; public_read_only: boolean; persistence: "sqlite" | "unavailable"; postgresql: { status: string; connected: boolean } }>("/api/v1/readiness"),
+  readiness: () => request<{ status: string; demo_mode: boolean; public_read_only?: boolean; persistence: "sqlite" | "unavailable"; postgresql: { status: string; connected: boolean } }>("/api/v1/readiness"),
 };
