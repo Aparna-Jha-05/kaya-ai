@@ -62,6 +62,9 @@ class TestPatrolEngineBoundaries(unittest.TestCase):
 
         for patrol in scorecard.patrol_results:
             self.assertEqual(patrol.status, "PASS", f"{patrol.patrol_name} failed: {patrol.reason}")
+        traffic = next(p for p in scorecard.patrol_results if p.patrol_name == "TRAFFIC_CONTROL")
+        self.assertEqual(traffic.evidence["promised_delivery_weeks"], 12)
+        self.assertEqual(traffic.evidence["maximum_delivery_weeks"], 12)
         self.assertEqual(scorecard.recommendation, "RECOMMENDED")
 
     def test_over_limit_boundaries_fail(self):

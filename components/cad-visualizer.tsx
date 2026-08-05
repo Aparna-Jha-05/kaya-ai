@@ -1,43 +1,49 @@
-interface CADVisualizerProps {
-  initialWidthM?: number;
-  doorLimitM?: number;
+interface ComparisonProps {
+  measured: number | null;
+  limit: number | null;
+  measuredLabel: string;
+  limitLabel: string;
+  unit: string;
 }
 
-export default function CADVisualizer({
-  initialWidthM = 2.1,
-  doorLimitM = 1.9,
-}: CADVisualizerProps) {
-  const widthPx = Math.round(initialWidthM * 100);
+function Comparison({ measured, limit, measuredLabel, limitLabel, unit }: ComparisonProps) {
+  if (measured == null || limit == null) {
+    return (
+      <section className="rounded-xl border border-amber/30 bg-amber/5 p-4" aria-label={`${measuredLabel} comparison unavailable`}>
+        <p className="text-xs font-bold text-amber">Comparison unavailable</p>
+        <p className="mt-1 text-xs text-text/55">The submitted value or recorded constraint is missing. No result is inferred.</p>
+      </section>
+    );
+  }
+
+  const scale = Math.max(measured, limit, 0.01);
+  const exceeds = measured > limit;
+  const measuredWidth = `${Math.max(4, (measured / scale) * 100)}%`;
+  const limitWidth = `${Math.max(4, (limit / scale) * 100)}%`;
 
   return (
-    <section className="rounded-2xl border border-line border-b-2 bg-card p-5 shadow-xs" aria-labelledby="clearance-heading">
-      <div className="flex items-start justify-between gap-4">
+    <section className="rounded-xl border border-line bg-surface p-4" aria-label={`${measuredLabel} compared with ${limitLabel}`}>
+      <p className={`text-xs font-bold ${exceeds ? "text-rose" : "text-cyan"}`}>
+        {exceeds ? `${measuredLabel} exceeds the recorded limit` : `${measuredLabel} is within the recorded limit`}
+      </p>
+      <div className="mt-4 space-y-3 font-mono text-[11px]">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-widest text-rose font-bold">Dimension Annotation Clearance Check</p>
-          <h3 id="clearance-heading" className="mt-1 text-base font-bold text-text">Equipment width exceeds the access limit</h3>
-          <p className="mt-1 text-xs text-text/60 font-medium">Extracted from detected PDF text regions or dimension annotations and compared with the recorded door clearance.</p>
+          <div className="mb-1 flex justify-between gap-3 text-text/65"><span>{measuredLabel}</span><span>{measured.toFixed(2)} {unit}</span></div>
+          <div className="h-3 overflow-hidden rounded-full bg-card"><div className={`h-full rounded-full ${exceeds ? "bg-rose" : "bg-cyan"}`} style={{ width: measuredWidth }} /></div>
         </div>
-        <span className="shrink-0 rounded-lg border border-rose/50 bg-rose/10 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-rose shadow-xs">Fail</span>
-      </div>
-
-      <div className="mt-4 grid gap-2 sm:grid-cols-2">
-        <Metric label="Equipment width" value={`${initialWidthM.toFixed(2)} m`} tone="rose" />
-        <Metric label="Door clearance" value={`${doorLimitM.toFixed(2)} m`} />
-      </div>
-
-      <div className="relative mt-4 flex h-56 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-line bg-surface/50">
-        <div className="absolute inset-y-4 left-1/2 w-[190px] -translate-x-1/2 border-x-2 border-dashed border-text/30">
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-line bg-card px-2 py-0.5 font-mono text-[10px] font-bold text-text/70 shadow-xs">Door clearance: {doorLimitM.toFixed(2)} m</span>
-        </div>
-        <div className="relative flex h-[130px] flex-col justify-between rounded-xl border-2 border-rose bg-rose/10 p-2.5 shadow-[0_0_20px_rgba(244,63,94,0.2)]" style={{ width: `${widthPx}px` }}>
-          <span className="w-fit rounded-md bg-rose px-2 py-0.5 text-[10px] font-extrabold text-on-accent shadow-xs">Extracted width: {initialWidthM.toFixed(2)} m</span>
-          <span className="font-mono text-[10px] font-bold text-rose">Exceeds limit by {(initialWidthM - doorLimitM).toFixed(2)} m</span>
+        <div>
+          <div className="mb-1 flex justify-between gap-3 text-text/65"><span>{limitLabel}</span><span>{limit.toFixed(2)} {unit}</span></div>
+          <div className="h-3 overflow-hidden rounded-full bg-card"><div className="h-full rounded-full bg-text/35" style={{ width: limitWidth }} /></div>
         </div>
       </div>
     </section>
   );
 }
 
-function Metric({ label, value, tone = "text" }: { label: string; value: string; tone?: "text" | "rose" }) {
-  return <div className="rounded-xl border border-line bg-surface px-3.5 py-2.5 shadow-xs"><p className="text-[10px] font-bold uppercase tracking-wider text-text/50">{label}</p><p className={`mt-1 font-mono text-sm font-bold ${tone === "rose" ? "text-rose" : "text-text"}`}>{value}</p></div>;
+export default function CADVisualizer({ widthM, doorLimitM }: { widthM: number | null; doorLimitM: number | null }) {
+  return <Comparison measured={widthM} limit={doorLimitM} measuredLabel="Equipment width" limitLabel="Door clearance" unit="m" />;
+}
+
+export function ScheduleVisualizer({ promisedWeeks, maximumWeeks }: { promisedWeeks: number | null; maximumWeeks: number | null }) {
+  return <Comparison measured={promisedWeeks} limit={maximumWeeks} measuredLabel="Promised delivery" limitLabel="Maximum delivery" unit="weeks" />;
 }

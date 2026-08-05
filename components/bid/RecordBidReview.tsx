@@ -7,6 +7,7 @@ import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import EvidenceBoard from "@/components/bid/EvidenceBoard";
 import RFIModal from "@/components/rfi-modal";
+import CADVisualizer, { ScheduleVisualizer } from "@/components/cad-visualizer";
 import { procurementApi, type ActivityEvent, type BidRecord } from "@/lib/api";
 import { activityActionLabel, cleanReasonText, displayCheckName, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
@@ -37,6 +38,11 @@ function evidenceText(evidence: Record<string, unknown> | null) {
         .map(([key, value]) => `${key.replaceAll("_", " ")}: ${formatEvidenceValue(value)}`)
         .join(" · ")
     : "No structured evidence returned.";
+}
+
+function evidenceNumber(evidence: Record<string, unknown> | null, key: string) {
+  const value = evidence?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 export default function RecordBidReview({ record }: { record: BidRecord }) {
@@ -617,6 +623,20 @@ function EvidenceDrawer({
             <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Measured Value vs Constraint Limit</p>
             <p className="mt-2 break-words text-sm font-mono text-text/80">{evidenceText(check.evidence)}</p>
           </section>
+
+          {check.patrol_name === "BUILDING_PATROL" && (
+            <CADVisualizer
+              widthM={evidenceNumber(check.evidence, "width_m")}
+              doorLimitM={evidenceNumber(check.evidence, "door_limit_m")}
+            />
+          )}
+
+          {check.patrol_name === "TRAFFIC_CONTROL" && (
+            <ScheduleVisualizer
+              promisedWeeks={evidenceNumber(check.evidence, "promised_delivery_weeks")}
+              maximumWeeks={evidenceNumber(check.evidence, "maximum_delivery_weeks")}
+            />
+          )}
 
           <section>
             <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Rule Identifier</p>

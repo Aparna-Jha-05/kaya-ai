@@ -101,7 +101,7 @@ class PatrolEngineService:
         results.append(PatrolResult(patrol_name="TRAFFIC_CONTROL", status=traffic_status,
             reason="Compliance Drift Report: rerun all patrols before accepting a post-award specification change." if post_award else "Review required: delivery commitment was not extracted." if delay_days is None else f"Float-aware schedule exposure is {delay_days} days.",
             rule_broken="DYNAMIC_REVALIDATION_TRIGGER" if post_award else "INSUFFICIENT_EVIDENCE" if delay_days is None else None,
-            evidence={"delay_days": delay_days, "delay_penalty_inr": simulation.delay_penalty_inr if simulation else None, "calculated_tco2_inr": simulation.calculated_tco2_inr if simulation else None, "lifecycle_mode": bid.lifecycle_mode.value}))
+            evidence={"promised_delivery_weeks": bid.promised_delivery_weeks, "maximum_delivery_weeks": graph.maximum_delivery_weeks, "delay_days": delay_days, "delay_penalty_inr": simulation.delay_penalty_inr if simulation else None, "calculated_tco2_inr": simulation.calculated_tco2_inr if simulation else None, "lifecycle_mode": bid.lifecycle_mode.value}))
 
         failed = any(result.status == "FAIL" for result in results)
         has_review = any(result.status == "FLAG" for result in results)
