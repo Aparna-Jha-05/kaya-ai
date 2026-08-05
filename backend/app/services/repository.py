@@ -443,9 +443,24 @@ class BidRepository:
         path = self.uploads_path / row["stored_file"] if row else None
         return path if path and path.is_file() else None
 
-    def remove_bid(self, record_id: str) -> bool:
+    def remove_bid(
+        self,
+        record_id: str,
+        *,
+        project_id: str | None = None,
+        uploader_identity: str | None = None,
+        idempotency_key: str | None = None,
+    ) -> bool:
+        capability = (project_id, uploader_identity, idempotency_key)
+        if any(value is not None for value in capability) and not all(capability):
+            return False
+        query = "SELECT stored_file FROM bids WHERE id = ?"
+        params: tuple[str, ...] = (record_id,)
+        if idempotency_key is not None:
+            query += " AND project_id = ? AND uploader_identity = ? AND idempotency_key = ?"
+            params += (project_id, uploader_identity, idempotency_key)  # type: ignore[arg-type]
         with self._lock, self._connect() as connection:
-            row = connection.execute("SELECT stored_file FROM bids WHERE id = ?", (record_id,)).fetchone()
+            row = connection.execute(query, params).fetchone()
             if not row:
                 return False
             connection.execute("DELETE FROM rfis WHERE bid_id = ?", (record_id,))

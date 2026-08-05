@@ -50,6 +50,19 @@ PROJECT_ID = os.getenv("PO_LICE_PROJECT_ID", "PRJ-POLICE-01")
 DEMO_ACTOR = "DEMO_SEEDER"
 
 
+def _scorecard_has_current_schedule_evidence(scorecard) -> bool:
+    traffic = next(
+        (result for result in scorecard.patrol_results if result.patrol_name == "TRAFFIC_CONTROL"),
+        None,
+    )
+    evidence = traffic.evidence if traffic else None
+    return bool(
+        evidence
+        and "promised_delivery_weeks" in evidence
+        and "maximum_delivery_weeks" in evidence
+    )
+
+
 def _generate_pdfs() -> dict[str, bytes]:
     """Return {filename: bytes} for the three narrative fixtures."""
     pdfs: dict[str, bytes] = {}
@@ -177,6 +190,14 @@ def seed(*, verbose: bool = True) -> list[dict]:
         existing = bid_repository.get_bid_by_idempotency(
             PROJECT_ID, DEMO_ACTOR, key,
         )
+        if existing and not _scorecard_has_current_schedule_evidence(existing.scorecard):
+            bid_repository.remove_bid(
+                existing.id,
+                project_id=PROJECT_ID,
+                uploader_identity=DEMO_ACTOR,
+                idempotency_key=key,
+            )
+            existing = None
         if existing:
             actual_rec = existing.scorecard.recommendation
             if verbose:

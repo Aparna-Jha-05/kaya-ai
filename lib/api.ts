@@ -117,6 +117,7 @@ export type RFIDraftResponse = {
 };
 
 const base = process.env.NEXT_PUBLIC_PO_LICE_API_URL ?? "http://localhost:8000";
+const deletionKeyName = (id: string) => `po-lice-upload-capability:${id}`;
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${base}${path}`, init);
   if (!response.ok) {
@@ -128,14 +129,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const procurementApi = {
-  upload(file: File, idempotencyKey = globalThis.crypto.randomUUID()) {
+  async upload(file: File, idempotencyKey = globalThis.crypto.randomUUID()) {
     const body = new FormData();
     body.append("file", file);
-    return request<BidRecord>("/api/v1/bids/upload", {
+    const record = await request<BidRecord>("/api/v1/bids/upload", {
       method: "POST",
       headers: { "Idempotency-Key": idempotencyKey },
       body,
     });
+    globalThis.sessionStorage?.setItem(deletionKeyName(record.id), idempotencyKey);
+    return record;
   },
   list: () => request<BidRecord[]>("/api/v1/bids"),
   get: (id: string) => request<BidRecord>(`/api/v1/bids/${id}`),
@@ -145,7 +148,16 @@ export const procurementApi = {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action, note }),
   }),
-  remove: (id: string) => request<void>(`/api/v1/bids/${id}`, { method: "DELETE" }),
+  canRemove: (id: string) => typeof window !== "undefined" && Boolean(sessionStorage.getItem(deletionKeyName(id))),
+  async remove(id: string) {
+    const idempotencyKey = sessionStorage.getItem(deletionKeyName(id));
+    if (!idempotencyKey) throw new Error("Only uploads created in this browser session can be removed.");
+    await request<void>(`/api/v1/bids/${id}`, {
+      method: "DELETE",
+      headers: { "Idempotency-Key": idempotencyKey },
+    });
+    sessionStorage.removeItem(deletionKeyName(id));
+  },
   simulate: (input: { base_capex_inr: number; discount_percent: number; delay_days: number }) => request<SimulationResponse>("/api/v1/bids/simulate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -159,5 +171,5 @@ export const procurementApi = {
   updateConstraints: (expected_version: number, max_substation_kw: number, max_door_width_m: number, max_embodied_carbon_kg: number) => request<{ status: string }>("/api/v1/site-constraints", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ expected_version, max_substation_kw, max_door_width_m, max_embodied_carbon_kg }) }),
   suppliers: () => request<SupplierProfile[]>("/api/v1/suppliers"),
   auditLogs: () => request<AuditLogEntry[]>("/api/v1/audit/logs"),
-  readiness: () => request<{ status: string; demo_mode: boolean; persistence: "sqlite" | "unavailable"; postgresql: { status: string; connected: boolean } }>("/api/v1/readiness"),
+  readiness: () => request<{ status: string; demo_mode: boolean; public_read_only: boolean; persistence: "sqlite" | "unavailable"; postgresql: { status: string; connected: boolean } }>("/api/v1/readiness"),
 };

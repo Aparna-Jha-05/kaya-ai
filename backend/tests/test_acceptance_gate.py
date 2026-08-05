@@ -33,10 +33,14 @@ class AcceptanceGateHttpTests(unittest.TestCase):
     def test_delete_uses_delete_method_and_accepts_no_content(self, urlopen):
         urlopen.return_value = _Response(204, b"")
 
-        status = http_delete("https://example.test/bids/demo")
+        status = http_delete(
+            "https://example.test/bids/demo",
+            headers={"Idempotency-Key": "delete-capability"},
+        )
 
         request = urlopen.call_args.args[0]
         self.assertEqual(request.get_method(), "DELETE")
+        self.assertEqual(request.get_header("Idempotency-key"), "delete-capability")
         self.assertEqual(status, 204)
 
 
