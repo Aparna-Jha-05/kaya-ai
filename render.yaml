@@ -19,6 +19,8 @@ services:
         sync: false
       - key: PO_LICE_PROJECT_ID
         value: PRJ-POLICE-01
+      - key: PO_LICE_PUBLIC_READ_ONLY
+        value: "true"
       - key: OLLAMA_ENABLED
         value: "false"
       - key: REMOTE_EXTRACTION_ENABLED

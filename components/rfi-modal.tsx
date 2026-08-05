@@ -10,6 +10,7 @@ interface RFIModalProps {
   vendorName?: string;
   bidId?: string;
   findings?: string[];
+  approvalDisabled?: boolean;
   onHandoffSuccess?: (logMsg: string) => void;
 }
 
@@ -18,6 +19,7 @@ export default function RFIModal({
   onClose,
   vendorName = "CoolTech Global Solutions",
   bidId,
+  approvalDisabled = false,
   onHandoffSuccess,
 }: RFIModalProps) {
   const [emailBody, setEmailBody] = useState("");
@@ -124,10 +126,10 @@ export default function RFIModal({
 
           <button
             onClick={() => void handleHandoff()}
-            disabled={loading || isSent || !rfiId}
-            className="flex items-center gap-2 rounded-lg bg-cyan px-5 py-2.5 text-xs font-bold text-on-accent shadow-lg transition-all hover:bg-cyan/90 hover:shadow-[0_8px_24px_rgb(var(--color-cyan)_/_0.2)]"
+            disabled={approvalDisabled || loading || isSent || !rfiId}
+            className="flex items-center gap-2 rounded-lg bg-cyan px-5 py-2.5 text-xs font-bold text-on-accent shadow-lg transition-all hover:bg-cyan/90 hover:shadow-[0_8px_24px_rgb(var(--color-cyan)_/_0.2)] disabled:cursor-not-allowed disabled:opacity-55"
           >
-            {loading ? "Generating…" : isSent ? "Recording…" : "Record RFI approval"}
+            {approvalDisabled ? "Approval protected in public demo" : loading ? "Generating…" : isSent ? "Recording…" : "Record RFI approval"}
           </button>
         </div>
         {error && <p role="alert" className="mt-3 text-xs text-rose">{error}</p>}

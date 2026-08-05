@@ -22,14 +22,17 @@ class ApiContractTests(unittest.TestCase):
         os.environ["PO_LICE_DATA_DIR"] = self.test_dir
         self.original_repository = api.bid_repository
         self.original_demo_mode = api.DEMO_MODE
+        self.original_public_read_only = api.PUBLIC_READ_ONLY
         api.bid_repository = BidRepository()
         api.DEMO_MODE = True
+        api.PUBLIC_READ_ONLY = False
         self.client = TestClient(api.app)
 
     def tearDown(self):
         self.client.close()
         api.bid_repository = self.original_repository
         api.DEMO_MODE = self.original_demo_mode
+        api.PUBLIC_READ_ONLY = self.original_public_read_only
         os.environ.pop("PO_LICE_DATA_DIR", None)
         shutil.rmtree(self.test_dir, ignore_errors=True)
 
@@ -170,6 +173,69 @@ class ApiContractTests(unittest.TestCase):
             },
         )
         self.assertEqual(stale.status_code, 409)
+
+    def test_public_demo_blocks_privileged_mutations(self):
+        bid = self._saved_bid()
+        draft = self.client.post("/api/v1/agent/rfi-draft", json={"bid_id": bid.id}).json()
+        api.PUBLIC_READ_ONLY = True
+
+        responses = [
+            self.client.patch(
+                f"/api/v1/bids/{bid.id}/status",
+                json={
+                    "decision": "AWARDED",
+                    "expected_version": 1,
+                    "reason": "Public visitor must not decide",
+                },
+            ),
+            self.client.post(
+                f"/api/v1/bids/{bid.id}/actions",
+                json={"action": "REVIEWED_READY_FOR_DECISION", "note": "Public visitor must not review"},
+            ),
+            self.client.patch(
+                f"/api/v1/rfis/{draft['rfi_id']}/approve",
+                json={"edited_text": draft["rfi_text"], "note": "Public visitor must not approve"},
+            ),
+            self.client.put(
+                "/api/v1/site-constraints",
+                json={
+                    "expected_version": 1,
+                    "max_substation_kw": 900,
+                    "max_door_width_m": 2.1,
+                    "max_embodied_carbon_kg": 400,
+                    "reason": "Public visitor must not administer constraints",
+                },
+            ),
+        ]
+
+        self.assertEqual([response.status_code for response in responses], [403, 403, 403, 403])
+        self.assertTrue(all("public demo" in response.json()["detail"].lower() for response in responses))
+
+    def test_delete_requires_matching_upload_capability(self):
+        upload = self.client.post(
+            "/api/v1/bids/upload",
+            headers={"Idempotency-Key": "delete-capability-1"},
+            files={"file": ("evidence.pdf", self._pdf_bid(), "application/pdf")},
+        )
+        self.assertEqual(upload.status_code, 200)
+        bid_id = upload.json()["id"]
+
+        self.assertEqual(self.client.delete(f"/api/v1/bids/{bid_id}").status_code, 403)
+        self.assertEqual(
+            self.client.delete(
+                f"/api/v1/bids/{bid_id}",
+                headers={"Idempotency-Key": "wrong-capability"},
+            ).status_code,
+            403,
+        )
+        self.assertEqual(
+            self.client.delete(
+                f"/api/v1/bids/{bid_id}",
+                headers={"Idempotency-Key": "delete-capability-1"},
+            ).status_code,
+            204,
+        )
+        self.assertIsNone(api.bid_repository.get_bid(bid_id))
 
     def test_rfi_uses_repository_bid_id_and_validates_edits(self):
         bid = self._saved_bid()

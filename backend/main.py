@@ -5,9 +5,9 @@ import os
 import re
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Annotated, Any, Dict, List
 
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status
+from fastapi import FastAPI, File, Header, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
@@ -36,6 +36,7 @@ MAX_PDF_BYTES = 15 * 1024 * 1024
 PDF_MAGIC = b"%PDF-"
 allowed_origins = [origin.strip() for origin in os.getenv("PO_LICE_ALLOWED_ORIGINS", "http://localhost:3000").split(",") if origin.strip()]
 DEMO_MODE = settings.demo_mode
+PUBLIC_READ_ONLY = os.getenv("PO_LICE_PUBLIC_READ_ONLY", "false").strip().lower() not in {"0", "false", "no", "off"}
 PROJECT_ID = os.getenv("PO_LICE_PROJECT_ID", "PRJ-POLICE-01")
 DEMO_ACTOR = "DEMO_OFFICER"
 
@@ -74,6 +75,7 @@ async def readiness_check() -> Dict[str, Any]:
     return {
         "status": "healthy" if DEMO_MODE else "unhealthy",
         "demo_mode": DEMO_MODE,
+        "public_read_only": PUBLIC_READ_ONLY,
         "persistence": "sqlite" if DEMO_MODE else "unavailable",
         "postgresql": pg_status,
     }
@@ -93,11 +95,23 @@ def require_demo_persistence() -> None:
         )
 
 
+def require_privileged_mutation() -> None:
+    require_demo_persistence()
+    if PUBLIC_READ_ONLY:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The public demo blocks reviewer and administrative actions. Upload and evidence inspection remain available.",
+        )
+
+
 @app.post("/api/v1/bids/upload", response_model=BidRecord, tags=["bids"])
-async def upload_and_audit_bid(request: Request, file: UploadFile = File(...)) -> BidRecord:
+async def upload_and_audit_bid(
+    request: Request,
+    file: UploadFile = File(...),
+    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+) -> BidRecord:
     """Validate and analyse one PDF. Source text is extracted; patrols make the decision."""
     require_demo_persistence()
-    idempotency_key = request.headers.get("Idempotency-Key")
     if idempotency_key and not re.fullmatch(r"[A-Za-z0-9._:-]{1,128}", idempotency_key):
         await file.close()
         raise HTTPException(
@@ -220,10 +234,26 @@ def download_source(bid_id: str) -> FileResponse:
 
 
 @app.delete("/api/v1/bids/{bid_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["bids"])
-def delete_bid(bid_id: str) -> None:
+def delete_bid(
+    bid_id: str,
+    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+) -> None:
     require_demo_persistence()
-    if not bid_repository.remove_bid(bid_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found.")
+    if not idempotency_key or not re.fullmatch(r"[A-Za-z0-9._:-]{1,128}", idempotency_key):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Deletion requires the Idempotency-Key used to create this upload.",
+        )
+    if not bid_repository.remove_bid(
+        bid_id,
+        project_id=PROJECT_ID,
+        uploader_identity=DEMO_ACTOR,
+        idempotency_key=idempotency_key,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This upload cannot be deleted with the supplied capability.",
+        )
 
 
 # ── Officer Decision (separate from procurement lifecycle) ───────────────
@@ -236,7 +266,7 @@ def update_officer_decision(bid_id: str, request: OfficerDecisionRequest) -> Bid
     but this endpoint maps it to the OfficerDecision concept.
     Returns HTTP 409 if expected_version is stale.
     """
-    require_demo_persistence()
+    require_privileged_mutation()
     try:
         return bid_repository.update_officer_decision(
             bid_id=bid_id,
@@ -257,7 +287,7 @@ def update_officer_decision(bid_id: str, request: OfficerDecisionRequest) -> Bid
 
 @app.post("/api/v1/bids/{bid_id}/actions", response_model=ActivityEvent, tags=["bids"])
 def record_reviewer_action(bid_id: str, request: ReviewerActionRequest) -> ActivityEvent:
-    require_demo_persistence()
+    require_privileged_mutation()
     event = bid_repository.add_action(bid_id, request.action, request.note)
     if not event:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found.")
@@ -294,7 +324,7 @@ def generate_rfi_draft(payload: RFIDraftRequest) -> RFIDraft:
 @app.patch("/api/v1/rfis/{rfi_id}/approve", response_model=RFIDraft, tags=["agent"])
 def approve_rfi(rfi_id: str, request: RFIApprovalRequest) -> RFIDraft:
     """Approve a persisted RFI draft. This is a separate action from generation."""
-    require_demo_persistence()
+    require_privileged_mutation()
     try:
         draft = bid_repository.get_rfi(rfi_id)
         if not draft:
@@ -335,7 +365,7 @@ def update_site_constraints(payload: ConstraintUpdateRequest) -> Dict[str, Any]:
 
     Returns HTTP 409 if expected_version is stale.
     """
-    require_demo_persistence()
+    require_privileged_mutation()
     try:
         current = bid_repository.get_current_constraints(PROJECT_ID)
         if not current:

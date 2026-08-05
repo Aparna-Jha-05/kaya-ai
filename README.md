@@ -8,7 +8,7 @@ dockets, checks them against deterministic project constraints, and keeps the
 final decision with a human reviewer.
 
 [![CI](https://github.com/Aparna-Jha-05/kaya-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Aparna-Jha-05/kaya-ai/actions/workflows/ci.yml)
-[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688)](https://fastapi.tiangolo.com/)
 [![OpenSpec](https://img.shields.io/badge/specs-OpenSpec-5B5BD6)](./openspec/README.md)
 
@@ -17,7 +17,7 @@ final decision with a human reviewer.
 [**Business case**](./BUSINESS.md) ·
 [**Demo runbook**](./DEMO_RUNBOOK.md)
 
-**3 synthetic demo bids · 4 deterministic patrols · 46 backend tests · 11/11 deployed acceptance checks**
+**3 synthetic demo bids · 4 deterministic patrols · 49 backend tests · 11/11 deployed acceptance checks**
 
 ![PO-LICE walkthrough: review queue, rejected low-cost bid, deterministic checks, and cited evidence](./public/readme/po-lice-demo.gif)
 
@@ -34,11 +34,17 @@ and trace the decision back to its PDF evidence.*
 | Machine-readable API contract | [OpenAPI JSON](https://po-lice-backend-staging.onrender.com/openapi.json) |
 | Source repository | [Aparna-Jha-05/kaya-ai](https://github.com/Aparna-Jha-05/kaya-ai) |
 
-These public links were checked on **30 July 2026**. The free-tier backend may
+These public links were checked on **5 August 2026**. The free-tier backend may
 need up to 45 seconds to wake after inactivity.
 
 All vendor names, documents, prices, and evidence in the public demonstration
 are synthetic competition fixtures.
+
+The hosted demo is deliberately safe for public judging: visitors can upload,
+simulate, inspect evidence, and generate an RFI draft. Reviewer decisions,
+reviewer activity, RFI approval, and constraint administration are protected
+until authenticated roles are implemented. Visitors can remove only an upload
+created in their current browser session.
 
 ## 60-second tour
 
@@ -72,8 +78,9 @@ stays missing and requires review.
 3. Run four deterministic patrols:
    Building, Green, Vice Squad, and Traffic Control.
 4. Compare bids using compliance status and a bounded five-year cost scenario.
-5. Inspect source evidence, approve an RFI draft, and record a reviewer action.
-6. Review the activity trail.
+5. Inspect source evidence and generate an evidence-bound RFI draft.
+6. Review the activity trail. Run locally to demonstrate privileged approval
+   actions without exposing them on the public deployment.
 
 The demo currently uses SQLite and filesystem storage. PostgreSQL/Supabase
 runtime persistence, authentication/RLS, object storage, durable correlation,
@@ -130,8 +137,7 @@ npm run dev
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
-cp backend/.env.example backend/.env
-PYTHONPATH=backend uvicorn main:app --reload --app-dir backend
+PYTHONPATH=backend uvicorn main:app --reload --app-dir backend --env-file .env.local
 ```
 
 Set the frontend API URL in `.env.local`:
@@ -156,7 +162,7 @@ python3 scripts/acceptance_gate.py \
   --frontend https://po-lice.vercel.app
 ```
 
-The current backend suite contains **46 tests**. The last recorded public
+The current backend suite contains **49 tests**. The last recorded public
 acceptance run passed **11/11 checks**; rerun it for release evidence rather
 than treating this sentence as a permanent guarantee.
 

@@ -18,7 +18,7 @@ with code or assertion-based tests, the code and tests win.
 
 | Layer | Technology | Responsibility |
 | --- | --- | --- |
-| Web client | Next.js 14, React, TypeScript, Tailwind CSS | Review queue, bid comparison, evidence inspection, upload, simulation, RFI approval, and activity UI |
+| Web client | Next.js 16, React, TypeScript, Tailwind CSS | Review queue, bid comparison, evidence inspection, upload, simulation, RFI draft review, and activity UI |
 | API | FastAPI, Pydantic | Validates requests and exposes the implemented workflow |
 | Document extraction | PyMuPDF and conservative regex parsing | Text, normalized facts, page references, rectangles, page geometry, and document metadata signals |
 | Optional model extraction | Ollama, then Gemini | Proposes only unresolved supported facts with exact source excerpts |
@@ -29,6 +29,11 @@ with code or assertion-based tests, the code and tests win.
 PostgreSQL/pgvector migrations and a synthetic seeder exist, but the live API
 does not yet use Supabase for runtime CRUD, authentication/RLS, object
 storage, or vector retrieval.
+
+The hosted public demo sets `PO_LICE_PUBLIC_READ_ONLY=true`: inspection,
+upload, simulation, and RFI draft generation remain available, while reviewer
+decisions, reviewer actions, RFI approval, and constraint updates are blocked.
+Those privileged flows remain runnable in local/private demo mode.
 
 ## Request flow
 
@@ -165,6 +170,7 @@ Backend deterministic demo:
 DEMO_MODE=true
 PO_LICE_PROJECT_ID=PRJ-POLICE-01
 PO_LICE_ALLOWED_ORIGINS=http://localhost:3000
+PO_LICE_PUBLIC_READ_ONLY=false
 OLLAMA_ENABLED=false
 REMOTE_EXTRACTION_ENABLED=false
 ```

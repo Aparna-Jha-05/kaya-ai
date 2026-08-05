@@ -59,8 +59,10 @@ The three seeded bids tell a deliberate story:
 - **Trane Solutions** stays within the demonstrated constraint envelope and is
   recommended.
 
-The reviewer can then inspect source evidence, approve an RFI draft, adjust a
+The reviewer can then inspect source evidence, review an RFI draft, adjust a
 bounded cost scenario, upload a synthetic bid, and view the activity trail.
+The public deployment protects approval actions; the full approval workflow is
+available only in writable local/private demo mode until authentication exists.
 The exact three-minute sequence is in [DEMO_RUNBOOK.md](./DEMO_RUNBOOK.md).
 
 ## Differentiation

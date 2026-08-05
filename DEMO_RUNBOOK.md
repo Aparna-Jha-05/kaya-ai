@@ -9,14 +9,15 @@
 
 | Component | Target URL | Verified Source Revision | Access Control |
 | --- | --- | --- | --- |
-| **Frontend** | `https://po-lice.vercel.app` | `c7f7a2d` | Public HTTPS (no platform login required) |
-| **Backend** | `https://po-lice-backend-staging.onrender.com` | `1940751` (latest backend/Render source change) | Public HTTPS (exact-origin CORS configured) |
+| **Frontend** | `https://po-lice.vercel.app` | `main` after required CI | Public HTTPS (no platform login required) |
+| **Backend** | `https://po-lice-backend-staging.onrender.com` | `main` after required CI | Public HTTPS; exact-origin CORS; privileged mutations protected |
 
 ### Environment Variables
 
 #### Backend (`Render` / local):
 - `PO_LICE_ALLOWED_ORIGINS`: Origin URL of frontend (e.g. `http://localhost:3000` or deployed Vercel domain)
 - `PO_LICE_PROJECT_ID`: `PRJ-POLICE-01`
+- `PO_LICE_PUBLIC_READ_ONLY`: `true` on the hosted demo; `false` only for a controlled local/private reviewer demo
 - `OLLAMA_ENABLED`: `false` (guaranteed deterministic path)
 - `REMOTE_EXTRACTION_ENABLED`: `false` (or `true` with `GEMINI_API_KEY` for optional enhancement)
 - `PO_LICE_DATA_DIR`: Data persistence directory (defaults to `backend/data/`)
@@ -57,25 +58,17 @@ If the backend instance is cold (asleep on free-tier Render hosting):
 - [x] Bid Detail page displays vendor name, equipment model, recommendation badge, and tab strip.
 - [x] Source tab displays extracted candidates, page numbers, and bounding-box / geometry status.
 - [x] Checks tab allows clicking "Inspect evidence & geometry" to open the drawer.
-- [x] RFI Modal opens, shows factual breach text, and allows human approval.
+- [x] RFI Modal opens and shows factual breach text; hosted approval is visibly protected.
 - [x] TCO Slider dynamically updates calculated 5-year cost without page refresh.
 - [x] Audit log page displays recorded activity events and allows CSV export.
 
-### Verification Evidence — 2026-07-28
+### Verification Evidence — 2026-08-05 Release Candidate
 
-- Main CI passed for frontend revision `c7f7a2d`: <https://github.com/Aparna-Jha-05/kaya-ai/actions/runs/30329660670>
-- Public deployed acceptance passed 11/11 checks against the Vercel and Render URLs above.
-- The acceptance-only upload was removed successfully; the live dataset returned to the three narrative fixtures.
-- Browser verification found no console errors and confirmed the truthful architecture copy, neutral TCO card, evidence drawer, readable integrity evidence, RFI modal, and activity export control.
+- Local backend discovery passed 49/49 assertion-based tests.
+- Next.js 16 production build and production dependency audit passed with zero reported vulnerabilities.
+- Public deployment evidence must be refreshed after this release reaches `main` by running the acceptance command above and checking the browser console on desktop and mobile.
 
-### Verification Evidence — 2026-07-30 Refresh
-
-- Pull-request and post-merge CI passed OpenSpec, backend, PostgreSQL foundation, extraction baseline, API contract, and frontend build checks for the competition README update: <https://github.com/Aparna-Jha-05/kaya-ai/actions/runs/30530393835>
-- The public deployed acceptance gate passed 11/11 checks against the Vercel and Render URLs above and removed its acceptance-only upload.
-- Browser verification moved the Trane upfront discount from 0% to 18%; the visible scenario changed from ₹6.96 Cr to ₹6.20 Cr without a page reload.
-- The runtime revisions in the deployment table remain the served application revisions because the subsequent README-only deployment was intentionally skipped by Vercel's ignored-build rule.
-
-### Go/No-Go Decision — 2026-07-30
+### Go/No-Go Decision
 
 **GO for the synthetic competition prototype.** CI, public access, deployed
 acceptance, visual behavior, fixture assertions, deterministic fallback, and
@@ -89,12 +82,12 @@ production-roadmap work and are not part of the demo-ready claim.
 
 | Capability | Status | Implementation Detail |
 | --- | --- | --- |
-| Next.js 14 Dashboard | **Implemented** | Full UI connected via `lib/api.ts` |
+| Next.js 16 Dashboard | **Implemented** | Full UI connected via `lib/api.ts` |
 | FastAPI Backend | **Implemented** | 15+ REST endpoints in `backend/main.py` |
 | PyMuPDF Extraction | **Implemented** | Text, unit normalization, page geometry |
 | 4 Deterministic Patrols | **Implemented** | Building, Green, Vice Squad, Traffic Control |
 | SQLite Persistence | **Implemented** | WAL mode, optimistic concurrency, RFI drafts |
-| Human Decision Audit | **Implemented** | Optimistic concurrency (`expected_version`) |
+| Human Decision Audit | **Implemented (controlled mode)** | Optimistic concurrency (`expected_version`); protected on the hosted public demo |
 | Scenario Simulation | **Implemented** | Bounded TCO² calculation service |
 | PostgreSQL / pgvector | *Planned Foundation* | Migrations & seeder verified; runtime CRUD planned |
 | Authentication / RLS | *Planned* | Explicit role design; auth middleware planned |

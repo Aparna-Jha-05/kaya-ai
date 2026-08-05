@@ -51,8 +51,8 @@ def http_get(url: str, headers: dict | None = None) -> tuple[int, dict | str, di
         return err.code, data, _lower_headers(dict(err.headers))
 
 
-def http_delete(url: str) -> int:
-    req = urllib.request.Request(url, method="DELETE")
+def http_delete(url: str, headers: dict | None = None) -> int:
+    req = urllib.request.Request(url, headers=headers or {}, method="DELETE")
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             return resp.status
@@ -148,6 +148,7 @@ def run_acceptance_gate(backend_url: str, frontend_url: str) -> bool:
 
     passed = 0
     total = 0
+    public_read_only = False
 
     def check(name: str, fn) -> bool:
         nonlocal passed, total
@@ -175,10 +176,12 @@ def run_acceptance_gate(backend_url: str, frontend_url: str) -> bool:
 
     # 2. Backend readiness
     def test_readiness():
+        nonlocal public_read_only
         status, data, _ = http_get(f"{backend_url}/api/v1/readiness")
         assert status == 200, f"Readiness returned HTTP {status}"
         assert isinstance(data, dict), "Readiness response not JSON"
         assert data.get("status") in ("healthy", "ok"), f"Unhealthy readiness: {data}"
+        public_read_only = bool(data.get("public_read_only"))
     check("Backend readiness", test_readiness)
 
     # 3. CORS origin headers check
@@ -202,10 +205,24 @@ def run_acceptance_gate(backend_url: str, frontend_url: str) -> bool:
         assert "RECOMMENDED" in recommendations, f"Missing RECOMMENDED fixture (found: {recommendations})"
         assert "REVIEW_REQUIRED" in recommendations, f"Missing REVIEW_REQUIRED fixture (found: {recommendations})"
         assert "REJECT" in recommendations, f"Missing REJECT fixture (found: {recommendations})"
+        seeded_bids = [
+            bid for bid in data
+            if any(name in bid.get("source", {}).get("vendor_name", "") for name in ("Trane", "Carrier", "CoolTech"))
+        ]
+        assert len(seeded_bids) >= 3, f"Expected three synthetic narrative fixtures, found {len(seeded_bids)}"
+        for bid in seeded_bids:
+            traffic = next(
+                (item for item in bid.get("scorecard", {}).get("patrol_results", []) if item.get("patrol_name") == "TRAFFIC_CONTROL"),
+                {},
+            )
+            evidence = traffic.get("evidence") or {}
+            assert "promised_delivery_weeks" in evidence, f"Stale schedule evidence for bid {bid.get('id')}"
+            assert "maximum_delivery_weeks" in evidence, f"Missing schedule limit for bid {bid.get('id')}"
     check("Three seeded narrative outcomes exist", test_seeded_fixtures)
 
     # 5. Synthetic PDF upload & idempotency
     uploaded_bid_id = None
+    upload_key = "GATE-ACCEPTANCE-UPLOAD-01"
     def test_upload():
         nonlocal uploaded_bid_id
         try:
@@ -217,12 +234,11 @@ def run_acceptance_gate(backend_url: str, frontend_url: str) -> bool:
         with open(pdf_path, "rb") as f:
             pdf_bytes = f.read()
 
-        key = "GATE-ACCEPTANCE-UPLOAD-01"
         status, data, _ = http_upload_file(
             f"{backend_url}/api/v1/bids/upload",
             "DemoUpload_SyntheticBid.pdf",
             pdf_bytes,
-            headers={"Idempotency-Key": key},
+            headers={"Idempotency-Key": upload_key},
         )
         assert status == 200, f"Upload returned {status}: {data}"
         assert isinstance(data, dict), "Upload output not JSON"
@@ -235,7 +251,7 @@ def run_acceptance_gate(backend_url: str, frontend_url: str) -> bool:
             f"{backend_url}/api/v1/bids/upload",
             "DemoUpload_SyntheticBid.pdf",
             pdf_bytes,
-            headers={"Idempotency-Key": key},
+            headers={"Idempotency-Key": upload_key},
         )
         assert status2 == 200, f"Replay upload returned {status2}"
         assert data2.get("id") == uploaded_bid_id, "Idempotent upload returned different ID"
@@ -274,19 +290,25 @@ def run_acceptance_gate(backend_url: str, frontend_url: str) -> bool:
             f"{backend_url}/api/v1/rfis/{rfi_id}/approve",
             {"edited_text": rfi_text, "note": "Acceptance test approval"},
         )
-        assert status == 200, f"RFI approve returned {status}: {data2}"
-        assert data2.get("status") == "APPROVED", f"RFI status not APPROVED: {data2}"
-        approved_rfi_id = rfi_id
-    check("RFI draft generation & human approval", test_rfi_workflow)
+        if public_read_only:
+            assert status == 403, f"Public RFI approval was not protected: {status}: {data2}"
+        else:
+            assert status == 200, f"RFI approve returned {status}: {data2}"
+            assert data2.get("status") == "APPROVED", f"RFI status not APPROVED: {data2}"
+            approved_rfi_id = rfi_id
+    check("RFI draft and approval boundary", test_rfi_workflow)
 
     # 9. Reviewer action
     def test_action():
         assert uploaded_bid_id, "No uploaded bid ID"
         payload = {"action": "REVIEWED_READY_FOR_DECISION", "note": "Acceptance test reviewer action"}
         status, data, _ = http_post_json(f"{backend_url}/api/v1/bids/{uploaded_bid_id}/actions", payload)
-        assert status == 200, f"Reviewer action returned {status}: {data}"
-        assert isinstance(data, dict) and data.get("bid_id") == uploaded_bid_id, "Action event schema invalid"
-    check("Reviewer action recording", test_action)
+        if public_read_only:
+            assert status == 403, f"Public reviewer action was not protected: {status}: {data}"
+        else:
+            assert status == 200, f"Reviewer action returned {status}: {data}"
+            assert isinstance(data, dict) and data.get("bid_id") == uploaded_bid_id, "Action event schema invalid"
+    check("Reviewer action boundary", test_action)
 
     # 10. Activity log retrieval
     def test_activity():
@@ -299,7 +321,10 @@ def run_acceptance_gate(backend_url: str, frontend_url: str) -> bool:
     # 11. Remove acceptance-only data so the judge-facing narrative stays clean
     def test_cleanup():
         assert uploaded_bid_id, "No uploaded bid ID"
-        status = http_delete(f"{backend_url}/api/v1/bids/{uploaded_bid_id}")
+        status = http_delete(
+            f"{backend_url}/api/v1/bids/{uploaded_bid_id}",
+            headers={"Idempotency-Key": upload_key},
+        )
         assert status == 204, f"Acceptance data cleanup returned {status}"
         status, data, _ = http_get(f"{backend_url}/api/v1/bids")
         assert status == 200 and isinstance(data, list), "Could not verify acceptance data cleanup"

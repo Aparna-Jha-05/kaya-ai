@@ -16,6 +16,7 @@ import unittest
 
 from scripts.seed_demo_data import (
     FIXTURES,
+    _scorecard_has_current_schedule_evidence,
     seed,
     generate_upload_fixture,
 )
@@ -112,6 +113,17 @@ class TestDemoFixtures(unittest.TestCase):
         flag_patrols = [p for p in record.scorecard.patrol_results if p.status == "FLAG"]
         self.assertGreater(len(flag_patrols), 0,
             "REVIEW_REQUIRED bid has no FLAG patrols")
+
+    def test_z_stale_fixture_scorecard_is_refreshed(self):
+        fixture = self.results[0]
+        record = self.repo.get_bid(fixture["id"])
+        stale_scorecard = record.scorecard.model_copy(deep=True)
+        traffic = next(item for item in stale_scorecard.patrol_results if item.patrol_name == "TRAFFIC_CONTROL")
+        traffic.evidence.pop("promised_delivery_weeks", None)
+        traffic.evidence.pop("maximum_delivery_weeks", None)
+
+        self.assertTrue(_scorecard_has_current_schedule_evidence(record.scorecard))
+        self.assertFalse(_scorecard_has_current_schedule_evidence(stale_scorecard))
 
 
 class TestUploadFixture(unittest.TestCase):

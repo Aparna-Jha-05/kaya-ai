@@ -50,6 +50,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
   const [tab, setTab] = useState<Tab>("summary");
   const [inspected, setInspected] = useState<BidRecord["scorecard"]["patrol_results"][number] | null>(null);
   const [rfiOpen, setRfiOpen] = useState(false);
+  const [privilegedActionsEnabled, setPrivilegedActionsEnabled] = useState(false);
   const tone = recommendationTone(record.scorecard.recommendation);
   const color = toneColor(tone);
   const source = record.source;
@@ -60,6 +61,10 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
     : record.scorecard.recommendation === "REVIEW_REQUIRED"
     ? "Review flagged evidence and record the appropriate decision."
     : "Confirm the evidence, then record a reviewer decision.";
+
+  useEffect(() => {
+    procurementApi.readiness().then((readiness) => setPrivilegedActionsEnabled(!readiness.public_read_only)).catch(() => undefined);
+  }, []);
 
   return (
     <div className="space-y-5">
@@ -122,7 +127,10 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
           </Card>
 
           <Card>
-            <CardHeader title="Reviewer action" caption="Human review is required before any procurement action is recorded." />
+            <CardHeader
+              title="Reviewer action"
+              caption={privilegedActionsEnabled ? "Human review is required before any procurement action is recorded." : "The public demo allows inspection and draft generation; privileged approval actions are protected."}
+            />
             <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-text/65">
                 {source.has_osha_cert === false
@@ -139,7 +147,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
                     Review RFI draft
                   </button>
                 )}
-                <ReviewerDecision record={record} />
+                <ReviewerDecision record={record} enabled={privilegedActionsEnabled} />
               </div>
             </div>
           </Card>
@@ -149,6 +157,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
             onClose={() => setRfiOpen(false)}
             vendorName={source.vendor_name}
             bidId={record.id}
+            approvalDisabled={!privilegedActionsEnabled}
             findings={record.scorecard.patrol_results
               .filter((check) => check.status !== "PASS")
               .map((check) => `${displayCheckName(check.patrol_name)}: ${check.reason}`)}
@@ -206,6 +215,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => void }) {
   const [removing, setRemoving] = useState(false);
+  const [canRemove, setCanRemove] = useState(false);
   const [error, setError] = useState("");
   const e = record.source.equipment;
   const fields = [
@@ -220,6 +230,8 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
 
   const candidates = record.source.extraction_report?.candidates ?? [];
   const annotations = record.source.extraction_report?.dimension_annotations ?? [];
+
+  useEffect(() => setCanRemove(procurementApi.canRemove(record.id)), [record.id]);
 
   async function remove() {
     if (!window.confirm("Remove this uploaded bid and its stored source PDF? This cannot be undone.")) return;
@@ -367,27 +379,29 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
 
       <ViceSquadCard record={record} />
 
-      <Card>
-        <CardHeader title="Remove uploaded bid" caption="This deletes the persisted record, activity, and source PDF." />
-        <div className="flex flex-wrap items-center justify-between gap-3 p-4">
-          <p className="text-xs text-text/55">Use only when this upload was submitted in error.</p>
-          <div>
-            <button
-              type="button"
-              onClick={() => void remove()}
-              disabled={removing}
-              className="rounded-lg border border-rose/30 px-4 py-2 text-sm font-semibold text-rose hover:bg-rose/10 disabled:opacity-60"
-            >
-              {removing ? "Removing…" : "Remove bid"}
-            </button>
-            {error && (
-              <p role="alert" className="mt-1 text-xs text-rose">
-                {error}
-              </p>
-            )}
+      {canRemove && (
+        <Card>
+          <CardHeader title="Remove uploaded bid" caption="This deletes the persisted record, activity, and source PDF." />
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <p className="text-xs text-text/55">Available only for uploads created in this browser session.</p>
+            <div>
+              <button
+                type="button"
+                onClick={() => void remove()}
+                disabled={removing}
+                className="rounded-lg border border-rose/30 px-4 py-2 text-sm font-semibold text-rose hover:bg-rose/10 disabled:opacity-60"
+              >
+                {removing ? "Removing…" : "Remove bid"}
+              </button>
+              {error && (
+                <p role="alert" className="mt-1 text-xs text-rose">
+                  {error}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
     </div>
   );
 }
@@ -518,7 +532,7 @@ function ActivityTab({ id }: { id: string }) {
   );
 }
 
-function ReviewerDecision({ record }: { record: BidRecord }) {
+function ReviewerDecision({ record, enabled }: { record: BidRecord; enabled: boolean }) {
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [message, setMessage] = useState("");
   const blocked = record.scorecard.recommendation === "REJECT";
@@ -545,12 +559,12 @@ function ReviewerDecision({ record }: { record: BidRecord }) {
       <button
         type="button"
         onClick={() => void save()}
-        disabled={state === "saving" || state === "saved"}
+        disabled={!enabled || state === "saving" || state === "saved"}
         className={`rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-60 ${
           blocked ? "bg-rose/15 text-rose hover:bg-rose/25" : "bg-cyan/15 text-cyan hover:bg-cyan/25"
         }`}
       >
-        {state === "saving" ? "Recording…" : state === "saved" ? "Decision recorded" : blocked ? "Record do not select" : "Record ready for decision"}
+        {!enabled ? "Protected in public demo" : state === "saving" ? "Recording…" : state === "saved" ? "Decision recorded" : blocked ? "Record do not select" : "Record ready for decision"}
       </button>
       {message && (
         <p aria-live="polite" className={`mt-1 text-xs ${state === "error" ? "text-rose" : "text-cyan"}`}>
@@ -583,17 +597,15 @@ function EvidenceDrawer({
     };
   }, [onClose]);
 
-  // Find candidate fact matching this patrol check for evidence location & geometry
   const candidates = record.source.extraction_report?.candidates ?? [];
-  const relevantCandidate = candidates.find((c) =>
-    check.patrol_name.includes("BUILDING")
-      ? c.field.includes("power") || c.field.includes("width")
-      : check.patrol_name.includes("GREEN")
-      ? c.field.includes("carbon")
-      : check.patrol_name.includes("TRAFFIC")
-      ? c.field.includes("delivery")
-      : false
-  );
+  const relevantFields = check.patrol_name.includes("BUILDING")
+    ? ["equipment.power_draw_kw", "equipment.width_m"]
+    : check.patrol_name.includes("GREEN")
+    ? ["equipment.embodied_carbon_factor"]
+    : check.patrol_name.includes("TRAFFIC")
+    ? ["promised_delivery_weeks"]
+    : [];
+  const relevantCandidates = candidates.filter((candidate) => relevantFields.includes(candidate.field));
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs" role="presentation" onMouseDown={onClose}>
@@ -647,25 +659,28 @@ function EvidenceDrawer({
 
           <section>
             <p className="text-[10px] font-bold uppercase tracking-wider text-text/50">Source Location & Geometry</p>
-            <div className="mt-2 space-y-2 rounded-xl border border-line bg-surface p-3.5 text-xs font-mono shadow-xs">
-              <div className="flex justify-between">
-                <span className="text-text/50">Page:</span>
-                <span className="text-text/80">{relevantCandidate?.page != null ? `Page ${relevantCandidate.page}` : "Document text"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-text/50">Geometry Region:</span>
-                <span className={relevantCandidate?.bbox ? "text-cyan font-bold" : "text-text/40"}>
-                  {relevantCandidate?.bbox ? `[${relevantCandidate.bbox.map((v) => v.toFixed(1)).join(", ")}]` : "Region unavailable"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-text/50">Extractor Type:</span>
-                <span className="text-text/70">{relevantCandidate ? "Detected PDF text region" : "Deterministic rule"}</span>
-              </div>
-              {relevantCandidate?.source_excerpt && (
-                <div className="mt-2 border-t border-line/50 pt-2">
-                  <span className="block text-[10px] text-text/50 uppercase font-bold">Cited Excerpt:</span>
-                  <p className="mt-1 text-text/80 italic">&quot;{relevantCandidate.source_excerpt}&quot;</p>
+            <div className="mt-2 space-y-2">
+              {relevantCandidates.length ? relevantCandidates.map((candidate) => (
+                <div key={candidate.field} className="space-y-2 rounded-xl border border-line bg-surface p-3.5 text-xs font-mono shadow-xs">
+                  <p className="font-bold text-cyan">{candidate.field}</p>
+                  <div className="flex justify-between">
+                    <span className="text-text/50">Page:</span>
+                    <span className="text-text/80">{candidate.page != null ? `Page ${candidate.page}` : "Document text"}</span>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <span className="text-text/50">Geometry Region:</span>
+                    <span className={candidate.bbox ? "text-right text-cyan font-bold" : "text-text/40"}>
+                      {candidate.bbox ? `[${candidate.bbox.map((value) => value.toFixed(1)).join(", ")}]` : "Region unavailable"}
+                    </span>
+                  </div>
+                  <div className="border-t border-line/50 pt-2">
+                    <span className="block text-[10px] text-text/50 uppercase font-bold">Cited Excerpt:</span>
+                    <p className="mt-1 text-text/80 italic">&quot;{candidate.source_excerpt}&quot;</p>
+                  </div>
+                </div>
+              )) : (
+                <div className="rounded-xl border border-line bg-surface p-3.5 text-xs font-mono text-text/50 shadow-xs">
+                  No source text region supports this deterministic rule result.
                 </div>
               )}
             </div>

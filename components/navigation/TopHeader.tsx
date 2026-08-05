@@ -24,12 +24,12 @@ export default function TopHeader() {
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-cyan shadow-[0_4px_12px_rgba(56,189,248,0.35)] group-hover:shadow-[0_4px_18px_rgba(56,189,248,0.55)] group-hover:scale-105 transition-all duration-200">
             <Image src="/icon.svg" alt="PO-LICE" width={22} height={22} priority />
           </span>
-          <span className="text-lg font-extrabold tracking-tight text-text group-hover:text-cyan transition-colors duration-200 leading-none">
+          <span className="hidden text-lg font-extrabold tracking-tight text-text group-hover:text-cyan transition-colors duration-200 leading-none sm:inline">
             PO-LICE
           </span>
         </Link>
 
-        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto py-0.5">
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-2 overflow-x-auto py-0.5 sm:gap-3">
           <nav aria-label="Primary navigation" className="flex items-center gap-1 text-xs">
             <NavLink href="/" active={isNavActive("/")}>
               Queue
@@ -42,7 +42,7 @@ export default function TopHeader() {
             </NavLink>
           </nav>
 
-          <div className="flex shrink-0 items-center gap-1.5 border-l border-line pl-2">
+          <div className="hidden shrink-0 items-center gap-1.5 border-l border-line pl-2 sm:flex">
             <ThemeToggle compact />
             <Link
               href="/bids/new"
