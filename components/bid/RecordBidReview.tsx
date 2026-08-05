@@ -63,7 +63,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
     : "Confirm the evidence, then record a reviewer decision.";
 
   useEffect(() => {
-    procurementApi.readiness().then((readiness) => setPrivilegedActionsEnabled(!readiness.public_read_only)).catch(() => undefined);
+    procurementApi.readiness().then((readiness) => setPrivilegedActionsEnabled(readiness.public_read_only === false)).catch(() => undefined);
   }, []);
 
   return (
