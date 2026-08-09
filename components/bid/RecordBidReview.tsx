@@ -6,8 +6,9 @@ import { CheckCircle2, FileSearch, Network, ScrollText, ShieldCheck } from "luci
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import EvidenceBoard from "@/components/bid/EvidenceBoard";
+import Spatial3DViewer from "@/components/bid/Spatial3DViewer";
 import RFIModal from "@/components/rfi-modal";
-import CADVisualizer, { ScheduleVisualizer } from "@/components/cad-visualizer";
+import { ScheduleVisualizer } from "@/components/cad-visualizer";
 import { procurementApi, type ActivityEvent, type BidRecord } from "@/lib/api";
 import { activityActionLabel, cleanReasonText, displayCheckName, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
@@ -637,9 +638,15 @@ function EvidenceDrawer({
           </section>
 
           {check.patrol_name === "BUILDING_PATROL" && (
-            <CADVisualizer
-              widthM={evidenceNumber(check.evidence, "width_m")}
-              doorLimitM={evidenceNumber(check.evidence, "door_limit_m")}
+            <Spatial3DViewer
+              equipmentLength={record.source.equipment.length_m}
+              equipmentWidth={record.source.equipment.width_m}
+              equipmentHeight={record.source.equipment.height_m}
+              doorWidth={evidenceNumber(check.evidence, "door_limit_m")}
+              resultStatus={check.status}
+              powerDrawKw={record.source.equipment.power_draw_kw}
+              maxPowerKw={evidenceNumber(check.evidence, "substation_limit_kw")}
+              floorLoadKg={record.source.equipment.floor_load_kg}
             />
           )}
 
