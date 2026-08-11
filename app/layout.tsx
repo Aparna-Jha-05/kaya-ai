@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import AppSidebar from "@/components/navigation/AppSidebar";
+
 import CommandPalette from "@/components/navigation/CommandPalette";
 import TopHeader from "@/components/navigation/TopHeader";
 
@@ -9,8 +9,15 @@ const sans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
   weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  adjustFontFallback: true,
 });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+  adjustFontFallback: true,
+});
 
 export const metadata: Metadata = {
   title: "PO-LICE · Purchase Order Liability, Intelligence & Compliance Engine",
@@ -18,6 +25,8 @@ export const metadata: Metadata = {
     "LLM extracts and explains, deterministic SQL and math validate procurement compliance.",
   icons: {
     icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
   },
 };
 
@@ -27,16 +36,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try { const theme = localStorage.getItem("po-lice-theme"); if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme; } catch {}`,
+            __html: `(function(){try{const t=localStorage.getItem("po-lice-theme");if(t==="light"||t==="dark"){document.documentElement.dataset.theme=t;}else if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.dataset.theme="dark";}}catch(e){}})()`,
           }}
         />
       </head>
-      <body className="h-full overflow-x-hidden bg-bg text-text font-sans antialiased">
-        <div className="flex h-screen flex-col max-w-[1600px] mx-auto overflow-hidden">
-          <TopHeader />
-          <div className="flex min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
-            <main className="flex-1 min-w-0 max-w-full px-4 py-6 sm:px-6 lg:px-8">{children}</main>
-            <footer className="mt-auto shrink-0 border-t border-line/40 px-6 py-8 text-center text-[11px] font-medium text-text/40">
+      {/* Single natural-scroll body — no overflow-hidden, no h-screen trap */}
+      <body className="min-h-screen bg-bg text-text font-sans antialiased">
+        {/* App shell: header sticky at top, then sidebar + content in a row */}
+        <TopHeader />
+        <div className="mx-auto flex w-full max-w-[1720px] items-start">
+          {/* Main content: flex-col so footer stays at bottom, no overflow clip */}
+          <div className="flex min-w-0 flex-1 flex-col">
+            <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 xl:px-10">
+              {children}
+            </main>
+            <footer className="border-t border-line/40 px-6 py-6 text-center text-[11px] font-medium text-text/40">
               ©2026 PO-LICE. Catching bid bandits before budget breaks.
             </footer>
           </div>

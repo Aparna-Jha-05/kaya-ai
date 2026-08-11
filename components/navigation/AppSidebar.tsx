@@ -7,9 +7,9 @@ import { FilePlus2, LayoutList, Scale, ScrollText } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
 const NAV = [
-  { href: "/", label: "Queue", Icon: LayoutList },
-  { href: "/bids", label: "Compare", Icon: Scale },
-  { href: "/audit", label: "Activity", Icon: ScrollText },
+  { href: "/", label: "Bid Review Queue", Icon: LayoutList },
+  { href: "/bids", label: "Bid Portfolio", Icon: Scale },
+  { href: "/audit", label: "Audit Log", Icon: ScrollText },
 ];
 
 export default function AppSidebar() {
@@ -24,7 +24,7 @@ export default function AppSidebar() {
   };
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-line bg-card/40 px-3 py-5 lg:flex">
+    <aside className="sticky top-[65px] hidden w-60 shrink-0 self-start flex-col max-h-[calc(100vh-65px)] overflow-y-auto border-r border-line bg-card/40 px-3 py-5 lg:flex">
       <Link href="/" title="Purchase Order Liability, Intelligence & Compliance Engine" className="mb-7 flex items-center gap-3 px-1 group">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-line border-b-2 bg-surface shadow-xs group-hover:border-cyan/40 group-hover:scale-105 transition-all duration-200">
           <LogoIcon className="h-5.5 w-5.5" />
@@ -62,7 +62,7 @@ export default function AppSidebar() {
             }`}
         >
           <FilePlus2 className="h-4 w-4" />
-          Upload
+          Upload Bid
         </Link>
         <ThemeToggle />
       </div>
