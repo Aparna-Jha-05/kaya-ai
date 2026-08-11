@@ -69,7 +69,7 @@ function buildGraph(record: BidRecord): { nodes: GNode[]; edges: GEdge[] } {
 
     nodes.push(
       n(`e${i}`, 320, y, patrol.reason.length > 80 ? patrol.reason.slice(0, 77) + "…" : patrol.reason, color, displayCheckName(patrol.patrol_name).toUpperCase(), evidenceDetails),
-      n(`i${i}`, 620, y, meta.impact, color, patrol.status === "FAIL" ? "ENGINEERING" : "REVIEW"),
+      n(`i${i}`, 620, y, meta.impact, color, patrol.status === "FAIL" ? "HARD FAILURE" : "REVIEW"),
       n(`c${i}`, 920, y, meta.action, consequenceColor, "CONSEQUENCE"),
     );
     edges.push(
@@ -101,8 +101,8 @@ export default function EvidenceBoard({ record }: { record: BidRecord }) {
   return (
     <Card>
       <CardHeader
-        title="Cascading Impact"
-        caption="Dependency analysis across engineering, carbon, and schedule constraints."
+        title="Financial &amp; TCO² Impact Analysis"
+        caption="Dependency graph across engineering, carbon, and schedule constraints."
       />
       <div className="terminal-grid overflow-x-auto rounded-b-xl p-4">
         <div className="relative mx-auto" style={{ width, height, minWidth: width }}>

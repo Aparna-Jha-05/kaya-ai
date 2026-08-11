@@ -10,9 +10,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
 
 const NAV = [
-  { href: "/", label: "Queue", Icon: LayoutList },
-  { href: "/bids", label: "Compare", Icon: Scale },
-  { href: "/audit", label: "Activity", Icon: ScrollText },
+  { href: "/", label: "Bid Review Queue", Icon: LayoutList },
+  { href: "/bids", label: "Bid Portfolio", Icon: Scale },
+  { href: "/audit", label: "Audit Log", Icon: ScrollText },
 ];
 
 export default function TopHeader() {
@@ -22,6 +22,15 @@ export default function TopHeader() {
 
   useEffect(() => {
     setMounted(true);
+    
+    const handleResize = () => {
+      if (window.innerWidth >= 640) {
+        setMobileMenuOpen(false);
+      }
+    };
+    
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const isUploadActive = pathname === "/bids/new";
@@ -46,7 +55,7 @@ export default function TopHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 shrink-0 border-b border-line bg-bg">
+      <header className="sticky top-0 z-50 shrink-0 border-b border-line bg-bg min-h-[65px]">
         <div className="mx-auto flex items-center justify-between gap-x-3 px-4 py-3">
           {/* Brand Logo */}
           <Link
@@ -54,7 +63,7 @@ export default function TopHeader() {
             title="Purchase Order Liability, Intelligence & Compliance Engine"
             className="flex items-center gap-3 group shrink-0"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-line border-b-2 bg-surface shadow-xs group-hover:border-cyan/40 group-hover:scale-105 transition-all duration-200">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-line border-b-2 bg-surface shadow-xs group-hover:border-cyan/40 group-hover:scale-105 transition duration-200">
               <LogoIcon className="h-5.5 w-5.5" />
             </span>
             <span className="text-xl font-extrabold tracking-tight text-text group-hover:text-cyan transition-colors duration-200 leading-none">
@@ -71,7 +80,7 @@ export default function TopHeader() {
                   <Link
                     key={href}
                     href={href}
-                    className={`rounded-xl px-3 py-2 transition-all ${
+                    className={`rounded-xl px-3 py-2 transition ${
                       active
                         ? "bg-cyan/15 font-bold text-cyan ring-1 ring-cyan/30 shadow-xs"
                         : "text-text/60 font-semibold hover:bg-surface hover:text-text"
@@ -87,14 +96,14 @@ export default function TopHeader() {
               <ThemeToggle compact />
               <Link
                 href="/bids/new"
-                className={`flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+                className={`flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition ${
                   isUploadActive
                     ? "bg-cyan/25 ring-1 ring-cyan/50 text-cyan"
                     : "bg-cyan text-on-accent hover:bg-cyan/90 tactile-press shadow-xs"
                 }`}
               >
                 <FilePlus2 className="h-3.5 w-3.5" />
-                <span>Upload</span>
+                <span>Upload Bid</span>
               </Link>
             </div>
           </div>
@@ -154,7 +163,7 @@ export default function TopHeader() {
                         key={href}
                         href={href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm transition-all duration-150 ${
+                        className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm transition duration-150 ${
                           active
                             ? "bg-cyan/15 font-bold text-cyan ring-1 ring-cyan/30 shadow-xs"
                             : "text-text/60 font-semibold hover:bg-surface hover:text-text"
@@ -172,14 +181,14 @@ export default function TopHeader() {
                   <Link
                     href="/bids/new"
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition-all ${
+                    className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition ${
                       isUploadActive
                         ? "bg-cyan/25 ring-1 ring-cyan/50 text-cyan"
                         : "bg-cyan text-on-accent hover:bg-cyan/90 tactile-press shadow-xs"
                     }`}
                   >
                     <FilePlus2 className="h-4 w-4" />
-                    Upload
+                    Upload Bid
                   </Link>
 
                   <ThemeToggle />

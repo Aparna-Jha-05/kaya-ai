@@ -50,6 +50,27 @@ export default function Spatial3DViewer({
   const powerBreach = powerDrawKw != null && powerDrawKw > maxPowerKw;
   const floorBreach = floorLoadKg != null && floorLoadKg > maxFloorLoadKg;
 
+  const activeBreaches = [
+    !fitsDoor && {
+      id: "door",
+      title: "Door Access Overlimit",
+      details: `Equipment width (${eqW}m) exceeds entry door width (${maxDoor}m)`,
+      delta: `+${(eqW - maxDoor).toFixed(2)}m`,
+    },
+    powerBreach && {
+      id: "power",
+      title: "Electrical Power Overlimit",
+      details: `Power demand (${powerDrawKw} kW) exceeds site feed rating (${maxPowerKw} kW)`,
+      delta: `+${(powerDrawKw! - maxPowerKw).toFixed(0)} kW`,
+    },
+    floorBreach && {
+      id: "floor",
+      title: "Floor Loading Overlimit",
+      details: `Equipment load (${floorLoadKg} kg/m²) exceeds slab rating (${maxFloorLoadKg} kg/m²)`,
+      delta: `+${(floorLoadKg! - maxFloorLoadKg).toFixed(0)} kg/m²`,
+    },
+  ].filter(Boolean) as Array<{ id: string; title: string; details: string; delta: string }>;
+
   const subParts = [
     {
       id: "power" as const,
@@ -407,7 +428,7 @@ export default function Spatial3DViewer({
     <div className="relative rounded-2xl border border-line bg-surface p-4 shadow-xs space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="ui-label text-cyan font-bold truncate">3D Geometry & Parts</span>
+          <span className="ui-label text-cyan font-bold truncate">Spatial 3D Model &amp; Clearance</span>
           <div
             className="relative shrink-0"
             onMouseEnter={() => setShowTooltip(true)}
@@ -436,20 +457,14 @@ export default function Spatial3DViewer({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {!fitsDoor && (
-            <span className="text-xs font-mono font-bold text-rose">
-              ✕ Door Overlimit
-            </span>
-          )}
-          {powerBreach && (
-            <span className="text-xs font-mono font-bold text-rose">
-              ⚠ Power Overlimit
-            </span>
-          )}
-          {fitsDoor && !powerBreach && !floorBreach && (
-            <span className="text-xs font-mono font-bold text-cyan">
+        <div className="flex items-center gap-2 shrink-0">
+          {activeBreaches.length === 0 ? (
+            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-xs font-bold text-cyan bg-cyan/15 border border-cyan/30 shrink-0">
               ✓ Compliant
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-xs font-bold text-rose bg-rose/15 border border-rose/30 shrink-0 max-w-[180px] truncate">
+              ✕ {activeBreaches.length} {activeBreaches.length === 1 ? "Breach" : "Breaches"}
             </span>
           )}
         </div>
@@ -497,7 +512,7 @@ export default function Spatial3DViewer({
                 key={part.id}
                 type="button"
                 onClick={() => setSelectedPart(isSelected ? "all" : part.id)}
-                className={`flex items-center justify-between rounded-lg border p-2 text-left text-xs transition-all tactile-press ${
+                className={`flex items-center justify-between rounded-lg border p-2 text-left text-xs transition-all tactile-press min-w-0 ${
                   isSelected
                     ? "border-cyan bg-cyan/15 text-cyan ring-1 ring-cyan/40"
                     : part.flagged
@@ -523,6 +538,33 @@ export default function Spatial3DViewer({
           })}
         </div>
       </div>
+
+      {/* Dedicated Constraint Breach Audit Panel */}
+      {activeBreaches.length > 0 && (
+        <div className="rounded-xl border border-rose/30 bg-rose/10 p-3 space-y-2 text-xs">
+          <div className="flex items-center justify-between border-b border-rose/20 pb-1.5 min-w-0">
+            <span className="font-sans font-bold text-rose flex items-center gap-1.5 text-[11px] uppercase tracking-wider truncate">
+              ⚠ Spatial & Technical Constraint Breaches
+            </span>
+            <span className="font-mono text-[10px] font-bold text-rose shrink-0">
+              {activeBreaches.length} FLAGGED
+            </span>
+          </div>
+          <div className="space-y-1.5 font-mono text-[11px]">
+            {activeBreaches.map((breach) => (
+              <div key={breach.id} className="flex items-center justify-between gap-2 rounded-lg bg-surface/80 p-2 border border-rose/20 min-w-0">
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-rose truncate">{breach.title}</p>
+                  <p className="text-[10px] text-text/70 font-sans mt-0.5 truncate">{breach.details}</p>
+                </div>
+                <span className="shrink-0 font-bold bg-rose/20 text-rose border border-rose/30 px-1.5 py-0.5 rounded text-[10px]">
+                  {breach.delta}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

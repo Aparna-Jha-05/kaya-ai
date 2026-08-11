@@ -120,9 +120,9 @@ function Header({
   return (
     <div>
       <Link href="/bids" className="mb-3 inline-flex items-center gap-1.5 text-xs text-text/50 hover:text-text">
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to comparison
+        <ArrowLeft className="h-3.5 w-3.5" /> Back to Portfolio
       </Link>
-      <p className="page-eyebrow mt-1">Bid review</p>
+      <p className="page-eyebrow mt-1">Procurement Review</p>
       <h1 className="mt-1 flex flex-wrap items-center gap-3 text-2xl font-bold tracking-tight text-text">
         {title}
         {badge && (

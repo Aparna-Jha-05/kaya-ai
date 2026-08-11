@@ -54,13 +54,13 @@ function check(bid: Comparable, name: string) {
   return bid.checks.find((value) => getPatrolCategory(value.name) === targetCategory);
 }
 function hasFailure(bid: Comparable) {
-  return bid.checks.some((value) => value.status === "FAIL" && (value.name === "Engineering" || value.name === "Carbon"));
+  return bid.checks.some((value) => value.status === "FAIL" && (getPatrolCategory(value.name) === "engineering" || getPatrolCategory(value.name) === "carbon"));
 }
 function status(bid: Comparable, name: string): CheckStatus {
   return check(bid, name)?.status ?? "FLAG";
 }
 function label(filter: ComplianceFilter) {
-  return filter === "eligible" ? "Hard checks passed" : filter === "has-failure" ? "Hard failure present" : "All compliance states";
+  return filter === "eligible" ? "Mandatory constraints satisfied" : filter === "has-failure" ? "Mandatory constraint breach" : "All compliance states";
 }
 
 export default function BidPortfolio() {
@@ -136,7 +136,7 @@ export default function BidPortfolio() {
 
   if (sourceState === "loading") {
     return (
-      <Card className="p-8 text-center text-sm text-text/50">
+      <Card className="p-8 text-center text-sm text-text/50 min-h-[400px] flex items-center justify-center font-medium">
         Loading portfolio bids for comparison…
       </Card>
     );
@@ -162,8 +162,8 @@ export default function BidPortfolio() {
     <div className="space-y-5">
       <Card>
         <CardHeader
-          title="Comparison setup"
-          caption="Filter and select up to 3 bids for side-by-side analysis"
+          title="Comparison Setup"
+          caption="Filter and select up to 3 bids for side-by-side analysis."
           right={<span className="font-mono text-xs font-extrabold text-cyan">{selectedIds.length}/3 selected</span>}
         />
         <div className="p-5 sm:p-6 space-y-4 min-w-0 max-w-full">
@@ -185,10 +185,10 @@ export default function BidPortfolio() {
                 onChange={(event) => setStateFilter(event.target.value as StateFilter)}
                 className="h-10 w-full min-w-0 max-w-full rounded-xl border border-line bg-surface px-3.5 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs truncate"
               >
-                <option value="all">Any status</option>
-                <option value="RECOMMENDED">Ready for decision</option>
-                <option value="REVIEW_REQUIRED">Needs review</option>
-                <option value="REJECT">Do not select</option>
+                <option value="all">All Statuses</option>
+                <option value="RECOMMENDED">RECOMMENDED</option>
+                <option value="REVIEW_REQUIRED">REVIEW REQUIRED</option>
+                <option value="REJECT">REJECT</option>
               </select>
             </label>
             <label className="min-w-0 max-w-full block">
@@ -198,9 +198,9 @@ export default function BidPortfolio() {
                 onChange={(event) => setCompliance(event.target.value as ComplianceFilter)}
                 className="h-10 w-full min-w-0 max-w-full rounded-xl border border-line bg-surface px-3.5 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs truncate"
               >
-                <option value="all">Any patrol result</option>
-                <option value="eligible">Hard checks passed</option>
-                <option value="has-failure">Hard failure present</option>
+                <option value="all">All Patrol Results</option>
+                <option value="eligible">Mandatory Constraints Satisfied</option>
+                <option value="has-failure">Mandatory Constraint Breach</option>
               </select>
             </label>
             <button
@@ -209,7 +209,7 @@ export default function BidPortfolio() {
               disabled={!resetNeeded}
               className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-line px-3.5 text-xs font-bold text-text/70 hover:border-cyan/40 hover:text-text tactile-press disabled:cursor-not-allowed disabled:opacity-35 shadow-xs"
             >
-              <X className="h-3.5 w-3.5" /> Clear filters
+              <X className="h-3.5 w-3.5" /> Clear Filters
             </button>
           </div>
 
@@ -220,7 +220,7 @@ export default function BidPortfolio() {
               return (
                 <label
                   key={bid.id}
-                  className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition-all ${
+                  className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition ${
                     selectedItem
                       ? "border-cyan bg-cyan/15 text-cyan ring-1 ring-cyan/40 shadow-xs"
                       : "border-line text-text/70 hover:border-cyan/40 hover:text-text shadow-xs"
@@ -250,51 +250,41 @@ export default function BidPortfolio() {
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_310px]">
           <Card>
             <CardHeader
-              title="Bid comparison"
-              caption="Side-by-side compliance checks and TCO² scenario analysis"
+              title="Bid Comparison"
+              caption="Side-by-side compliance checks and TCO² scenario analysis."
               right={
                 <span className="inline-flex items-center gap-1.5 text-xs text-text/50 font-medium">
                   <SlidersHorizontal className="h-3.5 w-3.5 text-blue" /> {label(compliance)}
                 </span>
               }
             />
-            <div className="overflow-x-auto overflow-y-auto max-h-[320px]">
-              <table className="w-full min-w-[720px] text-sm border-collapse table-fixed">
-                <colgroup>
-                  <col className="w-[20%]" />
-                  <col className="w-[13%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[11%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[14%]" />
-                  <col className="w-[12%]" />
-                </colgroup>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-sm border-collapse table-auto">
                 <thead className="sticky top-0 z-10 bg-surface">
                   <tr className="border-b-2 border-line table-header">
                     <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
                     <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                       <Tooltip text="Hard limit check. Validates power draw, cooling plant capacity balance, door clearance, warranty, and structural floor load tolerance.">
-                        <span>Engineering</span>
+                        <span>Building Patrol</span>
                       </Tooltip>
                     </th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                       <Tooltip text="Hard limit check. Validates embodied carbon emissions factor and water evaporation rate against site environmental caps.">
-                        <span>Carbon</span>
+                        <span>Green Patrol</span>
                       </Tooltip>
                     </th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                       <Tooltip text="Vendor risk score (0-10) calculated from historical performance metrics.">
-                        <span>Reliability</span>
+                        <span>Vice Squad</span>
                       </Tooltip>
                     </th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                       <Tooltip text="Schedule impact estimation calculating late delivery risk in days.">
-                        <span>Schedule</span>
+                        <span>Traffic Control</span>
                       </Tooltip>
                     </th>
-                    <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO² (INR)</th>
+                    <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-Yr TCO² (INR)</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Status</th>
                   </tr>
                 </thead>
@@ -439,7 +429,7 @@ function Inspector({ bid }: { bid: Comparable }) {
 
       <div className="grid grid-cols-2 gap-3 border-y border-line py-3.5 text-xs">
         <Metric label="Status" value={recommendationLabel(bid.recommendation)} />
-        <Metric label="5-year TCO²" value={inCrore(bid.cost)} />
+        <Metric label="5-Year TCO²" value={inCrore(bid.cost)} />
         <Metric
           label="Reliability"
           value={
@@ -466,7 +456,7 @@ function Inspector({ bid }: { bid: Comparable }) {
 
       <div>
         <Link href={`/bids/${bid.id}`} className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan hover:underline tactile-press">
-          Open bid review <ArrowRight className="h-3.5 w-3.5" />
+          Open Bid Review <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     </Card>

@@ -75,6 +75,7 @@ body {
 
 html {
   font-size: 100%;
+  scrollbar-gutter: stable;
 }
 
 /* Lock body scroll when a drawer or modal overlay is mounted. */

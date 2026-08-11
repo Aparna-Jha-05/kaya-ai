@@ -103,10 +103,10 @@ export default function RFIModal({
         {/* Header */}
         <div className="mb-4 flex items-start justify-between gap-3 border-b border-line pb-4 min-w-0">
           <div className="min-w-0 flex-1">
-            <p className="page-eyebrow mb-1">REQUEST FOR INFORMATION</p>
+            <p className="page-eyebrow mb-1">Request For Information</p>
             <h3 id="rfi-title" className="text-lg font-extrabold text-text flex items-center gap-2 truncate">
               <FileText className="h-5 w-5 text-cyan shrink-0" />
-              <span>Request information for {vendorName}</span>
+              <span>Draft Compliance RFI — {vendorName}</span>
             </h3>
           </div>
           <button
@@ -120,7 +120,7 @@ export default function RFIModal({
         </div>
 
         <p className="mb-3 text-xs font-medium text-text/60">
-          This server-generated draft is built from recorded findings for {vendorName}. Review it before recording approval.
+          Automated evidence draft compiled from patrol findings for {vendorName}. Review and approve for vendor dispatch.
         </p>
 
         {/* Draft Textarea */}
@@ -137,8 +137,8 @@ export default function RFIModal({
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-line pt-4">
           <div className="flex items-center gap-2 text-xs text-text/60">
             <span>Status:</span>
-            <span className="inline-flex items-center gap-1 rounded-lg bg-violet/15 px-2.5 py-1 text-xs font-bold text-violet border border-violet/30 shadow-xs">
-              <CheckCircle2 className="h-3.5 w-3.5" /> Draft ready for review
+            <span className="inline-flex items-center gap-1 rounded-lg bg-violet/15 px-2.5 py-1 text-xs font-extrabold text-violet uppercase border border-violet/30 shadow-xs">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Draft Ready
             </span>
           </div>
 
@@ -148,7 +148,7 @@ export default function RFIModal({
             disabled={loading || isSent || !rfiId}
             className="flex items-center justify-center gap-2 rounded-xl bg-cyan px-5 py-2.5 text-xs font-bold text-on-accent shadow-xs transition-all hover:bg-cyan/90 tactile-press disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            {loading ? "Generating…" : isSent ? "Recording…" : "Record RFI approval"}
+            {loading ? "Generating Draft…" : isSent ? "Approving…" : "Approve RFI"}
           </button>
         </div>
 

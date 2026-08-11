@@ -40,7 +40,7 @@ function liveItems(records: BidRecord[]): Item[] {
           bidId: record.id,
           icon: FileSearch,
           color: check.status === "FAIL" ? COLORS.rose : COLORS.amber,
-          title: `Open ${displayCheckName(check.patrol_name).toLowerCase()} review for ${record.source.vendor_name}`,
+          title: `${displayCheckName(check.patrol_name)} review for ${record.source.vendor_name}`,
           meta: check.reason,
           action: check.status === "FAIL",
         })
@@ -88,12 +88,12 @@ export default function CaseFilesPanel() {
   return (
     <Card>
       <CardHeader
-        title="Action queue"
-        caption="Reviewer tasks requiring verification"
+        title="Action Queue"
+        caption="Officer tasks requiring verification."
       />
-      <ul className="divide-y divide-line/40 max-h-[320px] overflow-y-auto">
+      <ul className="divide-y divide-line/40">
         {source === "loading" && (
-          <li className="px-5 py-6 sm:px-6 text-sm font-medium text-text/50">Loading action queue…</li>
+          <li className="px-5 py-10 sm:px-6 text-sm font-medium text-text/50 flex items-center justify-center">Loading action queue…</li>
         )}
 
         {source === "error" && (

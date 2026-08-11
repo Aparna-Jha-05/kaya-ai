@@ -51,7 +51,7 @@ export default function SummaryRow() {
           onClick={fetchMetrics}
           className="inline-flex items-center gap-1.5 rounded-lg bg-rose/20 px-3 py-1.5 text-xs font-semibold text-rose hover:bg-rose/30 tactile-press transition-colors"
         >
-          <RefreshCw className="h-3.5 w-3.5" /> Retry connection
+          <RefreshCw className="h-3.5 w-3.5" /> Retry Connection
         </button>
       </div>
     );
@@ -59,21 +59,21 @@ export default function SummaryRow() {
 
   const cards = [
     {
-      label: "Submitted bids",
+      label: "Submitted Bids",
       value: metrics?.total,
       color: COLORS.text,
       Icon: FileCheck2,
       help: metrics?.offline ? "No active service connection." : "Active procurement bids in current review queue.",
     },
     {
-      label: "Hard-limit failures",
+      label: "Constraint Breaches",
       value: metrics?.failures,
       color: COLORS.rose,
       Icon: AlertOctagon,
       help: "Bids exceeding engineering limits or carbon budget thresholds.",
     },
     {
-      label: "Documents missing",
+      label: "Pending Documentation",
       value: metrics?.missingDocs,
       color: COLORS.amber,
       Icon: FileWarning,

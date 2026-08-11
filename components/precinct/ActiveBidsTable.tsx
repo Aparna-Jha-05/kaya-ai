@@ -66,11 +66,11 @@ export default function ActiveBidsTable() {
   return (
     <Card>
       <CardHeader
-        title="Submitted bids"
-        caption="Active procurement bids in current review queue"
+        title="Submitted Bids"
+        caption="Active procurement bids in current review queue."
       />
       {source === "loading" && (
-        <p className="p-6 text-sm text-text/50">Loading submitted bids…</p>
+        <div className="p-12 text-sm text-text/50 flex items-center justify-center font-medium">Loading submitted bids…</div>
       )}
 
       {source === "error" && (
@@ -87,53 +87,43 @@ export default function ActiveBidsTable() {
       )}
 
       {(source === "live" || source === "empty") && (
-        <div className="overflow-x-auto overflow-y-auto max-h-[320px]">
-          <table className="w-full min-w-[720px] text-sm border-collapse table-fixed">
-            <colgroup>
-              <col className="w-[20%]" />
-              <col className="w-[13%]" />
-              <col className="w-[10%]" />
-              <col className="w-[10%]" />
-              <col className="w-[11%]" />
-              <col className="w-[10%]" />
-              <col className="w-[14%]" />
-              <col className="w-[12%]" />
-            </colgroup>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[680px] text-sm border-collapse table-auto">
             <thead className="sticky top-0 z-10 bg-surface">
               <tr className="border-b-2 border-line table-header">
                 <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
                 <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <Tooltip text="Hard limit check. Validates power draw, cooling plant capacity balance, door clearance, warranty, and structural floor load tolerance.">
-                    <span>Engineering</span>
+                    <span>Building Patrol</span>
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <Tooltip text="Hard limit check. Validates embodied carbon emissions factor and water evaporation rate against site environmental caps.">
-                    <span>Carbon</span>
+                    <span>Green Patrol</span>
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <Tooltip text="Vendor risk score (0-10) calculated from historical performance metrics.">
-                    <span>Reliability</span>
+                    <span>Vice Squad</span>
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <Tooltip text="Schedule impact estimation calculating late delivery risk in days.">
-                    <span>Schedule</span>
+                    <span>Traffic Control</span>
                   </Tooltip>
                 </th>
-                <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO² (INR)</th>
+                <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-Yr TCO² (INR)</th>
                 <th className="px-4 py-3 text-right font-bold whitespace-nowrap last:rounded-tr-[0.9rem]" />
               </tr>
             </thead>
             <tbody className="font-mono">
               {rows.length ? (
                 rows.map((row) => {
-                  const engineering = check(row, "Engineering")?.status ?? "FLAG";
-                  const carbon = check(row, "Carbon")?.status ?? "FLAG";
-                  const scheduleStatus = check(row, "Schedule")?.status ?? "FLAG";
-                  const risk = check(row, "Reliability")?.risk;
+                  const engineering = check(row, "Building Patrol")?.status ?? "FLAG";
+                  const carbon = check(row, "Green Patrol")?.status ?? "FLAG";
+                  const scheduleStatus = check(row, "Traffic Control")?.status ?? "FLAG";
+                  const risk = check(row, "Vice Squad")?.risk;
                   return (
                     <tr
                       key={row.id}

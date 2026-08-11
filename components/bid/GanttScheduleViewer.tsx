@@ -121,11 +121,13 @@ export default function GanttScheduleViewer({
   }
 
   return (
-    <div className="relative rounded-2xl border border-amber/40 bg-surface p-4 shadow-xs space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-2">
+    <div className={`relative rounded-2xl border bg-surface p-4 sm:p-5 shadow-xs space-y-3.5 ${
+      isLate ? "border-rose/40" : "border-amber/40"
+    }`}>
+      {/* Header with Title & Standardized Compliance Corner Badge */}
+      <div className="flex items-center justify-between border-b border-line/40 pb-2.5 min-w-0 w-full">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="ui-label text-amber font-bold truncate">Schedule Gantt</span>
+          <span className={`ui-label font-extrabold truncate ${isLate ? "text-rose" : "text-amber"}`}>Schedule &amp; Delivery</span>
           <div
             className="relative shrink-0"
             onMouseEnter={() => setShowHelp(true)}
@@ -150,16 +152,18 @@ export default function GanttScheduleViewer({
           </div>
         </div>
 
-        <span className={`text-xs font-mono font-bold shrink-0 ${
-          !hasInference ? "text-text/60" : isLate ? "text-rose" : "text-emerald"
+        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-xs font-bold border shadow-xs shrink-0 ${
+          !hasInference
+            ? "border-line/60 bg-surface/80 text-text/60"
+            : isLate
+            ? "border-rose/30 bg-rose/15 text-rose"
+            : "border-amber/30 bg-amber/15 text-amber"
         }`}>
           {!hasInference
             ? "Pending Extraction"
-            : isEarly
-            ? `✓ +${floatDays} Days Float`
             : isLate
-            ? `✕ ${Math.abs(floatDays)} Days Delay`
-            : "✓ On Schedule"}
+            ? "✕ Non-Compliant"
+            : "✓ Compliant"}
         </span>
       </div>
 
@@ -257,6 +261,22 @@ export default function GanttScheduleViewer({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Schedule Float & Delay Metric Summary */}
+      <div className="flex items-center justify-between rounded-xl border border-line/40 bg-inset p-3 text-xs font-mono w-full">
+        <span className="font-sans font-semibold text-text/80 text-[11px] truncate">
+          Schedule Delivery Margin
+        </span>
+        <span className={`font-bold shrink-0 ml-2 ${!hasInference ? "text-text/60" : isLate ? "text-rose" : "text-emerald"}`}>
+          {!hasInference
+            ? "Pending Extraction"
+            : isEarly
+            ? `+${floatDays} Days Float (Ahead)`
+            : isLate
+            ? `-${Math.abs(floatDays)} Days Delay (Overrun)`
+            : "On Schedule (0 Days Float)"}
+        </span>
       </div>
 
       {/* Hover Inspector Card */}

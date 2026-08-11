@@ -46,7 +46,7 @@ export default function TCOSlider({ baseCapexCr, onTCOChange }: TCOSliderProps) 
           <span className="mb-1.5 flex justify-between text-xs font-semibold">
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-cyan shrink-0" />
-              <span>Upfront discount: <strong className="text-cyan">{discountPercent}%</strong></span>
+              <span>Commercial Discount: <strong className="text-cyan">{discountPercent.toFixed(1)}%</strong></span>
             </span>
             <span className="text-text/60 font-mono">Base: ₹{baseCapexCr.toFixed(2)} Cr</span>
           </span>
@@ -54,7 +54,8 @@ export default function TCOSlider({ baseCapexCr, onTCOChange }: TCOSliderProps) 
             aria-label="Capex discount percentage"
             type="range"
             min="0"
-            max="25"
+            max="30"
+            step="0.5"
             value={discountPercent}
             onChange={(event) => setDiscountPercent(Number(event.target.value))}
             className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-line accent-cyan"
@@ -64,15 +65,16 @@ export default function TCOSlider({ baseCapexCr, onTCOChange }: TCOSliderProps) 
           <span className="mb-1.5 flex justify-between text-xs font-semibold">
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-amber shrink-0" />
-              <span>Delivery delay: <strong className="text-amber">{delayDays} days</strong></span>
+              <span>Schedule Delay: <strong className="text-amber">{delayDays} {delayDays === 1 ? "day" : "days"}</strong></span>
             </span>
-            <span className="text-text/60 font-mono">Penalty: ₹2.0L/day</span>
+            <span className="text-text/60 font-mono">Damages: ₹2.0L/day</span>
           </span>
           <input
             aria-label="Delivery delay in days"
             type="range"
             min="0"
-            max="30"
+            max="45"
+            step="1"
             value={delayDays}
             onChange={(event) => setDelayDays(Number(event.target.value))}
             className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-line accent-amber"
@@ -86,9 +88,9 @@ export default function TCOSlider({ baseCapexCr, onTCOChange }: TCOSliderProps) 
           <p className="text-amber text-xs font-semibold">Scenario service is unavailable. No replacement estimate is shown.</p>
         ) : (
           <div className="grid grid-cols-3 gap-2 text-center">
-            <Metric label="Upfront cost" value={`₹${(result!.adjusted_capex_inr / 10_000_000).toFixed(2)} Cr`} dotColor="bg-cyan" />
-            <Metric label="Delay cost" value={`₹${(result!.delay_penalty_inr / 10_000_000).toFixed(2)} Cr`} dotColor="bg-amber" />
-            <Metric label="5-year TCO²" value={`₹${(result!.calculated_tco2_inr / 10_000_000).toFixed(2)} Cr`} dotColor="bg-amber" />
+            <Metric label="Adjusted Capex" value={`₹${(result!.adjusted_capex_inr / 10_000_000).toFixed(2)} Cr`} dotColor="bg-cyan" />
+            <Metric label="Delay Penalty" value={`₹${(result!.delay_penalty_inr / 10_000_000).toFixed(2)} Cr`} dotColor="bg-amber" />
+            <Metric label="5-Year TCO²" value={`₹${(result!.calculated_tco2_inr / 10_000_000).toFixed(2)} Cr`} dotColor="bg-amber" />
           </div>
         )}
       </div>

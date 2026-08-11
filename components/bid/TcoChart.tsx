@@ -22,11 +22,11 @@ function CustomLegend() {
     <div className="mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-line/60 pt-3 text-xs font-bold">
       <div className="flex items-center gap-1.5">
         <span className="h-3 w-3 rounded-sm bg-cyan shadow-xs" />
-        <span className="text-text/70">Upfront Cost</span>
+        <span className="text-text/70">Bid Amount</span>
       </div>
       <div className="flex items-center gap-1.5">
         <span className="h-3 w-3 rounded-sm bg-amber shadow-xs" />
-        <span className="text-text/70">5-yr TCO²</span>
+        <span className="text-text/70">5-Year TCO²</span>
       </div>
     </div>
   );
@@ -43,7 +43,7 @@ export default function TcoChart({ data }: { data: Row[] }) {
     return (
       <div className="rounded-xl border border-line bg-surface p-4 shadow-xs">
         <div className="mb-3 text-xs font-bold text-text/70">
-          Upfront cost vs 5-year TCO² (INR) — lower is better
+          Bid Amount vs 5-Year TCO² Comparison (INR)
         </div>
         <div className="flex h-[260px] items-center justify-center text-xs font-medium text-text/40">
           Loading cost comparison…
@@ -55,7 +55,7 @@ export default function TcoChart({ data }: { data: Row[] }) {
   return (
     <div className="rounded-xl border border-line bg-surface p-4 shadow-xs">
       <div className="mb-3 text-xs font-bold text-text/70">
-        Upfront cost vs 5-year TCO² (INR) — lower is better
+        Bid Amount vs 5-Year TCO² Comparison (INR)
       </div>
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={data} margin={{ top: 12, right: 16, left: 16, bottom: 8 }}>
