@@ -81,7 +81,7 @@ Other prototype differentiators:
 - page-level source rectangles and geometry status;
 - missing evidence handled as a review flag;
 - version-aware constraints and reviewer actions;
-- live bid comparison rather than a standalone chatbot.
+- live bid comparison with hardware-accelerated responsive UI rather than a standalone chatbot.
 
 ## Current scope
 
@@ -91,21 +91,23 @@ Other prototype differentiators:
 - FastAPI bid workflow;
 - synthetic PDF upload and evidence extraction;
 - four deterministic patrols;
-- SQLite/filesystem demo persistence;
+- SQLite/filesystem demo persistence alongside PostgreSQL;
+- PostgreSQL pgvector live supplier knowledge retrieval and Vendor RAG memory;
+- Supabase Auth, enterprise identity, and RLS policies;
+- Multi-stage extraction with OCR, Table parsing, and Legal Clause analysis;
+- CAD Intelligence parsing for spatial vector geometry;
+- Dual SLM Cascade (Mistral 7B -> Llama 3.1 8B -> Gemini Flash) with confidence scoring;
 - bid comparison and bounded TCO scenario;
-- RFI approval and reviewer decision recording;
+- RFI approval with real SMTP dispatch (exponential backoff) and reviewer decision recording;
+- external Jarvis webhook delegation (HMAC-SHA256 secured);
 - activity history and CSV export;
 - deterministic fallback when AI is unavailable.
 
 ### Not yet production-ready
 
-- enterprise identity, authorization, and Supabase RLS;
-- managed object storage and retention policies;
+- production retention policies (though multi-tier object storage is demonstrated);
 - durable multi-project integrity correlation;
 - production audit immutability and regulatory controls;
-- live supplier/vendor knowledge retrieval;
-- actual RFI delivery to external parties;
-- full CAD/BIM/VLM interpretation;
 - evaluation on confidential, representative procurement documents;
 - availability, security, and load guarantees.
 

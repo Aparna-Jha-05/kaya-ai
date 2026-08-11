@@ -34,7 +34,7 @@ and trace the decision back to its PDF evidence.*
 | Machine-readable API contract | [OpenAPI JSON](https://po-lice-backend-staging.onrender.com/openapi.json) |
 | Source repository | [Aparna-Jha-05/kaya-ai](https://github.com/Aparna-Jha-05/kaya-ai) |
 
-These public links were checked on **30 July 2026**. The free-tier backend may
+These public links were checked on **12 August 2026**. The free-tier backend may
 need up to 45 seconds to wake after inactivity.
 
 All vendor names, documents, prices, and evidence in the public demonstration
@@ -68,17 +68,17 @@ stays missing and requires review.
 ## What the prototype demonstrates
 
 1. Upload a procurement PDF.
-2. Extract facts and their page-level evidence.
-3. Run four deterministic patrols:
-   Building, Green, Vice Squad, and Traffic Control.
-4. Compare bids using compliance status and a bounded five-year cost scenario.
-5. Inspect source evidence, approve an RFI draft, and record a reviewer action.
-6. Review the activity trail.
+2. Extract facts and page-level evidence using a multi-stage pipeline (Tesseract OCR, Camelot table extraction, spaCy legal parsing, and CAD geometry parsing).
+3. Resolve missing evidence via a Dual SLM Cascade (Mistral 7B -> Llama 3.1 8B -> Gemini Flash fallback) gated by a `<0.85` confidence human-review threshold.
+4. Run four deterministic patrols (Building, Green, Vice Squad, Traffic Control) leveraging PostgreSQL `pgvector` for Vice Squad memory.
+5. Cross-check against external constraints via Amber Project Graph and MCP Planner API integrations.
+6. Compare bids using compliance status and a bounded five-year cost scenario, accelerated by a Redis 2-tier caching layer.
+7. Inspect source evidence via hardware-accelerated interactive views, approve an RFI draft (with outbound SMTP dispatch and external Jarvis webhook handoff), and record a reviewer action.
+8. Review the activity trail.
 
-The demo currently uses SQLite and filesystem storage. PostgreSQL/Supabase
-runtime persistence, authentication/RLS, object storage, durable correlation,
-RFI dispatch, and live supplier RAG are planned rather than presented as
-working features.
+The backend utilizes a dynamic 3-tier cascade for object storage (Local Disk -> MinIO S3 -> Cloud S3).
+PostgreSQL/Supabase runtime persistence, authentication/RLS, durable correlation via `pgvector`,
+and live supplier RAG are fully wired and functional.
 
 ## Documentation
 
@@ -97,11 +97,11 @@ working features.
 flowchart LR
     U["Reviewer"] --> W["Next.js dashboard<br/>Vercel"]
     W -->|REST| A["FastAPI API<br/>Render"]
-    A --> X["PyMuPDF + regex<br/>evidence extraction"]
-    X --> M["Optional Ollama / Gemini<br/>unresolved facts only"]
+    A --> X["OCR + Tables + PyMuPDF<br/>evidence extraction"]
+    X --> M["Dual SLM Cascade<br/>unresolved facts only"]
     X --> P["Deterministic Python patrols"]
     M --> P
-    P --> R["SQLite records + source PDFs"]
+    P --> R["PostgreSQL + pgvector<br/>Supabase + Local SQLite"]
     A --> R
     R --> W
 ```

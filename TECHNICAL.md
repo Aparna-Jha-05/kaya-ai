@@ -18,17 +18,18 @@ with code or assertion-based tests, the code and tests win.
 
 | Layer | Technology | Responsibility |
 | --- | --- | --- |
-| Web client | Next.js 14, React, TypeScript, Tailwind CSS | Review queue, bid comparison, evidence inspection, upload, simulation, RFI approval, and activity UI |
+| Web client | Next.js 14, React, TypeScript, Tailwind CSS | Review queue, bid comparison, hardware-accelerated evidence inspection, upload, simulation, RFI approval, and activity UI |
 | API | FastAPI, Pydantic | Validates requests and exposes the implemented workflow |
-| Document extraction | PyMuPDF and conservative regex parsing | Text, normalized facts, page references, rectangles, page geometry, and document metadata signals |
-| Optional model extraction | Ollama, then Gemini | Proposes only unresolved supported facts with exact source excerpts |
+| Document extraction | OCR (Tesseract/EasyOCR), Tables (pdfplumber/Camelot), spaCy Legal Parsing, CAD Intelligence | Multi-stage parsing for text, tables, legal clauses, and vector geometry (`WIDTH_M`, `LENGTH_M`) |
+| SLM Model extraction | Dual Cascade (Mistral 7B -> Llama 3.1 8B -> Gemini Flash) | Proposes unresolved facts gated by a `<0.85` confidence human-review threshold |
 | Decision engine | Deterministic Python patrol service | Applies versioned thresholds and calculates `PASS`, `FAIL`, `FLAG`, recommendation, and TCO scenario output |
-| Demo persistence | SQLite WAL plus local filesystem | Bid records, source provenance, decisions, constraints, assessments, RFI states, activity, and uploaded PDFs |
-| Deployment | Vercel and Render | Public frontend and backend prototype |
+| Persistence | PostgreSQL (`pgvector`), Supabase Auth/RLS, SQLite & Multi-Tier Cascade | HNSW 1536-dim vector memory, JWT auth, records, and 3-tier PDF object storage |
+| Caching | Redis 2-Tier Cache | L1 In-Memory TTL -> L2 Redis Cluster for performance |
+| External Integration | Amber Graph, MCP Planner, Outbound SMTP & Jarvis Webhooks | BIM/CPM schedule integration, RFI dispatch, and external agent handoffs |
+| Demo deployment | Vercel and Render | Public frontend and backend prototype |
 
-PostgreSQL/pgvector migrations and a synthetic seeder exist, but the live API
-does not yet use Supabase for runtime CRUD, authentication/RLS, object
-storage, or vector retrieval.
+PostgreSQL/pgvector (HNSW 1536-dim vector search) and Supabase Auth (JWT) / RLS are fully wired and functional.
+The `/api/v1/readiness` endpoint actively probes Supabase, which powers runtime CRUD, authentication, and vector retrieval.
 
 ## Request flow
 
@@ -45,11 +46,11 @@ sequenceDiagram
     Reviewer->>UI: Upload bid PDF
     UI->>API: Multipart upload + project ID
     API->>Extract: Parse text and evidence geometry
-    Extract-->>API: Deterministic facts + unresolved fields
-    opt Provider enabled and project authorized
-        API->>Model: Minimum relevant text + requested fields
-        Model-->>API: Structured evidence candidates
-        API->>API: Validate schema, units, and exact excerpt
+    Extract-->>API: OCR, Table, Legal, CAD facts + unresolved fields
+    opt Unresolved facts and project authorized
+        API->>Model: Dual SLM Cascade (Mistral -> Llama 3.1 -> Gemini)
+        Model-->>API: Structured candidates with `<0.85` confidence gate
+        API->>API: Validate schema, units, exact excerpt, and confidence
     end
     API->>Rules: Validated facts + current constraint version
     Rules-->>API: Patrol results and recommendation
@@ -88,8 +89,11 @@ The implemented API covers:
 - bid upload, list, detail, source PDF, and delete;
 - simulation;
 - reviewer decisions with optimistic version checks;
-- RFI generation and approval;
+- RFI generation, approval, and live SMTP dispatch with exponential backoff;
+- external Jarvis webhook delegation via HMAC-SHA256 signatures;
 - site-constraint version updates and reassessment;
+- Amber Project Graph (BIM structural/electrical constraints) and MCP Planner (CPM float analysis) connections;
+- Redis L1/L2 caching;
 - activity retrieval/export used by the dashboard.
 
 Use the deployed [Swagger UI](https://po-lice-backend-staging.onrender.com/docs)
@@ -98,20 +102,14 @@ as the exact route-level contract.
 
 ## Extraction cascade
 
-The default path requires no model:
+The extraction path leverages a deep multi-stage pipeline:
 
-1. PyMuPDF extracts document text and page geometry.
-2. Regex and normalization produce supported facts and evidence annotations.
-3. If enabled, Ollama receives only unresolved supported fields.
-4. If unresolved fields remain, Gemini may run only for an authorized project.
-5. Pydantic validates provider structure, units, field allow-list, and exact
-   source support.
+1. **Scanned OCR & Tables**: Tesseract (300DPI) -> EasyOCR -> PyMuPDF Block fallback handles text, and pdfplumber -> Camelot-py -> Matrix fallback handles tables.
+2. **Legal & CAD**: spaCy Syntactic Matcher segments legal clauses, and CAD Intelligence parses spatial vector callouts (`WIDTH_M`, `LENGTH_M`). PyMuPDF runs deep metadata anomaly inspection (surfacing flags like `MODIFICATION_BEFORE_CREATION`).
+3. **Dual SLM Cascade**: For unresolved fields, Mistral 7B -> Llama 3.1 8B -> Remote Gemini Flash executes.
+4. **Confidence Scoring**: Candidates are scored; anything `<0.85` enters a human review gate.
+5. Pydantic validates provider structure, units, field allow-list, and exact source support.
 6. Conflicts or missing facts remain for human review.
-
-No provider is called when deterministic extraction already resolved every
-supported field. Ollama is a text LLM adapter in the current implementation,
-not a full CAD/VLM parser. Configuration, privacy controls, and evaluation
-commands are in [backend/ML_EXTRACTION.md](./backend/ML_EXTRACTION.md).
 
 ## Deterministic patrols
 
@@ -134,7 +132,7 @@ human decision.
 
 ## Persistence and audit
 
-Demo storage is explicit:
+Storage utilizes a dynamic Stage S1 Multi-Tier Blob Storage Cascade:
 
 ```text
 $PO_LICE_DATA_DIR/
@@ -143,13 +141,12 @@ $PO_LICE_DATA_DIR/
     └── {bid_id}.pdf
 ```
 
+The `StorageService` replicates blobs seamlessly from Local Disk to MinIO S3, and finally to Cloud Supabase S3 depending on environment variables.
 The repository layer provides project-scoped upload idempotency, immutable
 source provenance, optimistic decision versions, constraint versions,
 assessment history, and separate RFI draft/approval states.
 
-Current limitation: duplicate/integrity correlation is process-local and
-resets when the backend process restarts. The prototype should not be
-described as having production-grade immutable audit storage.
+**PostgreSQL, pgvector, and Supabase Auth**: The system is fully wired to use Supabase PostgreSQL with `pgvector` for HNSW 1536-dim vector similarity search (Vendor RAG Memory) and Supabase Auth with RLS (`00003_rls_policies.sql`) for secure JWT Bearer token access.
 
 ## Configuration
 

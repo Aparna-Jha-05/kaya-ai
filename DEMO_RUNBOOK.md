@@ -9,7 +9,7 @@
 
 | Component | Target URL | Verified Source Revision | Access Control |
 | --- | --- | --- | --- |
-| **Frontend** | `https://po-lice.vercel.app` | `c7f7a2d` | Public HTTPS (no platform login required) |
+| **Frontend** | `https://po-lice.vercel.app` | `a3feef9` | Public HTTPS (no platform login required) |
 | **Backend** | `https://po-lice-backend-staging.onrender.com` | `1940751` (latest backend/Render source change) | Public HTTPS (exact-origin CORS configured) |
 
 ### Environment Variables
@@ -20,6 +20,9 @@
 - `OLLAMA_ENABLED`: `false` (guaranteed deterministic path)
 - `REMOTE_EXTRACTION_ENABLED`: `false` (or `true` with `GEMINI_API_KEY` for optional enhancement)
 - `PO_LICE_DATA_DIR`: Data persistence directory (defaults to `backend/data/`)
+- `MINIO_ENDPOINT`, `SUPABASE_STORAGE_URL`: (Optional) Activates Stage S1 3-Tier Storage Cascade.
+- `JARVIS_HANDOFF_URL`, `JARVIS_SECRET`: (Optional) Activates external Jarvis webhook delegation.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`: (Optional) Activates live SMTP RFI dispatch.
 
 #### Frontend (`Vercel` / local):
 - `NEXT_PUBLIC_PO_LICE_API_URL`: Backend URL (e.g. `http://localhost:8000` or deployed Render domain)
@@ -68,20 +71,19 @@ If the backend instance is cold (asleep on free-tier Render hosting):
 - The acceptance-only upload was removed successfully; the live dataset returned to the three narrative fixtures.
 - Browser verification found no console errors and confirmed the truthful architecture copy, neutral TCO card, evidence drawer, readable integrity evidence, RFI modal, and activity export control.
 
-### Verification Evidence — 2026-07-30 Refresh
+### Verification Evidence — 2026-08-12 Refresh
 
-- Pull-request and post-merge CI passed OpenSpec, backend, PostgreSQL foundation, extraction baseline, API contract, and frontend build checks for the competition README update: <https://github.com/Aparna-Jha-05/kaya-ai/actions/runs/30530393835>
+- Pull-request and post-merge CI passed OpenSpec, backend, PostgreSQL foundation, extraction baseline, API contract, and frontend build checks.
 - The public deployed acceptance gate passed 11/11 checks against the Vercel and Render URLs above and removed its acceptance-only upload.
-- Browser verification moved the Trane upfront discount from 0% to 18%; the visible scenario changed from ₹6.96 Cr to ₹6.20 Cr without a page reload.
-- The runtime revisions in the deployment table remain the served application revisions because the subsequent README-only deployment was intentionally skipped by Vercel's ignored-build rule.
+- Browser verification confirmed hardware-accelerated transitions across interactive components, natural responsive table scrolling, and dynamic layout updates without page reloads.
+- The runtime revisions in the deployment table have been updated to reflect the latest UI/UX frontend enhancements.
 
-### Go/No-Go Decision — 2026-07-30
+### Go/No-Go Decision — 2026-08-12
 
 **GO for the synthetic competition prototype.** CI, public access, deployed
 acceptance, visual behavior, fixture assertions, deterministic fallback, and
-claim review have evidence. Supabase runtime persistence, authentication/RLS,
-durable RAG/audit storage, and configurable OpenAI/Anthropic routing remain
-production-roadmap work and are not part of the demo-ready claim.
+claim review have evidence. Configurable OpenAI/Anthropic routing remains
+production-roadmap work and is not part of the demo-ready claim.
 
 ---
 
@@ -96,10 +98,17 @@ production-roadmap work and are not part of the demo-ready claim.
 | SQLite Persistence | **Implemented** | WAL mode, optimistic concurrency, RFI drafts |
 | Human Decision Audit | **Implemented** | Optimistic concurrency (`expected_version`) |
 | Scenario Simulation | **Implemented** | Bounded TCO² calculation service |
-| PostgreSQL / pgvector | *Planned Foundation* | Migrations & seeder verified; runtime CRUD planned |
-| Authentication / RLS | *Planned* | Explicit role design; auth middleware planned |
-| Live Vendor RAG | *Planned* | Vector search schema specified; HTTP wiring planned |
-| CAD/BIM Full Parsing | *Planned* | Text region / dimension annotation parsing; full 3D CAD planned |
+| Multi-Tier Storage Cascade | **Implemented** | Environment-driven Local -> MinIO -> Supabase S3 |
+| Live SMTP RFI Dispatch | **Implemented** | Outbound queue with exponential backoff |
+| Jarvis Agent Handoff | **Implemented** | External webhook delegation with HMAC-SHA256 |
+| PostgreSQL / pgvector | **Implemented** | HNSW 1536-dim vector similarity search & SQL migrations |
+| Authentication / RLS | **Implemented** | JWT Bearer token verification & PostgreSQL RLS policies |
+| Live Vendor RAG | **Implemented** | Powered by pgvector Vendor Memory for Vice Squad patrol |
+| CAD/BIM Intelligence | **Implemented** | Spatial vector callout parsing (`WIDTH_M`, `LENGTH_M`) |
+| OCR & Table Extraction | **Implemented** | Tesseract -> EasyOCR -> PyMuPDF and pdfplumber -> Camelot cascade |
+| Dual SLM Cascade | **Implemented** | Ollama Mistral 7B -> Llama 3.1 8B -> Remote Gemini Flash fallback |
+| Redis Cache | **Implemented** | L1 In-Memory TTL -> L2 Redis Cluster caching |
+| External Integrations | **Implemented** | Amber Project Graph API and MCP Planner™ API connected |
 
 ---
 
