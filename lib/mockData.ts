@@ -183,6 +183,7 @@ export function createFallbackBidRecord(filename?: string, customVendor?: string
             page_rotation: 0,
             coordinate_system: "PDF_POINTS",
             accepted: true,
+            confidence: 0.98,
           },
         ],
         dimension_annotations: [

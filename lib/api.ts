@@ -48,6 +48,7 @@ export type BidRecord = {
         page_rotation: number | null;
         coordinate_system: string | null;
         accepted: boolean;
+        confidence: number;
       }>;
       dimension_annotations: Array<{
         field: string;
