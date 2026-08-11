@@ -124,7 +124,7 @@ h4, h5, h6 {
   line-height: 1.3;
 }
 
-/* Duolingo-grade tactile utility text & crisp labels. */
+/* Premium tactile utility text & crisp labels. */
 .ui-label {
   font-family: var(--font-mono), monospace;
   font-size: 0.6875rem;
@@ -205,7 +205,7 @@ kbd,
   -ms-overflow-style: none;
 }
 
-/* Duolingo-grade status glows & 2-layer brand fill utilities */
+/* Premium status glows & 2-layer brand fill utilities */
 .glow-cyan {
   box-shadow: 0 0 20px rgba(var(--color-cyan), 0.35);
 }
