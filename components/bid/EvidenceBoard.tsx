@@ -63,7 +63,7 @@ function buildGraph(record: BidRecord): { nodes: GNode[]; edges: GEdge[] } {
     const color = patrolColor(patrol.patrol_name);
     const meta = PATROL_META[patrol.patrol_name] ?? { impact: "Compliance review required", action: "Reviewer action needed" };
     const evidenceDetails: GNode["details"] = patrol.evidence
-      ? Object.entries(patrol.evidence).map(([k, v]) => ({ label: formatLabelTitleCase(k), value: String(v) }))
+      ? Object.entries(patrol.evidence).map(([k, v]) => ({ label: formatLabelTitleCase(k), value: v == null ? "Unstated in Document" : String(v) }))
       : undefined;
     const consequenceColor = patrol.status === "FAIL" ? COLORS.rose : COLORS.amber;
 

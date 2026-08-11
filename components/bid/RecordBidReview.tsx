@@ -636,7 +636,7 @@ function EvidenceDrawer({
                         ? `${equipment.embodied_carbon_factor.toLocaleString()} kgCO₂e`
                         : check.evidence?.embodied_carbon != null
                           ? `${String(check.evidence.embodied_carbon)} kgCO₂e`
-                          : "Pending"}
+                          : "Unstated in Document"}
                     </span>
                   </div>
                   <div className="h-3 w-full rounded-full bg-card overflow-hidden border border-line/40">
@@ -654,7 +654,7 @@ function EvidenceDrawer({
                     <span className="font-bold text-text">
                       {check.evidence?.project_cap != null
                         ? `${Number(check.evidence.project_cap).toLocaleString()} kgCO₂e`
-                        : "Pending"}
+                        : "Unstated in Document"}
                     </span>
                   </div>
                   <div className="h-3 w-full rounded-full bg-card overflow-hidden border border-line/40">
