@@ -3,9 +3,16 @@
 import logging
 import os
 import re
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List
+
+# Ensure backend directory takes precedence in sys.path over root (which has Next.js app/)
+_backend_dir = str(Path(__file__).resolve().parent)
+if _backend_dir in sys.path:
+    sys.path.remove(_backend_dir)
+sys.path.insert(0, _backend_dir)
 
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,9 +33,12 @@ from app.models.schemas import (
 )
 from app.services.extractor import PDFExtractorService
 from app.services.integrity import bid_integrity_matrix
+from app.services.jarvis_handoff import JarvisHandoffService
 from app.services.patrols import ConstraintGraph, PatrolEngineService
 from app.services.repository import InvalidTransitionError, StaleVersionError, bid_repository
 from app.services.rfi import RFIService
+from app.services.smtp_queue import OutboundSMTPQueueService
+from app.services.storage import StorageService
 from app.db.supabase import check_db_readiness, settings
 
 logger = logging.getLogger(__name__)
@@ -141,14 +151,19 @@ async def upload_and_audit_bid(request: Request, file: UploadFile = File(...)) -
     if not contents.startswith(PDF_MAGIC):
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="The uploaded file is not a valid PDF.")
 
-    temp_path: str | None = None
+    submission_ip = request.client.host if request.client else None
+    temp_path = None
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temporary_file:
-            temporary_file.write(contents)
-            temp_path = temporary_file.name
-        submission_ip = request.client.host if request.client else None
-        extracted_bid = PDFExtractorService.extract_from_pdf_path(
-            temp_path,
+        # Stage S1 Multi-Tier Blob Storage Cascade (Local Disk -> MinIO S3 -> Cloud S3)
+        storage_meta = StorageService.save_pdf(
+            pdf_bytes=contents,
+            filename=filename,
+            project_id=PROJECT_ID,
+        )
+        
+        extracted_bid = PDFExtractorService.extract_from_pdf_bytes(
+            raw_pdf=contents,
+            filename=filename,
             submission_ip=submission_ip,
             project_id=PROJECT_ID,
         )
@@ -315,12 +330,30 @@ def approve_rfi(rfi_id: str, request: RFIApprovalRequest) -> RFIDraft:
         violations = RFIService.validate_edited_text(request.edited_text, draft.protected_facts)
         if violations:
             raise ValueError("; ".join(violations))
-        return bid_repository.approve_rfi(
+        approved_rfi = bid_repository.approve_rfi(
             rfi_id,
             edited_text=request.edited_text,
             actor="DEMO_OFFICER",
             note=request.note,
         )
+        # Outbound SMTP Queue Dispatch Aspect
+        OutboundSMTPQueueService.enqueue_rfi_dispatch(
+            bid_id=approved_rfi.bid_id,
+            recipient_email=f"compliance@{draft.vendor_name.lower().replace(' ', '')}.com",
+            subject=f"OFFICIAL RFI NOTICE: Bid {approved_rfi.bid_id}",
+            rfi_body=request.edited_text or draft.rfi_text,
+            officer_identity="DEMO_OFFICER",
+        )
+        OutboundSMTPQueueService.process_outbox_queue()
+        # External Jarvis Handoff Aspect
+        JarvisHandoffService.dispatch_handoff(
+            bid_id=approved_rfi.bid_id,
+            vendor_name=draft.vendor_name,
+            event_type="RFI_APPROVED_DISPATCH",
+            rfi_text=request.edited_text or draft.rfi_text,
+            protected_facts=draft.protected_facts,
+        )
+        return approved_rfi
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="RFI not found.")
     except ValueError as error:

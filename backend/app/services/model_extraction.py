@@ -496,6 +496,9 @@ class ExtractionCascade:
                 report.selected, disagreements = _select_candidates(report.selected, history)
                 report.issues.extend(disagreements)
                 bid = _apply_selected(bid, report)
+                if any(c.provider == ExtractionProvider.OLLAMA for c in report.candidates if c.accepted):
+                    if "SLM_CASCADE_ENRICHED" not in bid.document_metadata.review_signals:
+                        bid.document_metadata.review_signals.append("SLM_CASCADE_ENRICHED")
                 missing = unresolved_fields(bid)
             except ProviderRequestError as error:
                 report.issues.append(
@@ -524,6 +527,10 @@ class ExtractionCascade:
                         report.selected, disagreements = _select_candidates(report.selected, history)
                         report.issues.extend(disagreements)
                         bid = _apply_selected(bid, report)
+                        if "DUAL_MODEL_FALLBACK_TRIGGERED" not in bid.document_metadata.review_signals:
+                            bid.document_metadata.review_signals.append("DUAL_MODEL_FALLBACK_TRIGGERED")
+                        if "SLM_CASCADE_ENRICHED" not in bid.document_metadata.review_signals:
+                            bid.document_metadata.review_signals.append("SLM_CASCADE_ENRICHED")
                         missing = unresolved_fields(bid)
                     except ProviderRequestError as fallback_error:
                         report.issues.append(
@@ -561,6 +568,9 @@ class ExtractionCascade:
                 report.selected, disagreements = _select_candidates(report.selected, history)
                 report.issues.extend(disagreements)
                 bid = _apply_selected(bid, report)
+                if any(c.provider == ExtractionProvider.GEMINI for c in report.candidates if c.accepted):
+                    if "REMOTE_VLM_ENRICHED" not in bid.document_metadata.review_signals:
+                        bid.document_metadata.review_signals.append("REMOTE_VLM_ENRICHED")
             except ProviderRequestError as error:
                 report.issues.append(
                     ExtractionIssue(

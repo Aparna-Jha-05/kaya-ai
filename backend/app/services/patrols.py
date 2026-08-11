@@ -1,10 +1,17 @@
 """Four deterministic patrols. Missing evidence produces a review flag, never a guess."""
 
+import math
 import re
 from dataclasses import dataclass
 
 from app.models.schemas import DocketScorecard, LifecycleMode, PatrolResult, SimulationRequest, SimulationResponse, VendorBidExtract
 from app.services.integrity import bid_integrity_matrix
+
+def exceeds(value: float, limit: float, abs_tol: float = 1e-9) -> bool:
+    return value > limit and not math.isclose(value, limit, abs_tol=abs_tol)
+
+def less_than(value: float, limit: float, abs_tol: float = 1e-9) -> bool:
+    return value < limit and not math.isclose(value, limit, abs_tol=abs_tol)
 
 
 @dataclass(frozen=True)
@@ -27,13 +34,28 @@ class ConstraintGraph:
 
 class PatrolEngineService:
     @classmethod
-    def load_constraints_from_repository(cls) -> ConstraintGraph:
-        """Load the current persisted constraints or fail visibly."""
+    def load_constraints_from_repository(cls, project_id: str = "PRJ-AMBER-01") -> ConstraintGraph:
+        """Load constraints from Amber Project Graph API (if configured) or local repository snapshot."""
+        from app.services.amber_graph import AmberProjectGraphService
         from app.services.repository import bid_repository
 
+        live_amber = AmberProjectGraphService.fetch_live_constraints(project_id)
+
         record = bid_repository.get_current_constraints()
-        if not record:
+        if not record and not live_amber:
             raise RuntimeError("Site constraints are unavailable.")
+
+        if live_amber:
+            return ConstraintGraph(
+                substation_limit_kw=live_amber.get("substation_limit_kw") or (record.max_substation_kw if record else 1200.0),
+                door_limit_m=live_amber.get("door_limit_m") or (record.max_door_width_m if record else 1.9),
+                carbon_cap_kgco2e=live_amber.get("carbon_cap_kgco2e") or (record.max_embodied_carbon_kg if record else 450.0),
+                water_evap_cap_gpm=live_amber.get("water_evap_cap_gpm") or (record.max_water_evap_gpm if record else None),
+                floor_load_limit_kg_m2=live_amber.get("floor_load_limit_kg_m2") or (record.max_floor_load_kg_m2 if record else None),
+                constraint_source=live_amber.get("source", "Amber Live BIM"),
+                constraint_version=record.version if record else 1,
+            )
+
         return ConstraintGraph(
             substation_limit_kw=record.max_substation_kw,
             door_limit_m=record.max_door_width_m,
@@ -79,17 +101,17 @@ class PatrolEngineService:
         ) if value is None]
         building_breaches = []
 
-        if equipment.power_draw_kw is not None and equipment.power_draw_kw > graph.substation_limit_kw:
+        if equipment.power_draw_kw is not None and exceeds(equipment.power_draw_kw, graph.substation_limit_kw):
             building_breaches.append("power draw exceeds the substation limit")
 
         # Cooling-load energy balance: Q_load (cooling capacity) must not exceed Q_plant_max
-        if equipment.cooling_capacity_kw is not None and equipment.cooling_capacity_kw > graph.cooling_plant_max_kw:
+        if equipment.cooling_capacity_kw is not None and exceeds(equipment.cooling_capacity_kw, graph.cooling_plant_max_kw):
             building_breaches.append(
                 f"cooling capacity {equipment.cooling_capacity_kw:.0f} kW exceeds plant maximum "
                 f"{graph.cooling_plant_max_kw:.0f} kW (Q_load ≤ Q_plant_max)"
             )
 
-        if equipment.width_m is not None and equipment.width_m > graph.door_limit_m:
+        if equipment.width_m is not None and exceeds(equipment.width_m, graph.door_limit_m):
             building_breaches.append("equipment width exceeds the access clearance")
 
         if warranty is not None and warranty < graph.contractual_warranty_min_years:
@@ -99,7 +121,7 @@ class PatrolEngineService:
         if graph.floor_load_limit_kg_m2 is not None:
             if equipment.floor_load_kg is None:
                 building_gaps.append("floor load")
-            elif equipment.floor_load_kg > graph.floor_load_limit_kg_m2:
+            elif exceeds(equipment.floor_load_kg, graph.floor_load_limit_kg_m2):
                 building_breaches.append(
                     f"equipment floor load {equipment.floor_load_kg:.0f} kg exceeds structural "
                     f"tolerance {graph.floor_load_limit_kg_m2:.0f} kg/m²"
@@ -128,14 +150,14 @@ class PatrolEngineService:
 
         # ── Patrol 2: Green Patrol ────────────────────────────────────────
         market_floor = graph.market_benchmark_inr * .8
-        carbon_fail = equipment.embodied_carbon_factor is not None and equipment.embodied_carbon_factor > graph.carbon_cap_kgco2e
-        price_flag = bid.bid_amount_inr is not None and bid.bid_amount_inr < market_floor
+        carbon_fail = equipment.embodied_carbon_factor is not None and exceeds(equipment.embodied_carbon_factor, graph.carbon_cap_kgco2e)
+        price_flag = bid.bid_amount_inr is not None and less_than(bid.bid_amount_inr, market_floor)
 
         # Water evaporation capacity check
         water_fail = (
             graph.water_evap_cap_gpm is not None
             and equipment.water_evap_gpm is not None
-            and equipment.water_evap_gpm > graph.water_evap_cap_gpm
+            and exceeds(equipment.water_evap_gpm, graph.water_evap_cap_gpm)
         )
         water_gap = graph.water_evap_cap_gpm is not None and equipment.water_evap_gpm is None
 
@@ -190,14 +212,26 @@ class PatrolEngineService:
             evidence={"agreement_compliance_index": aci, "bid_integrity_signals": correlations, "predictive_reliability_index": max(0, 100 - aci - min(10, 2 + (aci + 9) // 10) * 3)}))
 
         # ── Patrol 4: Traffic Control ─────────────────────────────────────
-        delay_days = max(0, (bid.promised_delivery_weeks - graph.maximum_delivery_weeks) * 7) if bid.promised_delivery_weeks is not None else None
+        from app.services.mcp_planner import MCPPlannerService
+
+        mcp_analysis = MCPPlannerService.analyze_schedule_exposure(
+            bid.promised_delivery_weeks, graph.maximum_delivery_weeks
+        )
+        delay_days = mcp_analysis.get("delay_days")
         simulation = cls.simulate(SimulationRequest(base_capex_inr=bid.bid_amount_inr or 0.01, delay_days=delay_days or 0, lifecycle_mode=bid.lifecycle_mode)) if bid.bid_amount_inr is not None else None
         post_award = bid.lifecycle_mode == LifecycleMode.POST_AWARD
         traffic_status = "FLAG" if post_award or delay_days is None or (delay_days > 5) else "PASS"
         results.append(PatrolResult(patrol_name="TRAFFIC_CONTROL", status=traffic_status,
             reason="Compliance Drift Report: rerun all patrols before accepting a post-award specification change." if post_award else "Review required: delivery commitment was not extracted." if delay_days is None else f"Float-aware schedule exposure is {delay_days} days.",
             rule_broken="DYNAMIC_REVALIDATION_TRIGGER" if post_award else "INSUFFICIENT_EVIDENCE" if delay_days is None else None,
-            evidence={"delay_days": delay_days, "delay_penalty_inr": simulation.delay_penalty_inr if simulation else None, "calculated_tco2_inr": simulation.calculated_tco2_inr if simulation else None, "lifecycle_mode": bid.lifecycle_mode.value}))
+            evidence={
+                "delay_days": delay_days,
+                "delay_penalty_inr": simulation.delay_penalty_inr if simulation else None,
+                "calculated_tco2_inr": simulation.calculated_tco2_inr if simulation else None,
+                "lifecycle_mode": bid.lifecycle_mode.value,
+                "exposure_source": mcp_analysis.get("exposure_source"),
+                "cpm_critical_path_impact": mcp_analysis.get("cpm_critical_path_impact"),
+            }))
 
         failed = any(result.status == "FAIL" for result in results)
         has_review = any(result.status == "FLAG" for result in results)

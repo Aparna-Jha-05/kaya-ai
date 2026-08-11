@@ -32,6 +32,7 @@ class FactField(str, Enum):
     POWER_DRAW_KW = "equipment.power_draw_kw"
     COOLING_CAPACITY_KW = "equipment.cooling_capacity_kw"
     WIDTH_M = "equipment.width_m"
+    LENGTH_M = "equipment.length_m"
     EMBODIED_CARBON = "equipment.embodied_carbon_factor"
     WATER_EVAP_GPM = "equipment.water_evap_gpm"
     FLOOR_LOAD_KG = "equipment.floor_load_kg"
@@ -52,6 +53,7 @@ CANONICAL_FACT_UNITS: dict[FactField, str | None] = {
     FactField.POWER_DRAW_KW: "kW",
     FactField.COOLING_CAPACITY_KW: "kW",
     FactField.WIDTH_M: "m",
+    FactField.LENGTH_M: "m",
     FactField.EMBODIED_CARBON: "kgCO2e/ton",
     FactField.WATER_EVAP_GPM: "gpm",
     FactField.FLOOR_LOAD_KG: "kg",
@@ -74,6 +76,7 @@ class FactCandidate(StrictModel):
     provider: ExtractionProvider
     model: str = Field(min_length=1, max_length=160)
     schema_version: str = Field(default="1.0", pattern=r"^\d+\.\d+$")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
     latency_ms: float = Field(default=0, ge=0, le=3_600_000)
     validation_signals: List[str] = Field(default_factory=list, max_length=20)
     accepted: bool = False
