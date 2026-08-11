@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { backendStore } from "@/lib/backendStore";
+
+const BACKEND_URL = process.env.PO_LICE_BACKEND_URL || "http://127.0.0.1:8000";
 
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { bid_id } = body;
-    const rfi = backendStore.generateRfiDraft(bid_id);
-    return NextResponse.json(rfi);
-  } catch (error) {
-    return NextResponse.json(
-      { detail: error instanceof Error ? error.message : "Failed to generate RFI draft" },
-      { status: 400 }
-    );
-  }
+  const headers = new Headers(request.headers);
+  headers.delete("host");
+  const res = await fetch(`${BACKEND_URL}/api/v1/agent/rfi-draft`, {
+    method: "POST",
+    headers,
+    body: request.body,
+    // @ts-expect-error duplex required
+    duplex: "half",
+  });
+  return new NextResponse(res.body, { status: res.status, headers: new Headers(res.headers) });
 }

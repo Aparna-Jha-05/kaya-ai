@@ -46,6 +46,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
   const [tab, setTab] = useState<Tab>("summary");
   const [inspected, setInspected] = useState<BidRecord["scorecard"]["patrol_results"][number] | null>(null);
   const [rfiOpen, setRfiOpen] = useState(false);
+  const [overrideOpen, setOverrideOpen] = useState(false);
   const tone = recommendationTone(record.scorecard.recommendation);
   const color = toneColor(tone);
   const source = record.source;
@@ -74,9 +75,9 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line/40 pt-3.5 lg:border-t-0 lg:pt-0 text-xs">
-            <Metric label="Bid Amount" value={inCrore(source.bid_amount_inr)} />
+            <Metric label="Bid Amount" value={`${inCrore(source.bid_amount_inr)}${source.document_metadata.review_signals.includes("MANUAL_OVERRIDE_APPLIED") && source.bid_amount_inr != null ? "*" : ""}`} />
             <Metric label="5-Year TCO²" value={inCrore(record.scorecard.calculated_tco2_inr)} />
-            <Metric label="Promised Delivery" value={source.promised_delivery_weeks == null ? "Unstated in Document" : `${source.promised_delivery_weeks} weeks`} />
+            <Metric label="Promised Delivery" value={source.promised_delivery_weeks == null ? "Unstated in Document" : `${source.promised_delivery_weeks} weeks${source.document_metadata.review_signals.includes("MANUAL_OVERRIDE_APPLIED") ? "*" : ""}`} />
           </div>
         </div>
       </section>
@@ -113,6 +114,13 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setOverrideOpen(true)}
+                  className="rounded-xl border border-line bg-surface px-4 py-2 text-sm font-bold text-text hover:bg-line/40 tactile-press shadow-xs transition-colors"
+                >
+                  Manual Override
+                </button>
                 {source.has_osha_cert === false && (
                   <button
                     type="button"
@@ -141,6 +149,12 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
             onClose={() => setRfiOpen(false)}
             vendorName={source.vendor_name}
             bidId={record.id}
+            onHandoffSuccess={() => router.refresh()}
+          />
+          <OverrideModal
+            isOpen={overrideOpen}
+            onClose={() => setOverrideOpen(false)}
+            record={record}
           />
         </div>
       )}
@@ -203,7 +217,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
         </div>
       )}
 
-      {tab === "source" && <SourceTab record={record} onRemoved={() => router.replace("/bids")} />}
+      {tab === "source" && <SourceTab record={record} onRemoved={() => { router.refresh(); router.replace("/bids"); }} />}
       {tab === "activity" && <ActivityTab id={record.id} />}
       {inspected && <EvidenceDrawer check={inspected} record={record} onClose={() => setInspected(null)} />}
     </div>
@@ -251,12 +265,12 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
 
   addIfPresent("Vendor", record.source.vendor_name, "vendor");
   addIfPresent("Model", e.model_number, "model");
-  addIfPresent("Power Draw", e.power_draw_kw != null ? `${e.power_draw_kw} kW` : null, "power");
-  addIfPresent("Cooling Capacity", e.cooling_capacity_kw != null ? `${e.cooling_capacity_kw} kW` : null, "cooling");
-  addIfPresent("Width", e.width_m != null ? `${e.width_m} m` : null, "width");
-  addIfPresent("Floor Load", e.floor_load_kg != null ? `${e.floor_load_kg} kg` : null, "floor");
-  addIfPresent("Water Evaporation", e.water_evap_gpm != null ? `${e.water_evap_gpm} gpm` : null, "water");
-  addIfPresent("Embodied Carbon", e.embodied_carbon_factor != null ? `${e.embodied_carbon_factor} kgCO₂e/ton` : null, "carbon");
+  addIfPresent("Power Draw", e.power_draw_kw != null ? `${e.power_draw_kw} kW${record.source.document_metadata.review_signals.includes("MANUAL_OVERRIDE_APPLIED") ? "*" : ""}` : null, "power");
+  addIfPresent("Cooling Capacity", e.cooling_capacity_kw != null ? `${e.cooling_capacity_kw} kW${record.source.document_metadata.review_signals.includes("MANUAL_OVERRIDE_APPLIED") ? "*" : ""}` : null, "cooling");
+  addIfPresent("Width", e.width_m != null ? `${e.width_m} m${record.source.document_metadata.review_signals.includes("MANUAL_OVERRIDE_APPLIED") ? "*" : ""}` : null, "width");
+  addIfPresent("Floor Load", e.floor_load_kg != null ? `${e.floor_load_kg} kg${record.source.document_metadata.review_signals.includes("MANUAL_OVERRIDE_APPLIED") ? "*" : ""}` : null, "floor");
+  addIfPresent("Water Evaporation", e.water_evap_gpm != null ? `${e.water_evap_gpm} gpm${record.source.document_metadata.review_signals.includes("MANUAL_OVERRIDE_APPLIED") ? "*" : ""}` : null, "water");
+  addIfPresent("Embodied Carbon", e.embodied_carbon_factor != null ? `${e.embodied_carbon_factor} kgCO₂e/ton${record.source.document_metadata.review_signals.includes("MANUAL_OVERRIDE_APPLIED") ? "*" : ""}` : null, "carbon");
   if (record.source.has_osha_cert === true) {
     addIfPresent("Safety Certificate", "Present & Verified", "osha");
   }
@@ -448,6 +462,7 @@ function ActivityTab({ id }: { id: string }) {
 }
 
 function ReviewerDecision({ record }: { record: BidRecord }) {
+  const router = useRouter();
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [message, setMessage] = useState("");
   const blocked = record.scorecard.recommendation === "REJECT";
@@ -463,6 +478,7 @@ function ReviewerDecision({ record }: { record: BidRecord }) {
       );
       setState("saved");
       setMessage("Decision recorded.");
+      router.refresh();
     } catch (error) {
       setState("error");
       setMessage(error instanceof Error ? error.message : "Could not record decision.");
@@ -906,5 +922,120 @@ function ReliabilityInspector({
         </div>
       </div>
     </div>
+  );
+}
+
+function OverrideModal({ isOpen, onClose, record }: { isOpen: boolean; onClose: () => void; record: BidRecord }) {
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  
+  const [overrides, setOverrides] = useState<Record<string, string>>({});
+  
+  useEffect(() => {
+    if (isOpen) {
+      setOverrides({});
+      setError("");
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError("");
+    
+    try {
+      const payload: Record<string, unknown> = { note: "Manual human override" };
+      
+      const fields = [
+        "bid_amount_inr", "promised_delivery_weeks", "power_draw_kw", 
+        "cooling_capacity_kw", "water_evap_gpm", "floor_load_kg", 
+        "length_m", "width_m", "height_m", "embodied_carbon_factor"
+      ];
+      
+      for (const field of fields) {
+        if (overrides[field] && overrides[field].trim() !== "") {
+          payload[field] = parseFloat(overrides[field]);
+        }
+      }
+      
+      if (overrides["has_osha_cert"] === "true") payload["has_osha_cert"] = true;
+      if (overrides["has_osha_cert"] === "false") payload["has_osha_cert"] = false;
+      
+      if (Object.keys(payload).length === 1) {
+         setError("No overrides provided.");
+         setSubmitting(false);
+         return;
+      }
+
+      await procurementApi.overrideBidFields(record.id, payload);
+      router.refresh();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to override fields");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setOverrides(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-card border-2 border-line/40 rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="p-5 border-b border-line/40 flex justify-between items-center bg-surface">
+          <div>
+            <h2 className="text-xl font-bold text-text">Manual Data Override</h2>
+            <p className="text-xs text-text/60 mt-1">Provide missing evidence values manually.</p>
+          </div>
+          <button onClick={onClose} className="text-text/50 hover:text-text px-3 py-2 rounded-lg bg-line/20 hover:bg-line/40 transition-colors font-bold text-xs">Close</button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="ui-label block mb-1.5 text-xs text-text/70">Promised Delivery (Weeks)</label>
+              <input type="number" step="1" name="promised_delivery_weeks" value={overrides.promised_delivery_weeks || ""} onChange={handleChange} className="w-full bg-surface border border-line rounded-xl px-4 py-2.5 text-sm text-text focus:outline-none focus:border-cyan" placeholder={record.source.promised_delivery_weeks?.toString() || "Unstated"} />
+            </div>
+            <div>
+              <label className="ui-label block mb-1.5 text-xs text-text/70">OSHA Cert</label>
+              <select name="has_osha_cert" value={overrides.has_osha_cert || ""} onChange={handleChange} className="w-full bg-surface border border-line rounded-xl px-4 py-2.5 text-sm text-text focus:outline-none focus:border-cyan">
+                <option value="">(Unchanged)</option>
+                <option value="true">Verified</option>
+                <option value="false">Missing</option>
+              </select>
+            </div>
+            <div>
+              <label className="ui-label block mb-1.5 text-xs text-text/70">Power Draw (kW)</label>
+              <input type="number" step="0.1" name="power_draw_kw" value={overrides.power_draw_kw || ""} onChange={handleChange} className="w-full bg-surface border border-line rounded-xl px-4 py-2.5 text-sm text-text focus:outline-none focus:border-cyan" placeholder={record.source.equipment.power_draw_kw?.toString() || "Unstated"} />
+            </div>
+            <div>
+              <label className="ui-label block mb-1.5 text-xs text-text/70">Cooling Capacity (kW)</label>
+              <input type="number" step="0.1" name="cooling_capacity_kw" value={overrides.cooling_capacity_kw || ""} onChange={handleChange} className="w-full bg-surface border border-line rounded-xl px-4 py-2.5 text-sm text-text focus:outline-none focus:border-cyan" placeholder={record.source.equipment.cooling_capacity_kw?.toString() || "Unstated"} />
+            </div>
+            <div>
+              <label className="ui-label block mb-1.5 text-xs text-text/70">Floor Load (kg)</label>
+              <input type="number" step="0.1" name="floor_load_kg" value={overrides.floor_load_kg || ""} onChange={handleChange} className="w-full bg-surface border border-line rounded-xl px-4 py-2.5 text-sm text-text focus:outline-none focus:border-cyan" placeholder={record.source.equipment.floor_load_kg?.toString() || "Unstated"} />
+            </div>
+            <div>
+              <label className="ui-label block mb-1.5 text-xs text-text/70">Water Evaporation (gpm)</label>
+              <input type="number" step="0.1" name="water_evap_gpm" value={overrides.water_evap_gpm || ""} onChange={handleChange} className="w-full bg-surface border border-line rounded-xl px-4 py-2.5 text-sm text-text focus:outline-none focus:border-cyan" placeholder={record.source.equipment.water_evap_gpm?.toString() || "Unstated"} />
+            </div>
+          </div>
+          {error && <p className="text-xs text-rose font-medium p-3 bg-rose/10 rounded-lg border border-rose/20">{error}</p>}
+        </form>
+        
+        <div className="p-5 border-t border-line/40 bg-surface flex justify-end">
+          <button type="submit" disabled={submitting} onClick={handleSubmit} className="rounded-xl bg-cyan px-6 py-2.5 text-sm font-bold text-background hover:bg-cyan/90 disabled:opacity-50 tactile-press shadow-md">
+            {submitting ? "Saving..." : "Save Overrides"}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }

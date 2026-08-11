@@ -291,6 +291,7 @@ class BidRepository:
         media_type: str = "application/pdf",
         idempotency_key: str | None = None,
         integrity_signals: list[str] | None = None,
+        custom_id: str | None = None,
     ) -> BidRecord:
         if idempotency_key:
             replay = self.get_bid_by_idempotency(
@@ -300,7 +301,7 @@ class BidRepository:
             )
             if replay:
                 return replay
-        record_id = str(uuid4())
+        record_id = custom_id or str(uuid4())
         submitted_at = datetime.now(timezone.utc).isoformat()
         stored_file = f"{record_id}.pdf"
         document_sha256 = hashlib.sha256(contents).hexdigest()
@@ -451,6 +452,58 @@ class BidRepository:
         with self._connect() as connection:
             row = connection.execute("SELECT * FROM bids WHERE id = ?", (record_id,)).fetchone()
         return self._record(row) if row else None
+
+    def save_bid_override(
+        self,
+        bid_id: str,
+        updated_source: VendorBidExtract,
+        new_scorecard: DocketScorecard,
+        actor: str,
+        note: str,
+    ) -> BidRecord:
+        """Save a manually overridden bid and re-run its assessment."""
+        timestamp = datetime.now(timezone.utc).isoformat()
+        with self._lock, self._connect() as connection:
+            row = connection.execute("SELECT version FROM bids WHERE id = ?", (bid_id,)).fetchone()
+            if not row:
+                raise KeyError(f"Bid {bid_id} not found")
+            
+            new_version = row["version"] + 1
+            
+            # Update bids table
+            connection.execute(
+                """
+                UPDATE bids 
+                SET source_json = ?, scorecard_json = ?, version = ? 
+                WHERE id = ?
+                """,
+                (updated_source.model_dump_json(), new_scorecard.model_dump_json(), new_version, bid_id),
+            )
+            
+            # Add assessment
+            connection.execute(
+                "INSERT INTO bid_assessments VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    str(uuid4()),
+                    bid_id,
+                    new_version,
+                    self._constraint_version(new_scorecard),
+                    new_scorecard.model_dump_json(),
+                    timestamp,
+                    "MANUAL_OVERRIDE",
+                ),
+            )
+            
+            # Add activity log
+            self._append(
+                connection, bid_id,
+                "MANUAL_OVERRIDE",
+                "FIELDS_UPDATED",
+                "DATA_ENTRY",
+                f"{actor}: {note}",
+            )
+            
+        return self.get_bid(bid_id)  # type: ignore[return-value]
 
     def source_path(self, record_id: str) -> Path | None:
         with self._connect() as connection:

@@ -162,12 +162,24 @@ export const procurementApi = {
     body: JSON.stringify({ action, note }),
   }),
   remove: (id: string) => request<void>(`/api/v1/bids/${id}`, { method: "DELETE" }),
-  simulate: (input: { base_capex_inr: number; discount_percent: number; delay_days: number }) => request<SimulationResponse>("/api/v1/bids/simulate", {
+  simulate: (input: { base_capex_inr: number; discount_percent: number; delay_days: number; opex_carbon_5yr_inr?: number; lifecycle_mode?: "PRE_AWARD" | "POST_AWARD" }) => request<SimulationResponse>("/api/v1/bids/simulate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...input, opex_carbon_5yr_inr: 27_600_000, lifecycle_mode: "PRE_AWARD" }),
+    body: JSON.stringify({
+      base_capex_inr: input.base_capex_inr,
+      discount_percent: input.discount_percent,
+      delay_days: input.delay_days,
+      opex_carbon_5yr_inr: input.opex_carbon_5yr_inr ?? 27_600_000,
+      lifecycle_mode: input.lifecycle_mode ?? "PRE_AWARD",
+    }),
   }),
   sourceUrl: (id: string) => `${base}/api/v1/bids/${id}/source`,
+
+  overrideBidFields: (bid_id: string, overrides: Record<string, any>) => request<BidRecord>(`/api/v1/bids/${bid_id}/override`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(overrides),
+  }),
 
   rfiDraft: (bid_id: string) => request<RFIDraftResponse>("/api/v1/agent/rfi-draft", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ bid_id }) }),
   approveRfi: (rfi_id: string, edited_text: string) => request<RFIDraftResponse>(`/api/v1/rfis/${rfi_id}/approve`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ edited_text, note: "Approved after human review" }) }),

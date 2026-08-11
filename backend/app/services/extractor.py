@@ -98,7 +98,17 @@ class PDFExtractorService:
                 )
 
                 # Stage S1 & S2: Scanned PDF Detection & OCR Fallback Engine
-                if not text.strip() or len(text.strip()) < 50:
+                text_is_sparse = not text.strip() or len(text.strip()) < 50
+                needs_ocr = text_is_sparse
+
+                if not needs_ocr:
+                    # Quick extraction pass to see if we're missing critical data
+                    quick_candidates = PDFExtractorService._deterministic_candidates(text)
+                    has_images = any(len(page.get_images()) > 0 for _, _, page in pages)
+                    if len(quick_candidates) < 3 and has_images:
+                        needs_ocr = True
+
+                if needs_ocr:
                     if "SCANNED_PDF_IMAGE_DETECTED" not in doc_meta.review_signals:
                         doc_meta.review_signals.append("SCANNED_PDF_IMAGE_DETECTED")
                     if "OCR_FALLBACK_RECOMMENDED" not in doc_meta.parser_warnings:
@@ -107,9 +117,10 @@ class PDFExtractorService:
                     # Trigger Stage S2 Multi-Engine OCR Fallback (Tesseract -> EasyOCR -> Block Fallback)
                     ocr_text, page_details = OCREngineService.run_ocr_on_pdf_bytes(raw_pdf, dpi=300)
                     if ocr_text.strip():
-                        text = ocr_text
+                        # Append OCR text to native text to prevent data loss in mixed-media PDFs
+                        text = text + "\n\n--- OCR FALLBACK TEXT ---\n" + ocr_text
                         pages = [
-                            (num, page_details[i]["text"] if i < len(page_details) else pt, page)
+                            (num, pt + "\n" + (page_details[i]["text"] if i < len(page_details) else ""), page)
                             for i, (num, pt, page) in enumerate(pages)
                         ]
                         if "OCR_TEXT_EXTRACTED" not in doc_meta.review_signals:

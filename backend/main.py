@@ -1,4 +1,5 @@
 """HTTP boundary for PO-LICE's procurement evidence service."""
+# Reload trigger: 2026-08-12
 
 import logging
 import os
@@ -23,6 +24,7 @@ from app.models.schemas import (
     ActivityEvent,
     BidRecord,
     ConstraintUpdateRequest,
+    ManualOverrideRequest,
     OfficerDecisionRequest,
     RFIApprovalRequest,
     RFIDraft,
@@ -252,6 +254,63 @@ def delete_bid(bid_id: str) -> None:
     require_demo_persistence()
     if not bid_repository.remove_bid(bid_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found.")
+
+
+@app.patch("/api/v1/bids/{bid_id}/override", response_model=BidRecord, tags=["bids"])
+def override_bid_fields(bid_id: str, request: ManualOverrideRequest) -> BidRecord:
+    require_demo_persistence()
+    try:
+        record = bid_repository.get_bid(bid_id)
+        if not record:
+            raise KeyError(f"Bid {bid_id} not found")
+
+        source = record.source
+        
+        # Apply overrides to source
+        if request.bid_amount_inr is not None:
+            source.bid_amount_inr = request.bid_amount_inr
+        if request.promised_delivery_weeks is not None:
+            source.promised_delivery_weeks = request.promised_delivery_weeks
+        if request.has_osha_cert is not None:
+            source.has_osha_cert = request.has_osha_cert
+            
+        # Apply overrides to equipment
+        if request.power_draw_kw is not None:
+            source.equipment.power_draw_kw = request.power_draw_kw
+        if request.cooling_capacity_kw is not None:
+            source.equipment.cooling_capacity_kw = request.cooling_capacity_kw
+        if request.water_evap_gpm is not None:
+            source.equipment.water_evap_gpm = request.water_evap_gpm
+        if request.floor_load_kg is not None:
+            source.equipment.floor_load_kg = request.floor_load_kg
+        if request.length_m is not None:
+            source.equipment.length_m = request.length_m
+        if request.width_m is not None:
+            source.equipment.width_m = request.width_m
+        if request.height_m is not None:
+            source.equipment.height_m = request.height_m
+        if request.embodied_carbon_factor is not None:
+            source.equipment.embodied_carbon_factor = request.embodied_carbon_factor
+
+        if "MANUAL_OVERRIDE_APPLIED" not in source.document_metadata.review_signals:
+            source.document_metadata.review_signals.append("MANUAL_OVERRIDE_APPLIED")
+
+        # Re-run patrols with updated data
+        new_scorecard = PatrolEngineService.run_all_patrols(source)
+        
+        updated_record = bid_repository.save_bid_override(
+            bid_id=bid_id,
+            updated_source=source,
+            new_scorecard=new_scorecard,
+            actor="DEMO_OFFICER",
+            note=request.note,
+        )
+        return updated_record
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found.")
+    except Exception as error:
+        logger.exception("Manual override failed")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
 # ── Officer Decision (separate from procurement lifecycle) ───────────────

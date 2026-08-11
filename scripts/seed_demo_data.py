@@ -30,16 +30,19 @@ from app.services.repository import bid_repository
 # ── Stable idempotency keys ────────────────────────────────────────────
 FIXTURES = {
     "DEMO-SEED-TRANE-COMPLIANT": {
+        "bid_id": "BID-2026-A01",
         "filename": "SyntheticBid_Trane_Compliant.pdf",
         "expected_recommendation": "RECOMMENDED",
         "expected_vendor": "Trane Solutions Pvt Ltd.",
     },
     "DEMO-SEED-CARRIER-REVIEW": {
+        "bid_id": "BID-2026-C03",
         "filename": "SyntheticBid_Carrier_Review.pdf",
         "expected_recommendation": "REVIEW_REQUIRED",
         "expected_vendor": "Carrier HVAC India Ltd.",
     },
     "DEMO-SEED-COOLTECH-REJECT": {
+        "bid_id": "BID-2026-B02",
         "filename": "SyntheticBid_CoolTech_Reject.pdf",
         "expected_recommendation": "REJECT",
         "expected_vendor": "CoolTech Global Solutions Pvt Ltd.",
@@ -184,7 +187,7 @@ def seed(*, verbose: bool = True) -> list[dict]:
         existing = bid_repository.get_bid_by_idempotency(
             PROJECT_ID, DEMO_ACTOR, key,
         )
-        if existing:
+        if existing and existing.id == fixture.get("bid_id"):
             actual_rec = existing.scorecard.recommendation
             if verbose:
                 print(f"  ✓ {key}: already exists (id={existing.id}, rec={actual_rec})")
@@ -195,6 +198,8 @@ def seed(*, verbose: bool = True) -> list[dict]:
                 "created": False,
             })
             continue
+        elif existing:
+            bid_repository.remove_bid(existing.id)
 
         contents = pdf_bytes[filename]
         import tempfile, os as _os
@@ -214,6 +219,7 @@ def seed(*, verbose: bool = True) -> list[dict]:
             project_id=PROJECT_ID,
             uploader_identity=DEMO_ACTOR,
             idempotency_key=key,
+            custom_id=fixture.get("bid_id"),
         )
 
         if verbose:

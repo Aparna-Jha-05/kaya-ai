@@ -1,18 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { backendStore } from "@/lib/backendStore";
+
+const BACKEND_URL = process.env.PO_LICE_BACKEND_URL || "http://127.0.0.1:8000";
 
 export async function POST(request: NextRequest) {
-  try {
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
-    const filename = file?.name || "Uploaded_Bid.pdf";
+  const url = new URL("/api/v1/bids/upload", BACKEND_URL);
+  const headers = new Headers(request.headers);
+  headers.delete("host");
 
-    const record = backendStore.addBid(filename);
-    return NextResponse.json(record, { status: 200 });
-  } catch (error) {
-    return NextResponse.json(
-      { message: error instanceof Error ? error.message : "Upload processing failed" },
-      { status: 400 }
-    );
-  }
+  const res = await fetch(url.toString(), {
+    method: "POST",
+    headers,
+    body: request.body,
+    // @ts-expect-error duplex required for request body stream
+    duplex: "half",
+  });
+
+  const responseHeaders = new Headers(res.headers);
+  return new NextResponse(res.body, {
+    status: res.status,
+    headers: responseHeaders,
+  });
 }

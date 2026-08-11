@@ -40,6 +40,7 @@ export default function BidWorkspace({ initialRecord }: { initialRecord?: BidRec
   }, [lit]);
 
   function onUploaded(next: BidRecord) {
+    router.refresh();
     router.replace(`/bids/${next.id}`);
   }
 

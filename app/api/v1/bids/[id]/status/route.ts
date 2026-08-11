@@ -1,28 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { backendStore } from "@/lib/backendStore";
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const body = await request.json();
-    const { decision, expected_version, reason } = body;
-    const updated = backendStore.updateOfficerDecision(
-      params.id,
-      decision,
-      expected_version ?? 1,
-      reason || ""
-    );
-    return NextResponse.json(updated);
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : "Failed to update decision";
-    if (msg.includes("not found")) {
-      return NextResponse.json({ detail: msg }, { status: 404 });
-    }
-    if (msg.includes("Stale version")) {
-      return NextResponse.json({ detail: msg }, { status: 409 });
-    }
-    return NextResponse.json({ detail: msg }, { status: 400 });
-  }
+const BACKEND_URL = process.env.PO_LICE_BACKEND_URL || "http://127.0.0.1:8000";
+
+export async function PATCH(request: NextRequest) {
+  const url = new URL(request.nextUrl.pathname, BACKEND_URL);
+  const headers = new Headers(request.headers);
+  headers.delete("host");
+
+  const res = await fetch(url.toString(), {
+    method: "PATCH",
+    headers,
+    body: request.body,
+    // @ts-expect-error duplex required
+    duplex: "half",
+  });
+
+  return new NextResponse(res.body, { status: res.status, headers: new Headers(res.headers) });
 }

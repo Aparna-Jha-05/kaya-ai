@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { backendStore } from "@/lib/backendStore";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const body = await request.json();
-    const { action, note } = body;
-    const event = backendStore.addActivityAction(params.id, action || "REVIEWED", note || "");
-    return NextResponse.json(event);
-  } catch (error) {
-    return NextResponse.json(
-      { detail: error instanceof Error ? error.message : "Failed to record reviewer action" },
-      { status: 400 }
-    );
-  }
+const BACKEND_URL = process.env.PO_LICE_BACKEND_URL || "http://127.0.0.1:8000";
+
+export async function POST(request: NextRequest) {
+  const url = new URL(request.nextUrl.pathname, BACKEND_URL);
+  const headers = new Headers(request.headers);
+  headers.delete("host");
+
+  const res = await fetch(url.toString(), {
+    method: "POST",
+    headers,
+    body: request.body,
+    // @ts-expect-error duplex required
+    duplex: "half",
+  });
+
+  return new NextResponse(res.body, { status: res.status, headers: new Headers(res.headers) });
 }

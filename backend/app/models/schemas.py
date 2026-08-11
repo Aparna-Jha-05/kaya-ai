@@ -321,6 +321,21 @@ class ConstraintUpdateRequest(StrictModel):
     reason: str = Field(default="Updated site operational requirements", min_length=3, max_length=2_000)
 
 
+class ManualOverrideRequest(StrictModel):
+    bid_amount_inr: Optional[float] = None
+    promised_delivery_weeks: Optional[int] = None
+    has_osha_cert: Optional[bool] = None
+    power_draw_kw: Optional[float] = None
+    cooling_capacity_kw: Optional[float] = None
+    water_evap_gpm: Optional[float] = None
+    floor_load_kg: Optional[float] = None
+    length_m: Optional[float] = None
+    width_m: Optional[float] = None
+    height_m: Optional[float] = None
+    embodied_carbon_factor: Optional[float] = None
+    note: str = Field(min_length=1, max_length=1000)
+
+
 class SimulationRequest(StrictModel):
     """Scenario inputs only; no compliance outcome can be supplied by a client."""
     base_capex_inr: float = Field(gt=0, le=10**13)
