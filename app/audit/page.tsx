@@ -112,8 +112,8 @@ export default function AuditPage() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0 flex-1">
-          <p className="page-eyebrow">System audit</p>
-          <h1 className="mt-1 text-2xl lg:text-3xl font-extrabold tracking-tight text-text truncate">Activity log</h1>
+          <p className="page-eyebrow">System Audit</p>
+          <h1 className="mt-1 text-2xl lg:text-3xl font-extrabold tracking-tight text-text truncate">Audit Log</h1>
           <p className="mt-1 text-xs font-medium text-text/50">Timestamped compliance checks, reviewer actions, and audit trail</p>
         </div>
         <div className="flex items-center gap-2">
@@ -123,7 +123,7 @@ export default function AuditPage() {
               onClick={loadData}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber/30 bg-amber/15 px-3.5 py-2 text-xs font-bold text-amber hover:bg-amber/25 tactile-press shadow-xs transition-all"
             >
-              <RefreshCw className="h-3.5 w-3.5" /> Retry connection
+              <RefreshCw className="h-3.5 w-3.5" /> Retry Connection
             </button>
           )}
           <button
@@ -140,46 +140,36 @@ export default function AuditPage() {
       {/* Compliance Scorecard Summary */}
       <Card>
         <CardHeader
-          title={recState === "ready" ? `${scorecards.length} bid scorecard${scorecards.length === 1 ? "" : "s"}` : "Compliance scorecard"}
+          title={recState === "ready" ? `${scorecards.length} Bid Scorecard${scorecards.length === 1 ? "" : "s"}` : "Compliance Scorecard"}
           caption="Per-bid summary of all four patrol results and 5-year TCO²."
         />
-        <div className="overflow-x-auto overflow-y-auto max-h-[320px]">
-          <table className="w-full min-w-[720px] text-sm border-collapse table-fixed">
-            <colgroup>
-              <col className="w-[20%]" />
-              <col className="w-[12%]" />
-              <col className="w-[10%]" />
-              <col className="w-[10%]" />
-              <col className="w-[11%]" />
-              <col className="w-[11%]" />
-              <col className="w-[14%]" />
-              <col className="w-[12%]" />
-            </colgroup>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-sm border-collapse table-auto">
             <thead className="sticky top-0 z-10 bg-surface">
               <tr className="border-b-2 border-line table-header">
                 <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
                 <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <Tooltip text="Hard limit check. Validates physical floor load capacity against equipment weight.">
-                    <span>Engineering</span>
+                    <span>Building Patrol</span>
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <Tooltip text="Hard limit check. Validates embodied carbon emissions factor against project carbon cap.">
-                    <span>Carbon</span>
+                    <span>Green Patrol</span>
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <Tooltip text="Vendor risk score (0-10) calculated from historical performance metrics.">
-                    <span>Reliability</span>
+                    <span>Vice Squad</span>
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <Tooltip text="Schedule impact estimation calculating late delivery risk in days.">
-                    <span>Schedule</span>
+                    <span>Traffic Control</span>
                   </Tooltip>
                 </th>
-                <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO² (INR)</th>
+                <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-Yr TCO² (INR)</th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Status</th>
               </tr>
             </thead>

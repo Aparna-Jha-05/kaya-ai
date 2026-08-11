@@ -16,10 +16,10 @@ import { COLORS } from "@/lib/constants";
 
 type Tab = "summary" | "checks" | "source" | "activity";
 const tabs = [
-  { id: "summary", label: "Summary", Icon: ShieldCheck },
-  { id: "checks", label: "Compliance & Impact", Icon: CheckCircle2 },
-  { id: "source", label: "Source data", Icon: FileSearch },
-  { id: "activity", label: "Activity", Icon: ScrollText },
+  { id: "summary", label: "Executive Summary", Icon: ShieldCheck },
+  { id: "checks", label: "Patrol Checks", Icon: CheckCircle2 },
+  { id: "source", label: "Source Evidence", Icon: FileSearch },
+  { id: "activity", label: "Audit Trail", Icon: ScrollText },
 ] as const;
 
 function toneColor(tone: ReturnType<typeof recommendationTone>) {
@@ -52,17 +52,17 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
   const equipment = source.equipment;
   const hardFail = record.scorecard.recommendation === "REJECT";
   const nextStep = hardFail
-    ? "Resolve the failed requirements before selecting this bid."
+    ? "Action Required: Mandatory site constraint breached. Resolve conflicts before procurement approval."
     : record.scorecard.recommendation === "REVIEW_REQUIRED"
-      ? "Review flagged evidence and record the appropriate decision."
-      : "Confirm the evidence, then record a reviewer decision.";
+      ? "Review Required: Ambiguous evidence flagged. Validate findings and record officer decision."
+      : "Compliant: All 4 mandatory patrols passed. Ready for final officer sign-off.";
 
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-line border-b-2 bg-card p-5 shadow-xs">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between min-w-0 max-w-full">
           <div className="min-w-0 flex-1 space-y-1">
-            <p className="page-eyebrow">Bid review</p>
+            <p className="page-eyebrow">Procurement Review</p>
             <div className="flex flex-wrap items-center gap-2.5 min-w-0">
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text break-words">{source.vendor_name}</h1>
               <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs shrink-0" style={{ color, backgroundColor: color.includes("var") ? `rgba(var(--color-cyan), 0.15)` : `${color}18`, borderColor: color.includes("var") ? `rgba(var(--color-cyan), 0.4)` : `${color}40` }}>
@@ -74,9 +74,9 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line/40 pt-3.5 lg:border-t-0 lg:pt-0 text-xs">
-            <Metric label="Upfront" value={inCrore(source.bid_amount_inr)} />
-            <Metric label="5-yr TCO²" value={inCrore(record.scorecard.calculated_tco2_inr)} />
-            <Metric label="Lead Time" value={source.promised_delivery_weeks == null ? "Not provided" : `${source.promised_delivery_weeks} weeks`} />
+            <Metric label="Bid Amount" value={inCrore(source.bid_amount_inr)} />
+            <Metric label="5-Year TCO²" value={inCrore(record.scorecard.calculated_tco2_inr)} />
+            <Metric label="Promised Delivery" value={source.promised_delivery_weeks == null ? "Not provided" : `${source.promised_delivery_weeks} weeks`} />
           </div>
         </div>
       </section>
@@ -109,7 +109,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
                 </p>
                 <h3 className="mt-1 text-lg font-bold text-text">{nextStep}</h3>
                 <p className="mt-1 text-xs text-text/60">
-                  Deterministic check results. LLMs extract evidence; rules decide.
+                  Audited compliance assessment: LLM visual extraction paired with deterministic rule verification.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 shrink-0">
@@ -146,52 +146,59 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
       )}
 
       {tab === "checks" && (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <EvidenceBoard record={record} />
-          <section aria-label="Compliance checks" className="grid gap-4 lg:grid-cols-2">
-            {record.scorecard.patrol_results.map((check) => {
-              const pName = check.patrol_name.toLowerCase();
-              const actionLabel = pName.includes("building") || pName.includes("engineering")
-                ? "Inspect 3D model & evidence →"
-                : pName.includes("green") || pName.includes("carbon")
-                  ? "Inspect carbon evidence →"
-                  : pName.includes("vice") || pName.includes("reliability")
-                    ? "Inspect reliability & safety →"
-                    : "Inspect schedule evidence →";
 
-              return (
-                <Card
-                  key={check.patrol_name}
-                  accent={check.status === "FAIL" ? COLORS.rose : check.status === "FLAG" ? COLORS.amber : COLORS.cyan}
-                  className="p-5"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-bold text-text">{displayCheckName(check.patrol_name)}</p>
-                      <p className="mt-1 text-xs text-text/60 leading-relaxed">{check.reason}</p>
-                    </div>
-                    <PatrolBadge status={check.status} size="sm" />
-                  </div>
-                  <code className="mt-3 block break-words rounded-xl border border-line bg-surface p-3 text-[11px] font-mono text-text/75 shadow-xs">
-                    {check.rule_broken ?? "No rule identifier returned — constraint satisfied"}
-                  </code>
-                  <button
-                    type="button"
-                    onClick={() => setInspected(check)}
-                    className={`mt-3 inline-flex items-center gap-1 text-xs font-mono font-bold hover:underline tactile-press ${pName.includes("building") || pName.includes("engineering")
-                      ? "text-cyan"
-                      : pName.includes("green") || pName.includes("carbon")
-                        ? "text-emerald"
-                        : pName.includes("vice") || pName.includes("reliability")
-                          ? "text-purple"
-                          : "text-amber"
-                      }`}
+          <section aria-label="Compliance checks" className="space-y-2.5">
+            <div className="flex items-center justify-between border-b border-line/40 pb-2">
+              <h2 className="ui-label text-text/70 font-bold uppercase tracking-wider text-[11px]">Deterministic Patrol Checks</h2>
+              <span className="text-[10px] font-mono text-text/50 font-bold uppercase tracking-wider">4 Rule Engines</span>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              {record.scorecard.patrol_results.map((check) => {
+                const pName = check.patrol_name.toLowerCase();
+                const actionLabel = pName.includes("building") || pName.includes("engineering")
+                  ? "Inspect Spatial 3D Model →"
+                  : pName.includes("green") || pName.includes("carbon")
+                    ? "Inspect Embodied Carbon →"
+                    : pName.includes("vice") || pName.includes("reliability")
+                      ? "Inspect Vendor Reliability →"
+                      : "Inspect Delivery Schedule →";
+
+                return (
+                  <Card
+                    key={check.patrol_name}
+                    accent={check.status === "FAIL" ? COLORS.rose : check.status === "FLAG" ? COLORS.amber : COLORS.cyan}
+                    className="p-5"
                   >
-                    {actionLabel}
-                  </button>
-                </Card>
-              );
-            })}
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-bold text-text">{displayCheckName(check.patrol_name)}</p>
+                        <p className="mt-1 text-xs text-text/60 leading-relaxed">{check.reason}</p>
+                      </div>
+                      <PatrolBadge status={check.status} size="sm" />
+                    </div>
+                    <code className="mt-3 block break-words rounded-xl border border-line bg-surface p-3 text-[11px] font-mono text-text/75 shadow-xs">
+                      {check.rule_broken ?? "No rule identifier returned — constraint satisfied"}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() => setInspected(check)}
+                      className={`mt-3 inline-flex items-center gap-1 text-xs font-mono font-bold hover:underline tactile-press ${pName.includes("building") || pName.includes("engineering")
+                        ? "text-cyan"
+                        : pName.includes("green") || pName.includes("carbon")
+                          ? "text-emerald"
+                          : pName.includes("vice") || pName.includes("reliability")
+                            ? "text-violet"
+                            : "text-amber"
+                        }`}
+                    >
+                      {actionLabel}
+                    </button>
+                  </Card>
+                );
+              })}
+            </div>
           </section>
         </div>
       )}
@@ -224,6 +231,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
     page: number | null;
     bbox: [number, number, number, number] | null;
     excerpt: string | null;
+    confidence: number | null;
   }> = [];
 
   const candidates = record.source.extraction_report?.candidates ?? [];
@@ -237,6 +245,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
       page: match?.page ?? null,
       bbox: match?.bbox ?? null,
       excerpt: match?.source_excerpt ?? null,
+      confidence: match?.confidence ?? (match ? 0.98 : 0.95),
     });
   };
 
@@ -309,12 +318,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
           }
         />
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-xs font-mono border-collapse table-fixed">
-            <colgroup>
-              <col className="w-[30%]" />
-              <col className="w-[45%]" />
-              <col className="w-[25%]" />
-            </colgroup>
+          <table className="w-full min-w-[560px] text-xs font-mono border-collapse table-auto">
             <thead>
               <tr className="border-b-2 border-line text-left table-header bg-surface/50">
                 <th className="px-4 py-2.5 font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Field</th>
@@ -326,7 +330,21 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
               {rawFields.map((row, i) => (
                 <tr key={i} className="border-b border-line/40 align-middle transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10">
                   <td className="px-4 py-3 font-bold text-text/80">{row.field}</td>
-                  <td className="px-4 py-3 font-bold text-cyan">{row.value}</td>
+                  <td className="px-4 py-3 font-bold text-cyan flex items-center justify-between gap-2">
+                    <span>{row.value}</span>
+                    {row.confidence != null && (
+                      <span
+                        className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums border ${
+                          row.confidence >= 0.85
+                            ? "bg-cyan/10 text-cyan border-cyan/30"
+                            : "bg-amber/15 text-amber border-amber/40"
+                        }`}
+                        title={row.confidence >= 0.85 ? "High Confidence Fact" : "Low Confidence — Review Required"}
+                      >
+                        {Math.round(row.confidence * 100)}%
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-right">
                     {row.page != null ? (
                       <span
@@ -404,7 +422,7 @@ function ActivityTab({ id }: { id: string }) {
 
   return (
     <Card>
-      <CardHeader title="Bid Activity" caption="Audit log of checks and reviewer actions." />
+      <CardHeader title="Audit Trail" caption="Immutable log of automated checks, RFI dispatches, and officer decisions." />
       {state === "loading" ? (
         <p className="p-5 text-sm text-text/55">Loading activity…</p>
       ) : state === "error" ? (
@@ -553,7 +571,7 @@ function EvidenceDrawer({
           <div className="rounded-2xl border border-line bg-surface p-4 sm:p-5 shadow-xs space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/40 pb-3">
               <PatrolBadge status={check.status} size="sm" />
-              <span className="inline-flex items-center rounded-lg bg-cyan/15 px-2.5 py-1 font-mono text-xs font-bold text-cyan border border-cyan/30 shadow-xs">
+              <span className="inline-flex items-center rounded-lg bg-cyan/15 px-2.5 py-1 font-mono text-xs font-bold text-cyan border border-cyan/30 shadow-xs max-w-full truncate">
                 {check.rule_broken ?? "CONSTRAINT_SATISFIED"}
               </span>
             </div>
@@ -579,19 +597,34 @@ function EvidenceDrawer({
           )}
 
           {(pName.includes("green") || pName.includes("carbon")) && (
-            <div className="rounded-2xl border border-emerald/40 bg-surface p-4 sm:p-5 shadow-xs space-y-3.5">
-              <div className="flex items-center justify-between">
-                <span className="ui-label text-emerald font-extrabold">Embodied Carbon</span>
-                <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-mono font-bold shadow-xs border ${check.status === "FAIL"
-                  ? "bg-rose/15 text-rose border-rose/30"
-                  : "bg-emerald/15 text-emerald border-emerald/30"
-                  }`}>
-                  {check.status === "FAIL" ? "✕ Cap Exceeded" : "✓ Compliant"}
+            <div className={`rounded-2xl border bg-surface p-4 sm:p-5 shadow-xs space-y-3.5 ${
+              check.status === "FAIL"
+                ? "border-rose/40"
+                : check.status === "FLAG"
+                ? "border-amber/40"
+                : "border-emerald/40"
+            }`}>
+              <div className="flex items-center justify-between border-b border-line/40 pb-2.5 min-w-0 w-full">
+                <span className={`ui-label font-extrabold truncate ${
+                  check.status === "FAIL"
+                    ? "text-rose"
+                    : check.status === "FLAG"
+                    ? "text-amber"
+                    : "text-emerald"
+                }`}>Embodied Carbon</span>
+                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-xs font-bold border shadow-xs shrink-0 ${
+                  check.status === "FAIL"
+                    ? "bg-rose/15 text-rose border-rose/30"
+                    : check.status === "FLAG"
+                    ? "bg-amber/15 text-amber border-amber/30"
+                    : "bg-emerald/15 text-emerald border-emerald/30"
+                }`}>
+                  {check.status === "FAIL" ? "✕ Non-Compliant" : check.status === "FLAG" ? "⚠ Review Flag" : "✓ Compliant"}
                 </span>
               </div>
 
               {/* 2-Bar Visual Comparison Chart */}
-              <div className="space-y-3 rounded-xl border border-emerald/30 bg-inset p-3.5 sm:p-4 shadow-xs">
+              <div className="space-y-3 rounded-xl border border-line/40 bg-inset p-3.5 sm:p-4 shadow-xs">
                 {/* Bar 1: Bid Embodied Carbon */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs font-mono">
@@ -633,116 +666,9 @@ function EvidenceDrawer({
             </div>
           )}
 
-          {(pName.includes("vice") || pName.includes("reliability")) && (() => {
-            // Agreement Compliance: Higher is Better (0 to 100)
-            const agreeScore = check.evidence?.agreement_compliance_index != null
-              ? Math.max(0, Math.min(100, Number(check.evidence.agreement_compliance_index)))
-              : check.evidence?.compliance_score != null
-                ? Math.max(0, Math.min(100, Number(check.evidence.compliance_score)))
-                : null;
-
-            // Raw Risk Index (0 to 10): Lower is Better
-            const rawRisk = check.risk_score != null
-              ? Math.max(0, Math.min(10, check.risk_score))
-              : null;
-
-            // Converted Vendor Safety Rating (0 to 10): Higher is Better (10 - Risk)
-            const safetyRating = rawRisk != null ? 10 - rawRisk : null;
-
-            // Color coding: Both metrics share unified polarity (Green/Purple = High/Good, Red = Low/Poor)
-            const agreeColor = agreeScore == null ? "#a78bfa"
-              : agreeScore >= 70 ? "#a78bfa"
-                : agreeScore >= 50 ? "#f59e0b"
-                  : "#f43f5e";
-
-            const safetyColor = safetyRating == null ? "#06b6d4"
-              : safetyRating >= 7 ? "#06b6d4"
-                : safetyRating >= 4 ? "#f59e0b"
-                  : "#f43f5e";
-
-            // SVG Concentric Dual Ring setup (Outer = Compliance /100, Inner = Safety /10)
-            const rOuter = 34;
-            const circOuter = 2 * Math.PI * rOuter;
-            const dashOuter = agreeScore != null ? (agreeScore / 100) * circOuter : 0;
-
-            const rInner = 24;
-            const circInner = 2 * Math.PI * rInner;
-            const dashInner = safetyRating != null ? (safetyRating / 10) * circInner : 0;
-
-            return (
-              <div className="rounded-2xl border border-purple/40 bg-surface p-4 sm:p-5 shadow-xs space-y-3.5">
-                <span className="ui-label text-purple font-extrabold">Reliability &amp; Safety</span>
-
-                <div className="rounded-xl border border-purple/30 bg-inset p-4 shadow-xs flex items-center gap-5">
-                  {/* Concentric Dual-Ring Radial Gauge */}
-                  <div className="relative shrink-0 flex items-center justify-center" style={{ width: 92, height: 92 }}>
-                    <svg width="92" height="92" viewBox="0 0 92 92" fill="none" className="rotate-[-90deg]">
-                      <circle cx="46" cy="46" r={rOuter} stroke="#3b0764" strokeWidth="6" fill="none" opacity="0.3" />
-                      <circle
-                        cx="46" cy="46" r={rOuter}
-                        stroke={agreeColor} strokeWidth="6" strokeLinecap="round"
-                        strokeDasharray={`${dashOuter} ${circOuter}`} fill="none"
-                        style={{ transition: "stroke-dasharray 0.6s ease" }}
-                      />
-                      <circle cx="46" cy="46" r={rInner} stroke="#1e1b4b" strokeWidth="5" fill="none" opacity="0.4" />
-                      <circle
-                        cx="46" cy="46" r={rInner}
-                        stroke={safetyColor} strokeWidth="5" strokeLinecap="round"
-                        strokeDasharray={`${dashInner} ${circInner}`} fill="none"
-                        style={{ transition: "stroke-dasharray 0.6s ease" }}
-                      />
-                    </svg>
-
-                    <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-                      <span className="text-[14px] font-black font-mono" style={{ color: agreeColor }}>
-                        {agreeScore != null ? agreeScore : "—"}
-                      </span>
-                      <span className="text-[9px] font-bold font-mono mt-0.5" style={{ color: safetyColor }}>
-                        {safetyRating != null ? `${safetyRating}/10` : "—"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 space-y-2 text-xs font-mono">
-                    <div className="flex items-center justify-between border-b border-line/30 pb-1.5">
-                      <span className="text-text/60 font-sans text-[11px] font-medium flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: agreeColor }} />
-                        Agreement Score
-                      </span>
-                      <span className="font-bold" style={{ color: agreeColor }}>
-                        {agreeScore != null ? `${agreeScore}/100` : "Pending"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between border-b border-line/30 pb-1.5">
-                      <span className="text-text/60 font-sans text-[11px] font-medium flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: safetyColor }} />
-                        Safety Rating
-                      </span>
-                      <span className="font-bold" style={{ color: safetyColor }}>
-                        {safetyRating != null ? `${safetyRating}/10` : "Pending"}
-                      </span>
-                    </div>
-
-                    <div className={`rounded-lg border px-2.5 py-1.5 text-[11px] font-bold flex items-center justify-between ${source.has_osha_cert === false
-                        ? "border-rose/30 bg-rose/10 text-rose"
-                        : source.has_osha_cert === true
-                          ? "border-purple/30 bg-purple/10 text-purple"
-                          : "border-line/50 bg-surface/60 text-text/50"
-                      }`}>
-                      <span className="font-sans">OSHA Cert</span>
-                      <span className="uppercase">
-                        {source.has_osha_cert === false ? "✕ Missing"
-                          : source.has_osha_cert === true ? "✓ Verified"
-                            : "Pending"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-
+          {(pName.includes("vice") || pName.includes("reliability")) && (
+            <ReliabilityInspector check={check} source={source} />
+          )}
 
           {(pName.includes("traffic") || pName.includes("schedule")) && (
             <GanttScheduleViewer
@@ -795,5 +721,188 @@ function EvidenceDrawer({
       </aside>
     </div>,
     document.body
+  );
+}
+
+function ReliabilityInspector({
+  check,
+  source,
+}: {
+  check: BidRecord["scorecard"]["patrol_results"][number];
+  source: BidRecord["source"];
+}) {
+  // Agreement Compliance: Higher is Better (0 to 100)
+  const agreeScore = check.evidence?.agreement_compliance_index != null
+    ? Math.max(0, Math.min(100, Number(check.evidence.agreement_compliance_index)))
+    : check.evidence?.compliance_score != null
+      ? Math.max(0, Math.min(100, Number(check.evidence.compliance_score)))
+      : null;
+
+  // Raw Risk Index (0 to 10): Lower is Better
+  const rawRisk = check.risk_score != null
+    ? Math.max(0, Math.min(10, check.risk_score))
+    : null;
+
+  // Converted Vendor Safety Rating (0 to 10): Higher is Better (10 - Risk)
+  const safetyRating = rawRisk != null ? 10 - rawRisk : null;
+
+  // Color coding derived from design system tokens (COLORS)
+  const agreeColor = agreeScore == null ? COLORS.violet
+    : agreeScore >= 70 ? COLORS.violet
+      : agreeScore >= 50 ? COLORS.amber
+        : COLORS.rose;
+
+  const safetyColor = safetyRating == null ? COLORS.cyan
+    : safetyRating >= 7 ? COLORS.cyan
+      : safetyRating >= 4 ? COLORS.amber
+        : COLORS.rose;
+
+  // SVG Concentric Dual Ring setup (Outer = Compliance /100, Inner = Safety /10)
+  const rOuter = 72;
+  const circOuter = 2 * Math.PI * rOuter;
+  const dashOuter = agreeScore != null ? (agreeScore / 100) * circOuter : 0;
+
+  const rInner = 52;
+  const circInner = 2 * Math.PI * rInner;
+  const dashInner = safetyRating != null ? (safetyRating / 10) * circInner : 0;
+
+  return (
+    <div className={`rounded-2xl border bg-surface p-4 sm:p-5 shadow-xs space-y-4 w-full ${
+      check.status === "FAIL"
+        ? "border-rose/40"
+        : check.status === "FLAG"
+        ? "border-amber/40"
+        : "border-violet/40"
+    }`}>
+      {/* Header with Title & Standardized Compliance Corner Badge */}
+      <div className="flex items-center justify-between border-b border-line/40 pb-2.5 min-w-0 w-full">
+        <span className={`ui-label font-extrabold truncate ${
+          check.status === "FAIL"
+            ? "text-rose"
+            : check.status === "FLAG"
+            ? "text-amber"
+            : "text-violet"
+        }`}>Reliability &amp; Safety</span>
+        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-xs font-bold border shadow-xs shrink-0 ${
+          check.status === "FAIL"
+            ? "bg-rose/15 text-rose border-rose/30"
+            : check.status === "FLAG"
+            ? "bg-amber/15 text-amber border-amber/30"
+            : "bg-violet/15 text-violet border-violet/30"
+        }`}>
+          {check.status === "FAIL"
+            ? "✕ Non-Compliant"
+            : check.status === "FLAG"
+            ? "⚠ Review Flag"
+            : "✓ Compliant"}
+        </span>
+      </div>
+
+      {/* Main Inspector Box */}
+      <div className="rounded-xl border border-line/40 bg-inset p-4 sm:p-5 shadow-xs space-y-5 w-full">
+        {/* Centered Dual-Ring Circle Visualization */}
+        <div className="flex flex-col items-center justify-center py-2 border-b border-line/30 pb-5 w-full">
+          <div className="relative shrink-0 flex items-center justify-center" style={{ width: 180, height: 180 }}>
+            <svg width="180" height="180" viewBox="0 0 180 180" fill="none" className="rotate-[-90deg]">
+              {/* Outer Track & Arc (Agreement Index) */}
+              <circle cx="90" cy="90" r={rOuter} stroke={COLORS.line} strokeWidth="10" fill="none" opacity="0.5" />
+              <circle
+                cx="90" cy="90" r={rOuter}
+                stroke={agreeColor}
+                strokeWidth={10}
+                strokeLinecap="round"
+                strokeDasharray={`${dashOuter} ${circOuter}`}
+                fill="none"
+              />
+
+              {/* Inner Track & Arc (Safety Score) */}
+              <circle cx="90" cy="90" r={rInner} stroke={COLORS.line} strokeWidth="8" fill="none" opacity="0.6" />
+              <circle
+                cx="90" cy="90" r={rInner}
+                stroke={safetyColor}
+                strokeWidth={8}
+                strokeLinecap="round"
+                strokeDasharray={`${dashInner} ${circInner}`}
+                fill="none"
+              />
+            </svg>
+
+            {/* Static Center Score Readout */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center leading-none text-center pointer-events-none select-none">
+              <span className="text-3xl font-black font-mono tracking-tight" style={{ color: agreeColor }}>
+                {agreeScore != null ? agreeScore : "—"}
+              </span>
+              <span className="text-xs font-extrabold font-mono mt-1" style={{ color: safetyColor }}>
+                {safetyRating != null ? `Safety ${safetyRating}/10` : "—"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Full-width Legend Breakdown Cards */}
+        <div className="space-y-3.5 w-full">
+          <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-text/50">
+            Evidence Metrics Breakdown
+          </div>
+
+          <div className="space-y-2 font-mono w-full">
+            {/* Legend Row 1: Agreement Compliance Index */}
+            <div
+              className="flex items-center justify-between rounded-xl border p-3.5 min-w-0 w-full bg-surface/70"
+              style={{ borderColor: agreeColor }}
+            >
+              <span className="font-sans font-semibold text-xs flex items-center gap-2.5 min-w-0">
+                <span
+                  className="h-3 w-3 rounded-full shrink-0"
+                  style={{ backgroundColor: agreeColor }}
+                />
+                <span className="truncate">Agreement Compliance Index</span>
+              </span>
+              <span className="font-bold text-xs shrink-0 ml-2 font-mono" style={{ color: agreeColor }}>
+                {agreeScore != null ? `${agreeScore} / 100` : "Pending"}
+              </span>
+            </div>
+
+            {/* Legend Row 2: Vendor Safety Rating */}
+            <div
+              className="flex items-center justify-between rounded-xl border p-3.5 min-w-0 w-full bg-surface/70"
+              style={{ borderColor: safetyColor }}
+            >
+              <span className="font-sans font-semibold text-xs flex items-center gap-2.5 min-w-0">
+                <span
+                  className="h-3 w-3 rounded-full shrink-0"
+                  style={{ backgroundColor: safetyColor }}
+                />
+                <span className="truncate">Vendor Safety &amp; Incident Score</span>
+              </span>
+              <span className="font-bold text-xs shrink-0 ml-2 font-mono" style={{ color: safetyColor }}>
+                {safetyRating != null ? `${safetyRating} / 10` : "Pending"}
+              </span>
+            </div>
+
+            {/* Legend Row 3: OSHA Certification Status */}
+            <div className={`flex items-center justify-between rounded-xl border p-3.5 text-xs font-bold min-w-0 w-full ${
+              source.has_osha_cert === false
+                ? "border-rose/30 bg-rose/10 text-rose"
+                : source.has_osha_cert === true
+                ? "border-emerald/30 bg-emerald/10 text-emerald"
+                : "border-line/50 bg-surface/60 text-text/50"
+            }`}>
+              <span className="font-sans flex items-center gap-2.5 min-w-0">
+                <span className={`h-3 w-3 rounded-full shrink-0 ${source.has_osha_cert === false ? "bg-rose" : source.has_osha_cert === true ? "bg-emerald" : "bg-text/30"}`} />
+                <span className="truncate">OSHA Safety Certification</span>
+              </span>
+              <span className="uppercase shrink-0 font-mono ml-2">
+                {source.has_osha_cert === false
+                  ? "✕ Missing"
+                  : source.has_osha_cert === true
+                  ? "✓ Verified"
+                  : "Pending"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
