@@ -20,30 +20,30 @@ export const COLORS = {
 export const PATROL_META = {
   building: {
     key: "building",
-    name: "Engineering",
+    name: "Engineering & Spatial",
     color: COLORS.blue,
-    caption: "checks equipment against hard site limits",
+    caption: "Verifies equipment dimensions and power against site limits",
     icon: "Building2",
   },
   green: {
     key: "green",
-    name: "Carbon",
+    name: "Carbon & Sustainability",
     color: COLORS.emerald,
-    caption: "checks the bid against the project carbon budget",
+    caption: "Evaluates embodied carbon against project carbon budget",
     icon: "Leaf",
   },
   vice: {
     key: "vice",
-    name: "Reliability",
+    name: "Reliability & Safety",
     color: COLORS.violet,
-    caption: "checks delivery history and dispute risk",
+    caption: "Assesses vendor delivery history, safety ratings, and dispute risk",
     icon: "ShieldAlert",
   },
   traffic: {
     key: "traffic",
-    name: "Schedule",
+    name: "Schedule & Delivery",
     color: COLORS.amber,
-    caption: "estimates the effect of late delivery on the schedule",
+    caption: "Estimates schedule delay exposure against project deadlines",
     icon: "Truck",
   },
 } as const;
@@ -55,13 +55,13 @@ export const GLOSSARY: Record<string, string> = {
   "Vendor reliability":
     "Delivery and dispute history used to calculate a reliability risk score from 1 to 10.",
   "TCO²":
-    "Total Cost of Ownership over 5 years, squared to also price in carbon, reliability and schedule risk — not just the sticker price.",
-  EPD: "Environmental Product Declaration — a certified carbon/water datasheet for a specific equipment model.",
-  ROJ: "Required-On-Job date — the deadline a piece of equipment must be on site to keep the master schedule.",
+    "Total Cost of Ownership over 5 years, squared to price in carbon, reliability and schedule risk — not just sticker price.",
+  EPD: "Environmental Product Declaration — certified carbon/water datasheet for a specific equipment model.",
+  ROJ: "Required-On-Job date — deadline equipment must be on site to keep master schedule.",
   Engineering: "Checks power, cooling, water and floor load against hard site limits.",
   Carbon: "Compares embodied carbon with the project kgCO₂e budget.",
-  Schedule: "Estimates delay exposure in days from the project schedule.",
-  "Schedule impact": "Estimates delay exposure in days from the project schedule.",
+  Schedule: "Estimates delay exposure in days from project schedule.",
+  "Schedule impact": "Estimates delay exposure in days from project schedule.",
   "Pydantic JSON": "A schema-validated JSON object — every field has a type and confidence score.",
 };
 
@@ -74,7 +74,7 @@ export const STATUS_COLOR: Record<Status, string> = {
 };
 
 export const REVIEW_STATE = {
-  RECOMMENDED: { label: "Ready for decision", color: COLORS.cyan },
-  ACCEPTABLE: { label: "Needs review", color: COLORS.amber },
-  REJECT: { label: "Do not select", color: COLORS.rose },
+  RECOMMENDED: { label: "Compliant (Recommended)", color: COLORS.cyan },
+  ACCEPTABLE: { label: "Flagged (Review Required)", color: COLORS.amber },
+  REJECT: { label: "Non-Compliant (Reject)", color: COLORS.rose },
 } as const;

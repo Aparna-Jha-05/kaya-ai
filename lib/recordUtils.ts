@@ -1,9 +1,9 @@
 import type { BidRecord, CheckStatus } from "@/lib/api";
 
 export function recommendationLabel(value: BidRecord["scorecard"]["recommendation"]) {
-  if (value === "REJECT") return "Do not select";
-  if (value === "RECOMMENDED") return "Ready for decision";
-  return "Needs review";
+  if (value === "REJECT") return "REJECT";
+  if (value === "RECOMMENDED") return "RECOMMENDED";
+  return "REVIEW REQUIRED";
 }
 
 export function recommendationTone(value: BidRecord["scorecard"]["recommendation"]) {
@@ -12,10 +12,10 @@ export function recommendationTone(value: BidRecord["scorecard"]["recommendation
 
 export function displayCheckName(name: string) {
   const normalized = name.toLowerCase();
-  if (normalized.includes("building") || normalized.includes("engineering")) return "Engineering";
-  if (normalized.includes("green") || normalized.includes("carbon")) return "Carbon";
-  if (normalized.includes("vice") || normalized.includes("reliability")) return "Reliability";
-  if (normalized.includes("traffic") || normalized.includes("schedule")) return "Schedule";
+  if (normalized.includes("building") || normalized.includes("engineering")) return "Building Patrol";
+  if (normalized.includes("green") || normalized.includes("carbon")) return "Green Patrol";
+  if (normalized.includes("vice") || normalized.includes("reliability")) return "Vice Squad";
+  if (normalized.includes("traffic") || normalized.includes("schedule")) return "Traffic Control";
   return name;
 }
 
@@ -36,9 +36,9 @@ export function statusText(status: CheckStatus) {
 }
 
 export function activityActionLabel(action: string) {
-  if (action === "RFI_DRAFT_APPROVED") return "RFI draft approved";
-  if (action === "REVIEWED_DO_NOT_SELECT") return "Do not select recorded";
-  if (action === "REVIEWED_READY_FOR_DECISION") return "Ready-for-decision review recorded";
+  if (action === "RFI_DRAFT_APPROVED") return "RFI Draft Approved";
+  if (action === "REVIEWED_DO_NOT_SELECT") return "Officer Decision: Reject Bid";
+  if (action === "REVIEWED_READY_FOR_DECISION") return "Officer Decision: Approved for Selection";
   return statusText(action as CheckStatus);
 }
 
