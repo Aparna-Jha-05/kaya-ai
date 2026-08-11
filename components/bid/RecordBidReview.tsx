@@ -263,6 +263,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
 
   // Include dimension annotations if present
   const annotations = record.source.extraction_report?.dimension_annotations ?? [];
+  annotations.forEach((a) => {
     rawFields.push({
       field: `Annotation: ${formatLabelTitleCase(a.field)}`,
       value: `${a.normalized_value} ${a.unit}`,
