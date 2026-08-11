@@ -33,43 +33,49 @@ from app.services.table_extractor import TableExtractionService
 
 class PDFExtractorService:
     _patterns: tuple[tuple[FactField, str], ...] = (
-        (FactField.VENDOR_NAME, r"(?:VENDOR|Vendor\s*Name)\s*:\s*(?P<value>[^\n]+)"),
-        (FactField.MODEL_NUMBER, r"(?:Equipment\s*Model|Model\s*Number)\s*:\s*(?P<value>[^\n]+)"),
+        (
+            FactField.VENDOR_NAME,
+            r"(?:VENDOR|Vendor\s*Name|Supplier\s*Name|Bidder\s*Name|Manufacturer|Company|Contractor)\s*[:\-]\s*(?P<value>[^\n]+)",
+        ),
+        (
+            FactField.MODEL_NUMBER,
+            r"(?:Equipment\s*Model|Model\s*Number|Model\s*No\.?|Part\s*No\.?|Series|Product\s*Code)\s*[:\-]\s*(?P<value>[^\n]+)",
+        ),
         (
             FactField.BID_AMOUNT_INR,
-            r"(?:Upfront\s*Capex\s*Price|Upfront\s*Bid\s*Amount)\s*:\s*(?P<unit>INR)\s*(?P<value>[\d,]+)",
+            r"(?:Upfront\s*Capex\s*Price|Upfront\s*Bid\s*Amount|Total\s*Price|Total\s*Capex|Bid\s*Amount|Quoted\s*Amount|Capex\s*Cost|Price)\s*[:\-]?\s*(?P<unit>INR|Rs\.?|₹)?\s*(?P<value>[\d,]+(?:\.\d+)?|\d+\s*(?:lakhs?|crores?))",
         ),
         (
             FactField.DELIVERY_WEEKS,
-            r"Promised\s*Delivery(?:\s*SLA)?\s*:\s*(?P<value>[\d,.]+)\s*(?P<unit>Weeks?|Days?)",
+            r"(?:Promised\s*Delivery(?:\s*SLA)?|Lead\s*Time|Delivery\s*Time|Completion\s*Window|Schedule)\s*[:\-]?\s*(?P<value>[\d,.]+)\s*(?P<unit>Weeks?|Days?|Months?)",
         ),
         (
             FactField.OSHA_CERT,
-            r"OSHA[^\n]*(?P<value>PENDING|MISSING|NOT\s*ATTACHED|CERTIFIED|ATTACHED|VALID|YES|NO)",
+            r"OSHA[^\n]*[:\-]?\s*(?P<value>PENDING|MISSING|NOT\s*ATTACHED|CERTIFIED|ATTACHED|VALID|YES|NO|COMPLIANT|NON-COMPLIANT)",
         ),
         (
             FactField.POWER_DRAW_KW,
-            r"(?:Substation\s*Power\s*Draw|Power\s*Consumption)\s*:\s*(?P<value>[\d,.]+)\s*(?P<unit>kW|MW)",
+            r"(?:Substation\s*Power\s*Draw|Power\s*Consumption|Power\s*Draw|Electrical\s*Demand|Power\s*Rating|Substation\s*Load)\s*[:\-]?\s*(?P<value>[\d,.]+)\s*(?P<unit>kW|MW|kVA)",
         ),
         (
             FactField.COOLING_CAPACITY_KW,
-            r"Cooling\s*Capacity\s*:\s*(?P<value>[\d,.]+)\s*(?P<unit>kW|MW)",
+            r"(?:Cooling\s*Capacity|Refrigeration\s*Capacity|Thermal\s*Rating)\s*[:\-]?\s*(?P<value>[\d,.]+)\s*(?P<unit>kW|MW|TR|Tons?)",
         ),
         (
             FactField.WIDTH_M,
-            r"(?:Equipment\s*)?Width\s*:\s*(?P<value>[\d,.]+)\s*(?P<unit>mm|m)",
+            r"(?:Equipment\s*)?(?:Width|Clearance|Chassis\s*Width)\s*[:\-]?\s*(?P<value>[\d,.]+)\s*(?P<unit>mm|m|cm)",
         ),
         (
             FactField.EMBODIED_CARBON,
-            r"Embodied\s*Carbon(?:\s*Factor)?\s*:\s*(?P<value>[\d,.]+)\s*(?P<unit>kgCO2e(?:/ton)?|tCO2e(?:/ton)?)",
+            r"(?:Embodied\s*Carbon(?:\s*Factor)?|Carbon\s*Footprint|CO2\s*Factor)\s*[:\-]?\s*(?P<value>[\d,.]+)\s*(?P<unit>kgCO2e(?:/ton)?|tCO2e(?:/ton)?)",
         ),
         (
             FactField.WATER_EVAP_GPM,
-            r"(?:Water\s*Evaporation|Water\s*Consumption|Evap(?:oration)?\s*Rate)\s*:\s*(?P<value>[\d,.]+)\s*(?P<unit>gpm|l/hr|lph)",
+            r"(?:Water\s*Evaporation|Water\s*Consumption|Evap(?:oration)?\s*Rate)\s*[:\-]?\s*(?P<value>[\d,.]+)\s*(?P<unit>gpm|l/hr|lph)",
         ),
         (
             FactField.FLOOR_LOAD_KG,
-            r"(?:Floor\s*Load|Equipment\s*Weight|Operating\s*Weight)\s*:\s*(?P<value>[\d,.]+)\s*(?P<unit>kg|tonnes?|ton)",
+            r"(?:Floor\s*Load|Equipment\s*Weight|Operating\s*Weight|Chassis\s*Weight)\s*[:\-]?\s*(?P<value>[\d,.]+)\s*(?P<unit>kg|tonnes?|ton)",
         ),
     )
 

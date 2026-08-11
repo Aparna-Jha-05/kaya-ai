@@ -18,9 +18,9 @@ interface Spatial3DViewerProps {
 type SubPartId = "all" | "power" | "compressor" | "coils" | "base";
 
 export default function Spatial3DViewer({
-  equipmentLength = 2.4,
-  equipmentWidth = 1.2,
-  equipmentHeight = 1.8,
+  equipmentLength,
+  equipmentWidth,
+  equipmentHeight,
   doorWidth = 1.1,
   passed = true,
   powerDrawKw,
@@ -41,17 +41,19 @@ export default function Spatial3DViewer({
   const startPosRef = useRef({ x: 0, y: 0 });
   const movedRef = useRef(false);
 
+  const isMissingDimensions = equipmentLength == null && equipmentWidth == null && equipmentHeight == null;
+
   const eqL = equipmentLength ?? 2.4;
   const eqW = equipmentWidth ?? 1.2;
   const eqH = equipmentHeight ?? 1.8;
   const maxDoor = doorWidth ?? 1.1;
 
-  const fitsDoor = eqW <= maxDoor;
+  const fitsDoor = equipmentWidth != null ? equipmentWidth <= maxDoor : true;
   const powerBreach = powerDrawKw != null && powerDrawKw > maxPowerKw;
   const floorBreach = floorLoadKg != null && floorLoadKg > maxFloorLoadKg;
 
   const activeBreaches = [
-    !fitsDoor && {
+    equipmentWidth != null && !fitsDoor && {
       id: "door",
       title: "Door Access Overlimit",
       details: `Equipment width (${eqW}m) exceeds entry door width (${maxDoor}m)`,
@@ -75,29 +77,29 @@ export default function Spatial3DViewer({
     {
       id: "power" as const,
       name: "Power Module",
-      status: powerBreach ? "FAIL" : "PASS",
-      details: powerDrawKw != null ? `${powerDrawKw} kW (Max ${maxPowerKw} kW)` : "Standard Rating",
+      status: powerDrawKw == null ? "FLAG" : powerBreach ? "FAIL" : "PASS",
+      details: powerDrawKw != null ? `${powerDrawKw} kW (Max ${maxPowerKw} kW)` : "Unstated in Document",
       flagged: powerBreach,
     },
     {
       id: "compressor" as const,
-      name: "Compressor",
-      status: "PASS",
-      details: "Hermetic Dual Stage",
-      flagged: false,
+      name: "Chassis Width",
+      status: equipmentWidth == null ? "FLAG" : fitsDoor ? "PASS" : "FAIL",
+      details: equipmentWidth != null ? `${equipmentWidth} m (Door ${maxDoor} m)` : "Unstated in Document",
+      flagged: equipmentWidth != null && !fitsDoor,
     },
     {
       id: "coils" as const,
-      name: "Cooling Coils",
-      status: "PASS",
-      details: "Shell & Tube",
+      name: "Enclosure Footprint",
+      status: equipmentLength != null && equipmentWidth != null ? "PASS" : "FLAG",
+      details: equipmentLength != null && equipmentWidth != null ? `${equipmentLength}m × ${equipmentWidth}m` : "Unstated in Document",
       flagged: false,
     },
     {
       id: "base" as const,
       name: "Base Footprint",
-      status: floorBreach ? "FAIL" : "PASS",
-      details: floorLoadKg != null ? `${floorLoadKg} kg/m² (Max ${maxFloorLoadKg} kg/m²)` : "Standard Chassis",
+      status: floorLoadKg == null ? "FLAG" : floorBreach ? "FAIL" : "PASS",
+      details: floorLoadKg != null ? `${floorLoadKg} kg/m² (Max ${maxFloorLoadKg} kg/m²)` : "Unstated in Document",
       flagged: floorBreach,
     },
   ];

@@ -120,9 +120,9 @@ def normalize_fact_value(field: FactField, raw_value: str) -> str | float | int 
         return raw
     if field is FactField.OSHA_CERT:
         normalized = raw.casefold()
-        if re.search(r"\b(?:pending|missing|no|false|invalid|not\s+(?:attached|certified|valid))\b", normalized):
+        if re.search(r"\b(?:pending|missing|no|false|invalid|non-compliant|not\s+(?:attached|certified|valid))\b", normalized):
             return False
-        if re.search(r"\b(?:certified|attached|valid|yes|true)\b", normalized):
+        if re.search(r"\b(?:certified|attached|valid|yes|true|compliant)\b", normalized):
             return True
         raise ValueError("unsupported boolean value")
 
@@ -133,16 +133,31 @@ def normalize_fact_value(field: FactField, raw_value: str) -> str | float | int 
     folded = raw.casefold()
 
     if field is FactField.BID_AMOUNT_INR:
+        if re.search(r"\bcrores?\b|\bcr\b", folded):
+            return number * 10_000_000
+        if re.search(r"\blakhs?\b|\blac\b|\blakh\b", folded):
+            return number * 100_000
         return number
     if field is FactField.DELIVERY_WEEKS:
-        weeks = number / 7 if re.search(r"\bdays?\b", folded) else number
-        if not math.isclose(weeks, round(weeks), abs_tol=1e-9):
-            raise ValueError("delivery days must convert to whole weeks")
+        if re.search(r"\bmonths?\b", folded):
+            weeks = number * 4.333
+        elif re.search(r"\bdays?\b", folded):
+            weeks = number / 7
+        else:
+            weeks = number
         return int(round(weeks))
-    if field in {FactField.POWER_DRAW_KW, FactField.COOLING_CAPACITY_KW}:
+    if field is FactField.POWER_DRAW_KW:
+        return number * 1_000 if re.search(r"\bmw\b", folded) else number
+    if field is FactField.COOLING_CAPACITY_KW:
+        if re.search(r"\btr\b|\btons?\b", folded):
+            return round(number * 3.51685, 2)
         return number * 1_000 if re.search(r"\bmw\b", folded) else number
     if field is FactField.WIDTH_M:
-        return number / 1_000 if re.search(r"\bmm\b", folded) else number
+        if re.search(r"\bmm\b", folded):
+            return number / 1_000
+        if re.search(r"\bcm\b", folded):
+            return number / 100
+        return number
     if field is FactField.EMBODIED_CARBON:
         return number * 1_000 if re.search(r"\btco2e", folded) else number
     if field is FactField.WATER_EVAP_GPM:

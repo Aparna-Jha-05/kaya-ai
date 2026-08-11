@@ -154,13 +154,13 @@ export default function GanttScheduleViewer({
 
         <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-xs font-bold border shadow-xs shrink-0 ${
           !hasInference
-            ? "border-line/60 bg-surface/80 text-text/60"
+            ? "border-amber/40 bg-amber/15 text-amber"
             : isLate
             ? "border-rose/30 bg-rose/15 text-rose"
-            : "border-amber/30 bg-amber/15 text-amber"
+            : "border-emerald/30 bg-emerald/15 text-emerald"
         }`}>
           {!hasInference
-            ? "Pending Extraction"
+            ? "⚠ Unstated in Document"
             : isLate
             ? "✕ Non-Compliant"
             : "✓ Compliant"}

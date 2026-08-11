@@ -76,7 +76,7 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line/40 pt-3.5 lg:border-t-0 lg:pt-0 text-xs">
             <Metric label="Bid Amount" value={inCrore(source.bid_amount_inr)} />
             <Metric label="5-Year TCO²" value={inCrore(record.scorecard.calculated_tco2_inr)} />
-            <Metric label="Promised Delivery" value={source.promised_delivery_weeks == null ? "Not provided" : `${source.promised_delivery_weeks} weeks`} />
+            <Metric label="Promised Delivery" value={source.promised_delivery_weeks == null ? "Unstated in Document" : `${source.promised_delivery_weeks} weeks`} />
           </div>
         </div>
       </section>
