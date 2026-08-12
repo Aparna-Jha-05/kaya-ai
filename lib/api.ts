@@ -163,21 +163,18 @@ async function request<T>(path: string, init?: RequestInit, timeoutMs = 30000): 
       signal: init?.signal ?? controller.signal,
     });
     clearTimeout(timeoutId);
-    if (!response.ok) {
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("po-lice:connection-error"));
-      }
-      const body = await response.json().catch(() => null);
-      throw new Error(body?.message ?? body?.detail ?? "Request failed.");
-    }
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("po-lice:connection-success"));
+    }
+    if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      throw new Error(body?.message ?? body?.detail ?? "Request failed.");
     }
     if (response.status === 204) return undefined as T;
     return response.json() as Promise<T>;
   } catch (err) {
     clearTimeout(timeoutId);
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && (err instanceof Error && (err.name === "AbortError" || err.name === "TypeError"))) {
       window.dispatchEvent(new CustomEvent("po-lice:connection-error"));
     }
     if (err instanceof Error && err.name === "AbortError") {
