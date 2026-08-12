@@ -11,16 +11,16 @@ function systemTheme(): Theme {
 }
 
 export default function ThemeToggle({ compact = false }: { compact?: boolean }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "light";
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    if (saved === "dark" || saved === "light") return saved;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  });
 
   useEffect(() => {
-    const root = document.documentElement;
+    // Track OS preference changes only when user hasn't made a manual choice.
     const saved = window.localStorage.getItem(STORAGE_KEY);
-    const initial = saved === "dark" || saved === "light" ? saved : systemTheme();
-    setTheme(initial);
-
-    // A system preference controls first use. Once a reviewer makes a choice,
-    // it is intentionally retained—there is no ambiguous third "default" mode.
     if (saved) return;
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const update = () => setTheme(systemTheme());
@@ -36,12 +36,12 @@ export default function ThemeToggle({ compact = false }: { compact?: boolean }) 
   }
 
   return (
-    <div className={`flex items-center rounded-xl border border-line bg-surface p-1 shadow-xs ${compact ? "inline-flex" : "w-full"}`} role="group" aria-label="Color theme">
-      <button type="button" onClick={() => choose("light")} aria-pressed={theme === "light"} className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-xs font-bold tactile-press transition-all ${compact ? "" : "flex-1"} ${theme === "light" ? "bg-card text-text ring-1 ring-line shadow-xs" : "text-text/60 hover:text-text"}`}>
+    <div suppressHydrationWarning className={`flex items-center rounded-xl border border-line bg-surface p-1 shadow-xs ${compact ? "inline-flex" : "w-full"}`} role="group" aria-label="Color theme">
+      <button suppressHydrationWarning type="button" onClick={() => choose("light")} aria-pressed={theme === "light"} className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-xs font-bold tactile-press transition-all ${compact ? "" : "flex-1"} ${theme === "light" ? "bg-card text-text ring-1 ring-line shadow-xs" : "text-text/60 hover:text-text"}`}>
         <Sun className="h-3.5 w-3.5" />
         <span className={compact ? "sr-only" : ""}>Light</span>
       </button>
-      <button type="button" onClick={() => choose("dark")} aria-pressed={theme === "dark"} className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-xs font-bold tactile-press transition-all ${compact ? "" : "flex-1"} ${theme === "dark" ? "bg-card text-text ring-1 ring-line shadow-xs" : "text-text/60 hover:text-text"}`}>
+      <button suppressHydrationWarning type="button" onClick={() => choose("dark")} aria-pressed={theme === "dark"} className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-xs font-bold tactile-press transition-all ${compact ? "" : "flex-1"} ${theme === "dark" ? "bg-card text-text ring-1 ring-line shadow-xs" : "text-text/60 hover:text-text"}`}>
         <Moon className="h-3.5 w-3.5" />
         <span className={compact ? "sr-only" : ""}>Dark</span>
       </button>
