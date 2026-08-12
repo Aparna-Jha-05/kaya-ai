@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const DEFAULT_PRODUCTION_BACKEND_URL = "https://po-lice-backend-staging-qiix.onrender.com";
+
 function getBackendUrl(): string {
-  const raw = process.env.PO_LICE_BACKEND_URL || "http://127.0.0.1:8000";
+  const raw =
+    process.env.PO_LICE_BACKEND_URL ||
+    process.env.NEXT_PUBLIC_PO_LICE_API_URL ||
+    (process.env.NODE_ENV === "production" ? DEFAULT_PRODUCTION_BACKEND_URL : "http://127.0.0.1:8000");
   return raw.trim().replace(/\/+$/, "");
 }
 

@@ -5,7 +5,10 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   async rewrites() {
-    const backendUrl = process.env.PO_LICE_BACKEND_URL || "http://127.0.0.1:8000";
+    const backendUrl =
+      process.env.PO_LICE_BACKEND_URL ||
+      process.env.NEXT_PUBLIC_PO_LICE_API_URL ||
+      (process.env.NODE_ENV === "production" ? "https://po-lice-backend-staging-qiix.onrender.com" : "http://127.0.0.1:8000");
     return [
       {
         source: "/api/v1/:path*",
