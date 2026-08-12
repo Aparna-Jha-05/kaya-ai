@@ -1,22 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { proxyRequest } from "@/lib/proxyHelper";
+
 export const dynamic = "force-dynamic";
 
-const BACKEND_URL = process.env.PO_LICE_BACKEND_URL || "http://127.0.0.1:8000";
-
-export async function GET() {
-  const res = await fetch(`${BACKEND_URL}/api/v1/site-constraints`);
-  return new NextResponse(res.body, { status: res.status, headers: new Headers(res.headers) });
+export async function GET(request: NextRequest) {
+  return proxyRequest(request);
 }
 
-export async function PUT(request: NextRequest) {
-  const headers = new Headers(request.headers);
-  headers.delete("host");
-  const res = await fetch(`${BACKEND_URL}/api/v1/site-constraints`, {
-    method: "PUT",
-    headers,
-    body: request.body,
-    // @ts-expect-error duplex required
-    duplex: "half",
-  });
-  return new NextResponse(res.body, { status: res.status, headers: new Headers(res.headers) });
+export async function POST(request: NextRequest) {
+  return proxyRequest(request);
 }

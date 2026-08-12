@@ -1,14 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { proxyRequest } from "@/lib/proxyHelper";
 
 export const dynamic = "force-dynamic";
 
-const BACKEND_URL = process.env.PO_LICE_BACKEND_URL || "http://127.0.0.1:8000";
-
 export async function GET(request: NextRequest) {
-  const url = new URL(request.nextUrl.pathname, BACKEND_URL);
-  const res = await fetch(url.toString());
-  return new NextResponse(res.body, {
-    status: res.status,
-    headers: new Headers(res.headers),
-  });
+  return proxyRequest(request);
 }

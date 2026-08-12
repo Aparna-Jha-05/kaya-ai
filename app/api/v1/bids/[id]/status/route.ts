@@ -1,20 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { proxyRequest } from "@/lib/proxyHelper";
+
 export const dynamic = "force-dynamic";
 
-const BACKEND_URL = process.env.PO_LICE_BACKEND_URL || "http://127.0.0.1:8000";
-
-export async function PATCH(request: NextRequest) {
-  const url = new URL(request.nextUrl.pathname, BACKEND_URL);
-  const headers = new Headers(request.headers);
-  headers.delete("host");
-
-  const res = await fetch(url.toString(), {
-    method: "PATCH",
-    headers,
-    body: request.body,
-    // @ts-expect-error duplex required
-    duplex: "half",
-  });
-
-  return new NextResponse(res.body, { status: res.status, headers: new Headers(res.headers) });
+export async function GET(request: NextRequest) {
+  return proxyRequest(request);
 }
