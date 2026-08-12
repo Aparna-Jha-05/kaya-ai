@@ -3,12 +3,14 @@ import { useRef, useState } from "react";
 import { UploadCloud, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import { procurementApi, type BidRecord } from "@/lib/api";
+import { useTour } from "@/components/walkthrough/TourContext";
 
 export default function UploadDropzone({
   onUploaded,
 }: {
   onUploaded: (record: BidRecord) => void;
 }) {
+  const { advanceIfMatch } = useTour();
   const [over, setOver] = useState(false);
   const [state, setState] = useState<"idle" | "uploading" | "error">("idle");
   const [error, setError] = useState("");
@@ -28,7 +30,14 @@ export default function UploadDropzone({
     }
     setState("uploading");
     setError("");
-    try { onUploaded(await procurementApi.upload(file)); } catch (reason) { setState("error"); setError(reason instanceof Error ? reason.message : "Upload failed."); }
+    try { 
+      const result = await procurementApi.upload(file);
+      onUploaded(result);
+      advanceIfMatch("tour-dropzone");
+    } catch (reason) { 
+      setState("error"); 
+      setError(reason instanceof Error ? reason.message : "Upload failed."); 
+    }
   }
 
   return (
@@ -54,6 +63,7 @@ export default function UploadDropzone({
       }}
       role="button"
       tabIndex={0}
+      data-tour="tour-dropzone"
       aria-label="Upload a bid PDF"
       className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all duration-150 tactile-press ${
         over
