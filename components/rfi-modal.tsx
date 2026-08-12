@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { createPortal } from "react-dom";
+import { X, FileText, CheckCircle2 } from "lucide-react";
 import { procurementApi } from "@/lib/api";
 
 interface RFIModalProps {
@@ -9,19 +10,17 @@ interface RFIModalProps {
   onClose: () => void;
   vendorName?: string;
   bidId?: string;
-  findings?: string[];
-  approvalDisabled?: boolean;
   onHandoffSuccess?: (logMsg: string) => void;
 }
 
 export default function RFIModal({
   isOpen,
   onClose,
-  vendorName = "CoolTech Global Solutions",
+  vendorName = "Supplier",
   bidId,
-  approvalDisabled = false,
   onHandoffSuccess,
 }: RFIModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [emailBody, setEmailBody] = useState("");
   const [rfiId, setRfiId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,16 +29,20 @@ export default function RFIModal({
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (!isOpen) return;
     closeRef.current?.focus();
-    document.body.classList.add("scroll-locked");
+    document.body.style.overflow = "hidden";
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !isSent) onClose();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
-      document.body.classList.remove("scroll-locked");
+      document.body.style.overflow = "";
     };
   }, [isOpen, isSent, onClose]);
 
@@ -82,58 +85,76 @@ export default function RFIModal({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80 p-4 backdrop-blur-md" role="presentation" onMouseDown={onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="rfi-title" className="w-full max-w-2xl min-w-0 max-w-full overflow-hidden rounded-2xl border border-line border-b-2 bg-card p-6 shadow-2xl animate-in fade-in zoom-in duration-200" onMouseDown={(event) => event.stopPropagation()}>
-        <div className="mb-4 flex items-center justify-between gap-3 border-b border-line pb-4 min-w-0">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-bg/80 p-4 backdrop-blur-md animate-in fade-in duration-150"
+      role="presentation"
+      onMouseDown={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rfi-title"
+        className="w-full max-w-2xl overflow-hidden rounded-2xl border border-line border-b-2 bg-card p-6 shadow-2xl animate-in zoom-in-95 duration-150"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="mb-4 flex items-start justify-between gap-3 border-b border-line pb-4 min-w-0">
           <div className="min-w-0 flex-1">
-            <div className="page-eyebrow mb-0.5">
-              REQUEST FOR INFORMATION
-            </div>
-            <h3 id="rfi-title" className="text-lg font-bold flex items-center gap-2 truncate">
-              Request information
+            <p className="page-eyebrow mb-1">Request For Information</p>
+            <h3 id="rfi-title" className="text-lg font-extrabold text-text flex items-center gap-2 truncate">
+              <FileText className="h-5 w-5 text-cyan shrink-0" />
+              <span>Draft Compliance RFI — {vendorName}</span>
             </h3>
           </div>
           <button
             ref={closeRef}
             onClick={onClose}
-            aria-label="Close RFI draft"
-            className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-xs font-bold text-text/70 hover:bg-surface hover:text-text tactile-press shadow-xs"
+            aria-label="Close RFI modal"
+            className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-line bg-surface px-3 py-1.5 text-xs font-bold text-text hover:border-cyan/40 hover:text-cyan tactile-press shadow-xs"
           >
-            <X className="h-3.5 w-3.5" /> Close
+            <X className="h-4 w-4" /> Close
           </button>
         </div>
 
-        <p className="mb-3 text-xs font-medium text-text/60 break-words">
-          This server-generated draft is built from recorded findings for {vendorName}. Review it before recording approval.
+        <p className="mb-3 text-xs font-medium text-text/60">
+          Automated evidence draft compiled from patrol findings for {vendorName}. Review and approve for vendor dispatch.
         </p>
 
+        {/* Draft Textarea */}
         <textarea
           aria-label="Editable RFI email draft"
           value={emailBody}
           onChange={(e) => setEmailBody(e.target.value)}
           disabled={loading || !rfiId}
-          placeholder={loading ? "Generating the evidence-bound draft…" : "RFI draft unavailable."}
-          className="h-56 w-full max-w-full min-w-0 box-border resize-none rounded-xl border border-line bg-surface p-4 font-mono text-xs leading-relaxed text-text outline-none focus:border-cyan shadow-xs"
+          placeholder={loading ? "Generating evidence-bound RFI draft…" : "RFI draft unavailable."}
+          className="h-56 w-full resize-none rounded-xl border border-line bg-surface p-4 font-mono text-xs leading-relaxed text-text outline-none focus:border-cyan/60 focus:ring-1 focus:ring-cyan/30 shadow-xs disabled:opacity-60"
         />
 
-        <div className="mt-5 flex items-center justify-between border-t border-line pt-3">
-          <span className="text-xs text-text/60">
-            Status: <strong className="text-violet">Draft ready for review</strong>
-          </span>
+        {/* Action Footer */}
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-line pt-4">
+          <div className="flex items-center gap-2 text-xs text-text/60">
+            <span>Status:</span>
+            <span className="inline-flex items-center gap-1 rounded-lg bg-violet/15 px-2.5 py-1 text-xs font-extrabold text-violet uppercase border border-violet/30 shadow-xs">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Draft Ready
+            </span>
+          </div>
 
           <button
+            type="button"
             onClick={() => void handleHandoff()}
-            disabled={approvalDisabled || loading || isSent || !rfiId}
-            className="flex items-center gap-2 rounded-lg bg-cyan px-5 py-2.5 text-xs font-bold text-on-accent shadow-lg transition-all hover:bg-cyan/90 hover:shadow-[0_8px_24px_rgb(var(--color-cyan)_/_0.2)] disabled:cursor-not-allowed disabled:opacity-55"
+            disabled={loading || isSent || !rfiId}
+            className="flex items-center justify-center gap-2 rounded-xl bg-cyan px-5 py-2.5 text-xs font-bold text-on-accent shadow-xs transition-all hover:bg-cyan/90 tactile-press disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            {approvalDisabled ? "Approval protected in public demo" : loading ? "Generating…" : isSent ? "Recording…" : "Record RFI approval"}
+            {loading ? "Generating Draft…" : isSent ? "Approving…" : "Approve RFI"}
           </button>
         </div>
-        {error && <p role="alert" className="mt-3 text-xs text-rose">{error}</p>}
+
+        {error && <p role="alert" className="mt-3 text-xs font-semibold text-rose">{error}</p>}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

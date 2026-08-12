@@ -1,12 +1,34 @@
+# Vercel build exclusions — keep the frontend bundle lean.
+# Python backend, agent tooling, and runtime data are all excluded.
+
+# Agent / IDE tooling
 .agent
+.agents
 .claude
 .codegraph
 .codex
 .opencode
+.playwright-cli
+
+# Python backend (deployed separately on Render)
 backend
-data
-docs
 venv
 .venv
+
+# Runtime data & uploads
+data
+uploads
 *.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+
+# Documentation
+docs
+*.pdf
+
+# Scripts and spec — not needed for Next.js build
+scripts
+openspec
+
+# Logs
 *.log

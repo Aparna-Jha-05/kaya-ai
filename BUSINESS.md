@@ -83,7 +83,7 @@ Other prototype differentiators:
 - page-level source rectangles and geometry status;
 - missing evidence handled as a review flag;
 - version-aware constraints and reviewer actions;
-- live bid comparison rather than a standalone chatbot.
+- live bid comparison with hardware-accelerated responsive UI rather than a standalone chatbot.
 
 ## Current scope
 
@@ -94,20 +94,22 @@ Other prototype differentiators:
 - synthetic PDF upload and evidence extraction;
 - four deterministic patrols;
 - SQLite/filesystem demo persistence;
+- Multi-stage extraction with OCR, Table parsing, and Legal Clause analysis;
+- CAD Intelligence parsing for spatial vector geometry;
+- optional Ollama/Gemini extraction cascade with confidence scoring;
 - bid comparison and bounded TCO scenario;
-- RFI approval and reviewer decision recording;
+- separate RFI draft/approval states and reviewer decision recording;
 - activity history and CSV export;
 - deterministic fallback when AI is unavailable.
 
 ### Not yet production-ready
 
 - enterprise identity, authorization, and Supabase RLS;
-- managed object storage and retention policies;
+- managed object storage and production retention policies;
 - durable multi-project integrity correlation;
 - production audit immutability and regulatory controls;
-- live supplier/vendor knowledge retrieval;
-- actual RFI delivery to external parties;
-- full CAD/BIM/VLM interpretation;
+- deployed PostgreSQL/pgvector supplier retrieval;
+- external SMTP and Jarvis dispatch;
 - evaluation on confidential, representative procurement documents;
 - availability, security, and load guarantees.
 

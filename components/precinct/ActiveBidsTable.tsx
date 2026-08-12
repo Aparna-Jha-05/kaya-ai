@@ -1,14 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, RefreshCw } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type BidRecord } from "@/lib/api";
 import { displayCheckName, formatCroreValue } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
+import { useTour } from "@/components/walkthrough/TourContext";
 
 type Row = {
   id: string;
@@ -38,6 +39,7 @@ function fromRecord(record: BidRecord): Row {
 
 export default function ActiveBidsTable() {
   const router = useRouter();
+  const { advanceIfMatch } = useTour();
   const [rows, setRows] = useState<Row[]>([]);
   const [source, setSource] = useState<"loading" | "live" | "empty" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -59,88 +61,78 @@ export default function ActiveBidsTable() {
 
   useEffect(() => {
     loadData();
+    const handleUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<BidRecord[]>;
+      if (customEvent.detail) {
+        setRows(customEvent.detail.map(fromRecord));
+        setSource(customEvent.detail.length > 0 ? "live" : "empty");
+      }
+    };
+    window.addEventListener("po-lice:bids-updated", handleUpdate);
+    return () => window.removeEventListener("po-lice:bids-updated", handleUpdate);
   }, [loadData]);
 
   const check = (row: Row, name: string) => row.checks.find((item) => item.name === name);
 
   return (
-    <Card>
+    <Card data-tour="tour-queue">
       <CardHeader
-        title="Submitted bids"
-        caption="Active procurement bids in current review queue"
+        title="Submitted Bids"
+        caption="Active procurement bids in current review queue."
       />
       {source === "loading" && (
-        <p className="p-6 text-sm text-text/50">Loading submitted bids…</p>
+        <div className="p-12 text-sm text-text/50 flex items-center justify-center font-medium">Loading submitted bids…</div>
       )}
 
-      {source === "error" && (
-        <div className="p-6 space-y-3">
-          <p className="text-sm text-rose">{errorMessage}</p>
-          <button
-            type="button"
-            onClick={loadData}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-3 py-1.5 text-xs font-semibold text-cyan hover:bg-cyan/25"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Retry loading bids
-          </button>
-        </div>
-      )}
-
-      {(source === "live" || source === "empty") && (
-        <div className="overflow-x-auto overflow-y-auto max-h-[320px]">
-          <table className="w-full min-w-[920px] text-sm border-collapse table-fixed">
-            <colgroup>
-              <col className="w-[20%]" />
-              <col className="w-[13%]" />
-              <col className="w-[10%]" />
-              <col className="w-[10%]" />
-              <col className="w-[11%]" />
-              <col className="w-[10%]" />
-              <col className="w-[14%]" />
-              <col className="w-[12%]" />
-            </colgroup>
+      {(source === "live" || source === "empty" || source === "error") && (
+        <div className="table-scroll-area">
+          <table className="w-full min-w-[680px] text-sm border-collapse table-auto">
             <thead className="sticky top-0 z-10 bg-surface">
               <tr className="border-b-2 border-line table-header">
                 <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
                 <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
-                  <Tooltip text="Hard limit check. Validates physical floor load capacity against equipment weight.">
-                    <span>Engineering</span>
+                  <Tooltip text="Hard limit check. Validates power draw, cooling plant capacity balance, door clearance, warranty, and structural floor load tolerance.">
+                    <span>Building Patrol</span>
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
-                  <Tooltip text="Hard limit check. Validates embodied carbon emissions factor against project carbon cap.">
-                    <span>Carbon</span>
+                  <Tooltip text="Hard limit check. Validates embodied carbon emissions factor and water evaporation rate against site environmental caps.">
+                    <span>Green Patrol</span>
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <Tooltip text="Vendor risk score (0-10) calculated from historical performance metrics.">
-                    <span>Reliability</span>
+                    <span>Vice Squad</span>
                   </Tooltip>
                 </th>
                 <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <Tooltip text="Schedule impact estimation calculating late delivery risk in days.">
-                    <span>Schedule</span>
+                    <span>Traffic Control</span>
                   </Tooltip>
                 </th>
-                <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO² (INR)</th>
+                <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-Yr TCO² (INR)</th>
                 <th className="px-4 py-3 text-right font-bold whitespace-nowrap last:rounded-tr-[0.9rem]" />
               </tr>
             </thead>
             <tbody className="font-mono">
               {rows.length ? (
                 rows.map((row) => {
-                  const engineering = check(row, "Engineering")?.status ?? "FLAG";
-                  const carbon = check(row, "Carbon")?.status ?? "FLAG";
-                  const scheduleStatus = check(row, "Schedule")?.status ?? "FLAG";
-                  const risk = check(row, "Reliability")?.risk;
+                  const engineering = check(row, "Building Patrol")?.status ?? "FLAG";
+                  const carbon = check(row, "Green Patrol")?.status ?? "FLAG";
+                  const scheduleStatus = check(row, "Traffic Control")?.status ?? "FLAG";
+                  const risk = check(row, "Vice Squad")?.risk;
                   return (
                     <tr
                       key={row.id}
-                      onClick={() => router.push(`/bids/${row.id}`)}
+                      onClick={() => {
+                        advanceIfMatch("tour-queue");
+                        router.push(`/bids/${row.id}`);
+                      }}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
                           event.preventDefault();
+                          advanceIfMatch("tour-queue");
                           router.push(`/bids/${row.id}`);
                         }
                       }}
@@ -176,8 +168,8 @@ export default function ActiveBidsTable() {
                             className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-extrabold tabular-nums border shadow-xs"
                             style={{
                               color: risk != null && risk > 6 ? COLORS.rose : COLORS.cyan,
-                              backgroundColor: risk != null && risk > 6 ? `${COLORS.rose}1f` : `${COLORS.cyan}1f`,
-                              borderColor: risk != null && risk > 6 ? `${COLORS.rose}50` : `${COLORS.cyan}50`,
+                              backgroundColor: risk != null && risk > 6 ? "rgba(var(--color-rose), 0.15)" : "rgba(var(--color-cyan), 0.15)",
+                              borderColor: risk != null && risk > 6 ? "rgba(var(--color-rose), 0.4)" : "rgba(var(--color-cyan), 0.4)",
                             }}
                           >
                             {risk == null ? "—" : `${risk}/10`}

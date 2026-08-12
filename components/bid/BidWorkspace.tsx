@@ -13,10 +13,10 @@ type Stage = "upload" | "results";
 
 const PIPELINE = [
   { key: "upload", label: "Vendor PDF", Icon: FileText },
-  { key: "extract", label: "Extract data", Icon: ScanText },
-  { key: "validate", label: "Validate data", Icon: Braces },
-  { key: "patrols", label: "Run checks", Icon: Users },
-  { key: "results", label: "Review results", Icon: ClipboardList },
+  { key: "extract", label: "Extract Data", Icon: ScanText },
+  { key: "validate", label: "Validate Data", Icon: Braces },
+  { key: "patrols", label: "Run Patrols", Icon: Users },
+  { key: "results", label: "Review Results", Icon: ClipboardList },
 ] as const;
 
 const STAGE_INDEX: Record<Stage, number> = { upload: 0, results: 4 };
@@ -40,6 +40,7 @@ export default function BidWorkspace({ initialRecord }: { initialRecord?: BidRec
   }, [lit]);
 
   function onUploaded(next: BidRecord) {
+    router.refresh();
     router.replace(`/bids/${next.id}`);
   }
 

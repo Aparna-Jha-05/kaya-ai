@@ -184,7 +184,8 @@ class CascadeTests(unittest.TestCase):
             "VENDOR: Complete Systems\nUpfront Bid Amount: INR 4,20,00,000\n"
             "Promised Delivery: 10 Weeks\nOSHA Certified: Yes\nEquipment Model: C-1\n"
             "Substation Power Draw: 1100 kW\nCooling Capacity: 1200 kW\n"
-            "Equipment Width: 1.8 m\nEmbodied Carbon Factor: 380 kgCO2e/ton"
+            "Equipment Width: 1.8 m\nEmbodied Carbon Factor: 380 kgCO2e/ton\n"
+            "Water Evaporation Rate: 18 gpm\nFloor Load: 2200 kg"
         )
         bid = PDFExtractorService.parse_bid_text(text)
 

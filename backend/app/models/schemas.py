@@ -32,7 +32,10 @@ class FactField(str, Enum):
     POWER_DRAW_KW = "equipment.power_draw_kw"
     COOLING_CAPACITY_KW = "equipment.cooling_capacity_kw"
     WIDTH_M = "equipment.width_m"
+    LENGTH_M = "equipment.length_m"
     EMBODIED_CARBON = "equipment.embodied_carbon_factor"
+    WATER_EVAP_GPM = "equipment.water_evap_gpm"
+    FLOOR_LOAD_KG = "equipment.floor_load_kg"
 
 
 class ExtractionProvider(str, Enum):
@@ -50,7 +53,10 @@ CANONICAL_FACT_UNITS: dict[FactField, str | None] = {
     FactField.POWER_DRAW_KW: "kW",
     FactField.COOLING_CAPACITY_KW: "kW",
     FactField.WIDTH_M: "m",
+    FactField.LENGTH_M: "m",
     FactField.EMBODIED_CARBON: "kgCO2e/ton",
+    FactField.WATER_EVAP_GPM: "gpm",
+    FactField.FLOOR_LOAD_KG: "kg",
 }
 
 
@@ -70,6 +76,7 @@ class FactCandidate(StrictModel):
     provider: ExtractionProvider
     model: str = Field(min_length=1, max_length=160)
     schema_version: str = Field(default="1.0", pattern=r"^\d+\.\d+$")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
     latency_ms: float = Field(default=0, ge=0, le=3_600_000)
     validation_signals: List[str] = Field(default_factory=list, max_length=20)
     accepted: bool = False
@@ -296,6 +303,8 @@ class SiteConstraintRecord(StrictModel):
     max_substation_kw: float
     max_door_width_m: float
     max_embodied_carbon_kg: float
+    max_water_evap_gpm: Optional[float] = Field(default=None, gt=0)
+    max_floor_load_kg_m2: Optional[float] = Field(default=None, gt=0)
     actor: str = "SYSTEM"
     reason: str = "Initial baseline"
     created_at: str
@@ -307,7 +316,24 @@ class ConstraintUpdateRequest(StrictModel):
     max_substation_kw: float = Field(gt=0)
     max_door_width_m: float = Field(gt=0)
     max_embodied_carbon_kg: float = Field(gt=0)
+    max_water_evap_gpm: Optional[float] = Field(default=None, gt=0)
+    max_floor_load_kg_m2: Optional[float] = Field(default=None, gt=0)
     reason: str = Field(default="Updated site operational requirements", min_length=3, max_length=2_000)
+
+
+class ManualOverrideRequest(StrictModel):
+    bid_amount_inr: Optional[float] = None
+    promised_delivery_weeks: Optional[int] = None
+    has_osha_cert: Optional[bool] = None
+    power_draw_kw: Optional[float] = None
+    cooling_capacity_kw: Optional[float] = None
+    water_evap_gpm: Optional[float] = None
+    floor_load_kg: Optional[float] = None
+    length_m: Optional[float] = None
+    width_m: Optional[float] = None
+    height_m: Optional[float] = None
+    embodied_carbon_factor: Optional[float] = None
+    note: str = Field(min_length=1, max_length=1000)
 
 
 class SimulationRequest(StrictModel):

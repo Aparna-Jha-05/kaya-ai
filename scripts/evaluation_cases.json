@@ -2,21 +2,25 @@
   {
     "id": "complete_native_text",
     "description": "All required fields are present in native PDF text.",
-    "text": "VENDOR: Atlas Cooling Pvt Ltd.\nUpfront Bid Amount: INR 4,20,00,000\nPromised Delivery: 10 Weeks\nOSHA Form 300 Certified: Yes\nEquipment Model: AT-1100\nSubstation Power Draw: 1100 kW\nEquipment Width: 1.80 m\nEmbodied Carbon Factor: 380 kgCO2e/ton\nWarranty: 5 Years",
+    "text": "VENDOR: Atlas Cooling Pvt Ltd.\nUpfront Bid Amount: INR 4,20,00,000\nPromised Delivery: 10 Weeks\nOSHA Form 300 Certified: Yes\nEquipment Model: AT-1100\nSubstation Power Draw: 1100 kW\nEquipment Width: 1.80 m\nEmbodied Carbon Factor: 380 kgCO2e/ton\nWater Evaporation Rate: 22 gpm\nFloor Load: 2500 kg\nWarranty: 5 Years",
     "expected": {
       "bid_amount_inr": 42000000,
       "promised_delivery_weeks": 10,
       "has_osha_cert": true,
       "equipment.power_draw_kw": 1100,
       "equipment.width_m": 1.8,
-      "equipment.embodied_carbon_factor": 380
+      "equipment.embodied_carbon_factor": 380,
+      "equipment.water_evap_gpm": 22,
+      "equipment.floor_load_kg": 2500
     },
     "expected_units": {
       "bid_amount_inr": "INR",
       "promised_delivery_weeks": "week",
       "equipment.power_draw_kw": "kW",
       "equipment.width_m": "m",
-      "equipment.embodied_carbon_factor": "kgCO2e/ton"
+      "equipment.embodied_carbon_factor": "kgCO2e/ton",
+      "equipment.water_evap_gpm": "gpm",
+      "equipment.floor_load_kg": "kg"
     }
   },
   {
@@ -30,7 +34,9 @@
     "must_remain_missing": [
       "equipment.power_draw_kw",
       "equipment.width_m",
-      "equipment.embodied_carbon_factor"
+      "equipment.embodied_carbon_factor",
+      "equipment.water_evap_gpm",
+      "equipment.floor_load_kg"
     ]
   },
   {
@@ -63,10 +69,25 @@
     "must_remain_missing": [
       "equipment.power_draw_kw",
       "equipment.width_m",
-      "equipment.embodied_carbon_factor"
+      "equipment.embodied_carbon_factor",
+      "equipment.water_evap_gpm",
+      "equipment.floor_load_kg"
     ],
     "forbidden_values": [
       999
     ]
+  },
+  {
+    "id": "floor_load_tonnes_to_kg",
+    "description": "Floor load in metric tonnes converts correctly to kg.",
+    "text": "VENDOR: HeavyUnit Systems Ltd.\nUpfront Bid Amount: INR 4,60,00,000\nPromised Delivery: 11 Weeks\nEquipment Model: HU-2T\nSubstation Power Draw: 1050 kW\nEquipment Width: 1.9 m\nEmbodied Carbon Factor: 400 kgCO2e/ton\nOperating Weight: 3.5 tonnes\nWater Evaporation Rate: 28 gpm\nWarranty: 5 Years",
+    "expected": {
+      "equipment.floor_load_kg": 3500,
+      "equipment.water_evap_gpm": 28
+    },
+    "expected_units": {
+      "equipment.floor_load_kg": "kg",
+      "equipment.water_evap_gpm": "gpm"
+    }
   }
 ]

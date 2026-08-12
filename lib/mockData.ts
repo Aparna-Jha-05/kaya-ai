@@ -48,65 +48,7 @@ export interface Bid {
   po_number: string;
 }
 
-export const BIDS: Bid[] = [
-  {
-    id: "A",
-    vendor: "Vendor A",
-    equipment_type: "Industrial Chiller",
-    model: "Model A",
-    power_draw_kw: 1150,
-    cooling_capacity_kw: 3400,
-    water_evaporation_gpm: 380,
-    floor_load_kg_m2: 1400,
-    carbon_intensity_kgco2e: 800000,
-    delivery_weeks: 15,
-    has_safety_cert: true,
-    upfront_cost_cr: 4.2,
-    tco2_cr: 6.0,
-    vendor_history: { late_deliveries: 1, total_deliveries: 6, disputes: 0 },
-    recommendation: "RECOMMENDED",
-    po_number: "PO-2026-A-0417",
-  },
-  {
-    id: "B",
-    vendor: "Vendor B",
-    equipment_type: "Industrial Chiller",
-    model: "Model B (substituted)",
-    power_draw_kw: 1400, // over 1200 -> Building Patrol FAIL
-    cooling_capacity_kw: 3450,
-    water_evaporation_gpm: 460, // over 400
-    floor_load_kg_m2: 1620, // over 1500
-    carbon_intensity_kgco2e: 920000, // over 850000 -> Green Patrol FAIL
-    delivery_weeks: 18, // over 16
-    has_safety_cert: false, // missing safety certificate -> Case Files trigger
-    upfront_cost_cr: 3.8, // cheapest upfront
-    tco2_cr: 6.8, // most expensive over 5 years
-    vendor_history: { late_deliveries: 3, total_deliveries: 5, disputes: 1 },
-    recommendation: "REJECT",
-    po_number: "PO-2026-B-0418",
-  },
-  {
-    id: "C",
-    vendor: "Vendor C",
-    equipment_type: "Industrial Chiller",
-    model: "Model C",
-    power_draw_kw: 1180,
-    cooling_capacity_kw: 3480,
-    water_evaporation_gpm: 395,
-    floor_load_kg_m2: 1480,
-    carbon_intensity_kgco2e: 830000,
-    delivery_weeks: 16,
-    has_safety_cert: true,
-    upfront_cost_cr: 4.5,
-    tco2_cr: 6.0,
-    vendor_history: { late_deliveries: 2, total_deliveries: 6, disputes: 0 },
-    recommendation: "ACCEPTABLE",
-    po_number: "PO-2026-C-0419",
-  },
-];
 
-export const getBid = (id: string): Bid | undefined =>
-  BIDS.find((b) => b.id.toLowerCase() === id.toLowerCase());
 
 // EPD carbon lookup (mock) — Green Patrol falls back to this when a bid omits a
 // carbon value. Keyed by model.
@@ -183,15 +125,29 @@ export const CAD_DIMS: Record<string, { footprint_m: string; weight_kg_m2: numbe
 
 export function createFallbackBidRecord(filename?: string, customVendor?: string) {
   const name = (filename || customVendor || "Uploaded Bid").replace(/\.pdf$/i, "").replaceAll("_", " ");
-  const isB = name.toLowerCase().includes("b") || name.toLowerCase().includes("cooltech");
-  const isC = name.toLowerCase().includes("c") || name.toLowerCase().includes("carrier");
-  const vendorName = customVendor || (isB ? "Vendor B (CoolTech)" : isC ? "Vendor C (Carrier)" : name.toLowerCase().includes("vendor") ? name : `Vendor (${name})`);
+  const clean = name.toLowerCase().replaceAll(" ", "");
+  const isB = clean.includes("cooltech") || clean.includes("vendorb");
+  const isC = clean.includes("carrier") || clean.includes("vendorc");
+  const vendorName = customVendor || (isB ? "CoolTech Global Solutions" : isC ? "Carrier HVAC India Ltd" : "Trane Solutions Pvt Ltd");
   const id = `uploaded-${Date.now()}`;
 
   return {
     id,
     filename: filename || `${vendorName.replaceAll(" ", "_")}.pdf`,
     submitted_at: new Date().toISOString(),
+    source_document: {
+      project_id: "PRJ-POLICE-01",
+      storage_reference: `bids/${id}.pdf`,
+      sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      original_filename: filename || `${vendorName.replaceAll(" ", "_")}.pdf`,
+      media_type: "application/pdf",
+      byte_length: 245820,
+      uploader_identity: "DEMO_OFFICER",
+      ingestion_time: new Date().toISOString(),
+      integrity_signals: [],
+    },
+    assessment_version: 1,
+    assessment_history: [],
     source: {
       vendor_name: vendorName,
       bid_amount_inr: isB ? 38_000_000 : isC ? 45_000_000 : 42_000_000,
@@ -202,7 +158,51 @@ export function createFallbackBidRecord(filename?: string, customVendor?: string
         "Limitation of Liability: Liability capped at contract value.",
         "Payment Terms: 30 days net upon milestone completion.",
       ],
-      document_metadata: { author: "Procurement Officer", creation_date: new Date().toISOString(), creator_tool: "PO-LICE Client Extractor" },
+      document_metadata: {
+        author: "Procurement Officer",
+        creation_date: new Date().toISOString(),
+        modification_date: new Date().toISOString(),
+        creator_tool: "PO-LICE Client Extractor",
+        producer: "PyMuPDF / PO-LICE",
+        is_encrypted: false,
+        parser_warnings: [],
+        review_signals: isB ? ["SAFETY_CERTIFICATE_MISSING", "POWER_DRAW_OVER_LIMIT"] : [],
+      },
+      extraction_report: {
+        candidates: [
+          {
+            field: "power_draw_kw",
+            raw_value: isB ? "1400 kW" : "1150 kW",
+            normalized_value: isB ? 1400 : 1150,
+            unit: "kW",
+            source_excerpt: "Power Draw: 1,150 kW",
+            page: 1,
+            bbox: [100, 200, 300, 220] as [number, number, number, number],
+            page_width: 612,
+            page_height: 792,
+            page_rotation: 0,
+            coordinate_system: "PDF_POINTS",
+            accepted: true,
+            confidence: 0.98,
+          },
+        ],
+        dimension_annotations: [
+          {
+            field: "dimensions",
+            normalized_value: 4.2,
+            unit: "m",
+            source_excerpt: "Length: 4.2m, Width: 2.1m, Height: 2.2m",
+            page: 2,
+            bbox: [100, 300, 400, 320] as [number, number, number, number],
+            page_width: 612,
+            page_height: 792,
+            page_rotation: 0,
+            coordinate_system: "PDF_POINTS",
+            interpretation_status: "VERIFIED",
+          },
+        ],
+        issues: [],
+      },
       equipment: {
         equipment_type: "Industrial Chiller",
         manufacturer: vendorName,

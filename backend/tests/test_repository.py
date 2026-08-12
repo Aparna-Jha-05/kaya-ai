@@ -222,11 +222,15 @@ class TestBidRepository(unittest.TestCase):
             max_substation_kw=1500.0,
             max_door_width_m=2.1,
             max_embodied_carbon_kg=400.0,
+            max_water_evap_gpm=30.0,
+            max_floor_load_kg_m2=2500.0,
             actor="ADMIN_ALICE",
             reason="Substation capacity expansion",
         )
         self.assertEqual(updated.version, 2)
         self.assertEqual(updated.max_substation_kw, 1500.0)
+        self.assertEqual(updated.max_water_evap_gpm, 30.0)
+        self.assertEqual(updated.max_floor_load_kg_m2, 2500.0)
 
         # Current constraint is version 2
         current = self.repo.get_current_constraints("PRJ-AMBER-01")

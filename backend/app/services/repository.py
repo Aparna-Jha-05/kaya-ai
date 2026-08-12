@@ -105,6 +105,8 @@ class BidRepository:
                   max_substation_kw REAL NOT NULL DEFAULT 1200.0,
                   max_door_width_m REAL NOT NULL DEFAULT 1.9,
                   max_embodied_carbon_kg REAL NOT NULL DEFAULT 450.0,
+                  max_water_evap_gpm REAL,
+                  max_floor_load_kg_m2 REAL,
                   actor TEXT NOT NULL DEFAULT 'SYSTEM',
                   reason TEXT NOT NULL DEFAULT 'Initial baseline',
                   created_at TEXT NOT NULL,
@@ -121,6 +123,18 @@ class BidRepository:
                   trigger TEXT NOT NULL,
                   UNIQUE (bid_id, version),
                   FOREIGN KEY (bid_id) REFERENCES bids(id)
+                );
+
+                CREATE TABLE IF NOT EXISTS vendor_docs (
+                  id TEXT PRIMARY KEY,
+                  vendor_id TEXT NOT NULL,
+                  vendor_name TEXT NOT NULL,
+                  project_id TEXT NOT NULL DEFAULT 'PRJ-AMBER-01',
+                  doc_type TEXT NOT NULL DEFAULT 'SUBMISSION',
+                  sha256 TEXT NOT NULL,
+                  stored_file TEXT NOT NULL,
+                  ingested_at TEXT NOT NULL,
+                  notes TEXT NOT NULL DEFAULT ''
                 );
             """)
             columns = {
@@ -167,10 +181,11 @@ class BidRepository:
             ).fetchone()
             if row["cnt"] == 0:
                 connection.execute(
-                    "INSERT INTO site_constraints VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO site_constraints VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (
                         str(uuid4()), "PRJ-AMBER-01", 1, 1,
                         1200.0, 1.9, 450.0,
+                        None, None,
                         "SYSTEM", "Initial baseline constraint version",
                         datetime.now(timezone.utc).isoformat(),
                     ),
@@ -276,6 +291,7 @@ class BidRepository:
         media_type: str = "application/pdf",
         idempotency_key: str | None = None,
         integrity_signals: list[str] | None = None,
+        custom_id: str | None = None,
     ) -> BidRecord:
         if idempotency_key:
             replay = self.get_bid_by_idempotency(
@@ -285,7 +301,7 @@ class BidRepository:
             )
             if replay:
                 return replay
-        record_id = str(uuid4())
+        record_id = custom_id or str(uuid4())
         submitted_at = datetime.now(timezone.utc).isoformat()
         stored_file = f"{record_id}.pdf"
         document_sha256 = hashlib.sha256(contents).hexdigest()
@@ -436,6 +452,58 @@ class BidRepository:
         with self._connect() as connection:
             row = connection.execute("SELECT * FROM bids WHERE id = ?", (record_id,)).fetchone()
         return self._record(row) if row else None
+
+    def save_bid_override(
+        self,
+        bid_id: str,
+        updated_source: VendorBidExtract,
+        new_scorecard: DocketScorecard,
+        actor: str,
+        note: str,
+    ) -> BidRecord:
+        """Save a manually overridden bid and re-run its assessment."""
+        timestamp = datetime.now(timezone.utc).isoformat()
+        with self._lock, self._connect() as connection:
+            row = connection.execute("SELECT version FROM bids WHERE id = ?", (bid_id,)).fetchone()
+            if not row:
+                raise KeyError(f"Bid {bid_id} not found")
+
+            new_version = row["version"] + 1
+
+            # Update bids table
+            connection.execute(
+                """
+                UPDATE bids
+                SET source_json = ?, scorecard_json = ?, version = ?
+                WHERE id = ?
+                """,
+                (updated_source.model_dump_json(), new_scorecard.model_dump_json(), new_version, bid_id),
+            )
+
+            # Add assessment
+            connection.execute(
+                "INSERT INTO bid_assessments VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    str(uuid4()),
+                    bid_id,
+                    new_version,
+                    self._constraint_version(new_scorecard),
+                    new_scorecard.model_dump_json(),
+                    timestamp,
+                    "MANUAL_OVERRIDE",
+                ),
+            )
+
+            # Add activity log
+            self._append(
+                connection, bid_id,
+                "MANUAL_OVERRIDE",
+                "FIELDS_UPDATED",
+                "DATA_ENTRY",
+                f"{actor}: {note}",
+            )
+
+        return self.get_bid(bid_id)  # type: ignore[return-value]
 
     def source_path(self, record_id: str) -> Path | None:
         with self._connect() as connection:
@@ -680,6 +748,8 @@ class BidRepository:
             max_substation_kw=row["max_substation_kw"],
             max_door_width_m=row["max_door_width_m"],
             max_embodied_carbon_kg=row["max_embodied_carbon_kg"],
+            max_water_evap_gpm=row["max_water_evap_gpm"],
+            max_floor_load_kg_m2=row["max_floor_load_kg_m2"],
             actor=row["actor"], reason=row["reason"],
             created_at=row["created_at"],
         )
@@ -694,6 +764,8 @@ class BidRepository:
         reason: str,
         project_id: str = "PRJ-POLICE-01",
         reassessments: dict[str, DocketScorecard] | None = None,
+        max_water_evap_gpm: float | None = None,
+        max_floor_load_kg_m2: float | None = None,
     ) -> SiteConstraintRecord:
         """Create a new constraint version with optimistic concurrency.
 
@@ -725,10 +797,11 @@ class BidRepository:
             )
             # Insert new version
             connection.execute(
-                "INSERT INTO site_constraints VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO site_constraints VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     new_id, project_id, new_version, 1,
                     max_substation_kw, max_door_width_m, max_embodied_carbon_kg,
+                    max_water_evap_gpm, max_floor_load_kg_m2,
                     actor, reason, created_at,
                 ),
             )
@@ -813,6 +886,8 @@ class BidRepository:
             max_substation_kw=max_substation_kw,
             max_door_width_m=max_door_width_m,
             max_embodied_carbon_kg=max_embodied_carbon_kg,
+            max_water_evap_gpm=max_water_evap_gpm,
+            max_floor_load_kg_m2=max_floor_load_kg_m2,
             actor=actor, reason=reason, created_at=created_at,
         )
 
