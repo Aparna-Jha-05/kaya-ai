@@ -148,8 +148,8 @@ export default function BidPortfolio() {
   }
 
   return (
-    <div className="space-y-5">
-      <Card>
+    <div className="space-y-5 min-w-0 max-w-full overflow-x-clip">
+      <Card className="min-w-0 max-w-full">
         <CardHeader
           title="Comparison Setup"
           caption="Filter and select up to 3 bids for side-by-side analysis."
@@ -236,8 +236,8 @@ export default function BidPortfolio() {
       </Card>
 
       {selected.length ? (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_310px]">
-          <Card>
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_310px] min-w-0 max-w-full">
+          <Card className="min-w-0 max-w-full">
             <CardHeader
               title="Bid Comparison"
               caption="Side-by-side compliance checks and TCO² scenario analysis."
@@ -247,7 +247,7 @@ export default function BidPortfolio() {
                 </span>
               }
             />
-            <div className="table-scroll-area table-max-3">
+            <div className="table-scroll-area table-max-3 min-w-0 max-w-full">
               <table className="w-full min-w-[720px] text-sm border-collapse table-auto">
                 <thead className="sticky top-0 z-10 bg-surface">
                   <tr className="border-b-2 border-line table-header">
@@ -411,7 +411,7 @@ export default function BidPortfolio() {
 function Inspector({ bid }: { bid: Comparable }) {
   const color = recommendationTone(bid.recommendation) === "rose" ? COLORS.rose : recommendationTone(bid.recommendation) === "amber" ? COLORS.amber : COLORS.cyan;
   return (
-    <Card accent={color} className="h-fit p-5 xl:sticky xl:top-5 space-y-4">
+    <Card accent={ color } className="h-fit p-5 xl:sticky xl:top-[81px] max-h-[calc(100vh-100px)] overflow-y-auto overflow-x-hidden space-y-4 min-w-0 max-w-full">
       <div>
         <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-cyan">Selected bid inspector</p>
         <h2 className="mt-1 text-lg font-extrabold text-text">{bid.vendor}</h2>

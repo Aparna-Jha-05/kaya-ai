@@ -53,7 +53,7 @@ export default function TcoChart({ data }: { data: Row[] }) {
   }
 
   return (
-    <div className="rounded-xl border border-line bg-surface p-4 shadow-xs">
+    <div className="rounded-xl border border-line bg-surface p-4 shadow-xs min-w-0 max-w-full overflow-hidden">
       <div className="mb-3 text-xs font-bold text-text/70">
         Bid Amount vs 5-Year TCO² Comparison (INR)
       </div>
