@@ -125,21 +125,12 @@ export default function AuditPage() {
           <h1 className="mt-1 text-2xl lg:text-3xl font-extrabold tracking-tight text-text truncate">Audit Log</h1>
           <p className="mt-1 text-xs font-medium text-text/50">Timestamped compliance checks, reviewer actions, and audit trail</p>
         </div>
-        <div className="flex items-center gap-2">
-          {(evState === "offline" || recState === "offline") && (
-            <button
-              type="button"
-              onClick={loadData}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber/30 bg-amber/15 px-3.5 py-2 text-xs font-bold text-amber hover:bg-amber/25 tactile-press shadow-xs transition-all"
-            >
-              <RefreshCw className="h-3.5 w-3.5" /> Retry Connection
-            </button>
-          )}
+        <div className="flex w-full sm:w-auto items-center gap-2">
           <button
             type="button"
             onClick={() => exportCsv(events)}
             disabled={evState !== "ready" || events.length === 0}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-surface px-3.5 py-2 text-xs font-bold text-text hover:border-cyan/40 hover:text-cyan tactile-press shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-line bg-surface px-3.5 py-2 text-xs font-bold text-text hover:border-cyan/40 hover:text-cyan tactile-press shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             <Download className="h-3.5 w-3.5 text-cyan" /> Export CSV
           </button>
@@ -192,7 +183,7 @@ export default function AuditPage() {
               ) : recState === "offline" ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-10 text-center text-rose font-medium">
-                    Scorecard service connection failed. Click &quot;Retry connection&quot; above.
+                    Scorecard service connection failed.
                   </td>
                 </tr>
               ) : scorecards.length ? (
@@ -227,7 +218,7 @@ export default function AuditPage() {
       {/* Activity Event Log */}
       {evState === "offline" && (
         <p className="rounded-xl border border-amber/30 bg-amber/10 px-4 py-3 text-sm font-semibold text-amber">
-          The activity service is unavailable. Click &quot;Retry connection&quot; above when the service is online.
+          The activity service is unavailable.
         </p>
       )}
       <Card>

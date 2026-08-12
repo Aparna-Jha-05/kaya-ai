@@ -67,7 +67,7 @@ export default function AppSidebar() {
           className="w-full flex items-center justify-center gap-2 rounded-xl bg-cyan text-on-accent hover:bg-cyan/90 font-bold px-3 py-2.5 text-sm tactile-press shadow-xs transition-all"
         >
           <Sparkles className="h-4 w-4" />
-          Interactive Guided Tour
+          Guided Tour
         </button>
         <ThemeToggle />
       </div>

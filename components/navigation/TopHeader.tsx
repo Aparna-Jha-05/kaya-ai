@@ -35,6 +35,10 @@ export default function TopHeader() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   const isNavActive = (href: string) => {
     if (href === "/") return pathname === "/";
     if (href === "/bids") return pathname === "/bids" || pathname.startsWith("/bids/");
@@ -59,7 +63,10 @@ export default function TopHeader() {
           <Link
             href="/"
             data-tour="tour-nav-dashboard"
-            onClick={() => advanceIfMatch("tour-nav-dashboard")}
+            onClick={() => {
+              setMobileMenuOpen(false);
+              advanceIfMatch("tour-nav-dashboard");
+            }}
             title="Purchase Order Liability, Intelligence & Compliance Engine"
             className="flex items-center gap-3 group shrink-0"
           >
@@ -96,12 +103,12 @@ export default function TopHeader() {
               <button
                 type="button"
                 onClick={() => startTour(0)}
-                title="Interactive Guided Tour"
-                aria-label="Interactive Guided Tour"
+                title="Guided Tour"
+                aria-label="Guided Tour"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface text-text hover:border-cyan/40 hover:bg-cyan/10 hover:text-cyan tactile-press transition-all shadow-xs"
               >
                 <Sparkles className="h-4 w-4 text-cyan" />
-                <span className="sr-only">Interactive Guided Tour</span>
+                <span className="sr-only">Guided Tour</span>
               </button>
               <ThemeToggle compact />
             </div>
@@ -182,7 +189,7 @@ export default function TopHeader() {
                     className="w-full flex items-center justify-center gap-2 rounded-xl bg-cyan text-on-accent hover:bg-cyan/90 font-bold px-3 py-2.5 text-sm tactile-press shadow-xs transition"
                   >
                     <Sparkles className="h-4 w-4" />
-                    Interactive Guided Tour (5 Steps)
+                    Guided Tour
                   </button>
 
                   <ThemeToggle />
