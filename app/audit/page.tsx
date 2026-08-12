@@ -104,6 +104,15 @@ export default function AuditPage() {
 
   useEffect(() => {
     loadData();
+    const handleBidsUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<BidRecord[]>;
+      if (customEvent.detail) {
+        setRecords(customEvent.detail);
+        setRecState("ready");
+      }
+    };
+    window.addEventListener("po-lice:bids-updated", handleBidsUpdated);
+    return () => window.removeEventListener("po-lice:bids-updated", handleBidsUpdated);
   }, [loadData]);
 
   const scorecards = allScorecardsFromRecords(records);
