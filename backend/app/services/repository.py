@@ -156,6 +156,17 @@ class BidRepository:
                 if name not in existing_columns:
                     connection.execute(f"ALTER TABLE bids ADD COLUMN {name} {definition}")
 
+            constraint_columns = {
+                "max_water_evap_gpm": "REAL",
+                "max_floor_load_kg_m2": "REAL",
+            }
+            existing_constraint_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(site_constraints)").fetchall()
+            }
+            for name, definition in constraint_columns.items():
+                if name not in existing_constraint_columns:
+                    connection.execute(f"ALTER TABLE site_constraints ADD COLUMN {name} {definition}")
+
             connection.execute(
                 """
                 CREATE UNIQUE INDEX IF NOT EXISTS idx_bids_project_idempotency

@@ -57,7 +57,7 @@ export default function TCOSlider({ baseCapexCr, onTCOChange }: TCOSliderProps) 
             max="30"
             step="0.5"
             value={discountPercent}
-            onChange={(event) => setDiscountPercent(Number(event.target.value))}
+            onInput={(event) => setDiscountPercent(Number(event.currentTarget.value))}
             className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-line accent-cyan"
           />
         </label>
@@ -76,7 +76,7 @@ export default function TCOSlider({ baseCapexCr, onTCOChange }: TCOSliderProps) 
             max="45"
             step="1"
             value={delayDays}
-            onChange={(event) => setDelayDays(Number(event.target.value))}
+            onInput={(event) => setDelayDays(Number(event.currentTarget.value))}
             className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-line accent-amber"
           />
         </label>
