@@ -134,17 +134,33 @@ export type RFIDraftResponse = {
 
 const base = process.env.NEXT_PUBLIC_PO_LICE_API_URL ?? "";
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${base}${path}`, init);
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    throw new Error(body?.message ?? body?.detail ?? "Request failed.");
+  try {
+    const response = await fetch(`${base}${path}`, init);
+    if (!response.ok) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("po-lice:connection-error"));
+      }
+      const body = await response.json().catch(() => null);
+      throw new Error(body?.message ?? body?.detail ?? "Request failed.");
+    }
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("po-lice:connection-success"));
+    }
+    if (response.status === 204) return undefined as T;
+    return response.json() as Promise<T>;
+  } catch (err) {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("po-lice:connection-error"));
+    }
+    throw err;
   }
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
 }
+
+let inflightBidsList: Promise<BidRecord[]> | null = null;
 
 export const procurementApi = {
   upload(file: File, idempotencyKey = globalThis.crypto.randomUUID()) {
+    inflightBidsList = null;
     const body = new FormData();
     body.append("file", file);
     return request<BidRecord>("/api/v1/bids/upload", {
@@ -153,15 +169,29 @@ export const procurementApi = {
       body,
     });
   },
-  list: () => request<BidRecord[]>("/api/v1/bids"),
+  list: () => {
+    if (inflightBidsList) return inflightBidsList;
+    inflightBidsList = request<BidRecord[]>("/api/v1/bids").finally(() => {
+      setTimeout(() => {
+        inflightBidsList = null;
+      }, 1500);
+    });
+    return inflightBidsList;
+  },
   get: (id: string) => request<BidRecord>(`/api/v1/bids/${id}`),
   activity: (id?: string) => request<ActivityEvent[]>(`/api/v1/activity${id ? `?bid_id=${encodeURIComponent(id)}` : ""}`),
-  action: (id: string, action: ReviewAction, note: string) => request<ActivityEvent>(`/api/v1/bids/${id}/actions`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action, note }),
-  }),
-  remove: (id: string) => request<void>(`/api/v1/bids/${id}`, { method: "DELETE" }),
+  action: (id: string, action: ReviewAction, note: string) => {
+    inflightBidsList = null;
+    return request<ActivityEvent>(`/api/v1/bids/${id}/actions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, note }),
+    });
+  },
+  remove: (id: string) => {
+    inflightBidsList = null;
+    return request<void>(`/api/v1/bids/${id}`, { method: "DELETE" });
+  },
   simulate: (input: { base_capex_inr: number; discount_percent: number; delay_days: number; opex_carbon_5yr_inr?: number; lifecycle_mode?: "PRE_AWARD" | "POST_AWARD" }) => request<SimulationResponse>("/api/v1/bids/simulate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

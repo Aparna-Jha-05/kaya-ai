@@ -50,12 +50,21 @@ export function getPatrolCategory(name: string): "engineering" | "carbon" | "rel
   return "schedule";
 }
 
-export function formatCrore(value: number | null | undefined, fallback = "—") {
-  return value == null ? fallback : `${(value / 10_000_000).toFixed(2)} Cr`;
+export function formatCurrencyGlobal(value: number | null | undefined, fallback = "—"): string {
+  if (value == null) return fallback;
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(2)}M`;
+  }
+  if (abs >= 1_000) {
+    return `${(value / 1_000).toFixed(1)}K`;
+  }
+  return value.toLocaleString();
 }
 
-export const inCrore = (value: number | null | undefined) => formatCrore(value, "Not provided");
-export const formatCroreValue = (value: number | null | undefined) => formatCrore(value, "—");
+export const formatCrore = formatCurrencyGlobal;
+export const inCrore = (value: number | null | undefined) => formatCurrencyGlobal(value, "Not provided");
+export const formatCroreValue = (value: number | null | undefined) => formatCurrencyGlobal(value, "—");
 
 export function cleanReasonText(reason: string | null | undefined) {
   if (!reason) return "";
