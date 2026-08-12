@@ -12,7 +12,7 @@ final decision with a human reviewer.
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688)](https://fastapi.tiangolo.com/)
 [![OpenSpec](https://img.shields.io/badge/specs-OpenSpec-5B5BD6)](./openspec/README.md)
 
-[**Open live demo**](https://po-lice.vercel.app) ·
+[**Open live demo**](https://kaya-ai-police.vercel.app) ·
 [**Technical architecture**](./TECHNICAL.md) ·
 [**Business case**](./BUSINESS.md) ·
 [**Demo runbook**](./DEMO_RUNBOOK.md)
@@ -43,7 +43,7 @@ are synthetic competition fixtures.
 ## 60-second tour
 
 1. [Open the live application](https://kaya-ai-police.vercel.app).
-2. The portfolio view displays three baseline fixture vendors.
+2. Select **CoolTech**, the lowest-cost bid at ₹3.80 Cr.
 3. Open **Checks** to see its power, access, warranty, and carbon failures.
 4. Select **Inspect evidence & geometry** to trace a rule result to the cited
    PDF excerpt, page, and region.

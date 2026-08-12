@@ -9,8 +9,8 @@
 
 | Component | Target URL | Verified Source Revision | Access Control |
 | --- | --- | --- | --- |
-| **Frontend** | `https://po-lice.vercel.app` | `a3feef9` | Public HTTPS (no platform login required) |
-| **Backend** | `https://po-lice-backend-staging.onrender.com` | `1940751` (latest backend/Render source change) | Public HTTPS (exact-origin CORS configured) |
+| **Frontend** | `https://kaya-ai-police.vercel.app` | `a3feef9` | Public HTTPS (no platform login required) |
+| **Backend** | `https://po-lice-backend-staging-qiix.onrender.com` | `1940751` (latest backend/Render source change) | Public HTTPS (exact-origin CORS configured) |
 
 ### Environment Variables
 
