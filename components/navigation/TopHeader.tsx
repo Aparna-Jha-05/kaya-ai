@@ -5,20 +5,22 @@ import { createPortal } from "react-dom";
 import LogoIcon from "@/components/ui/LogoIcon";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, LayoutList, Scale, ScrollText, FilePlus2 } from "lucide-react";
+import { Menu, X, LayoutList, Scale, ScrollText, Sparkles } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
+import { useTour } from "@/components/walkthrough/TourContext";
 
 const NAV = [
   { href: "/", label: "Bid Review Queue", Icon: LayoutList },
   { href: "/bids", label: "Bid Portfolio", Icon: Scale },
-  { href: "/audit", label: "Audit Log", Icon: ScrollText },
+  { href: "/audit", label: "Audit Log", Icon: ScrollText, tourAttr: "tour-audit" },
 ];
 
 export default function TopHeader() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { startTour, advanceIfMatch } = useTour();
 
   useEffect(() => {
     setMounted(true);
@@ -33,15 +35,12 @@ export default function TopHeader() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const isUploadActive = pathname === "/bids/new";
-
   const isNavActive = (href: string) => {
     if (href === "/") return pathname === "/";
-    if (href === "/bids") return pathname === "/bids" || (pathname.startsWith("/bids/") && !isUploadActive);
+    if (href === "/bids") return pathname === "/bids" || pathname.startsWith("/bids/");
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -57,9 +56,10 @@ export default function TopHeader() {
     <>
       <header className="sticky top-0 z-50 shrink-0 border-b border-line bg-bg min-h-[65px]">
         <div className="mx-auto flex items-center justify-between gap-x-3 px-4 py-3">
-          {/* Brand Logo */}
           <Link
             href="/"
+            data-tour="tour-nav-dashboard"
+            onClick={() => advanceIfMatch("tour-nav-dashboard")}
             title="Purchase Order Liability, Intelligence & Compliance Engine"
             className="flex items-center gap-3 group shrink-0"
           >
@@ -71,15 +71,15 @@ export default function TopHeader() {
             </span>
           </Link>
 
-          {/* Adaptive Inline Navigation for Tablet View (sm:flex) */}
           <div className="hidden sm:flex items-center gap-3">
             <nav aria-label="Primary navigation" className="flex items-center gap-1 text-xs">
-              {NAV.map(({ href, label }) => {
+              {NAV.map(({ href, label, tourAttr }) => {
                 const active = isNavActive(href);
                 return (
                   <Link
                     key={href}
                     href={href}
+                    data-tour={tourAttr}
                     className={`rounded-xl px-3 py-2 transition ${
                       active
                         ? "bg-cyan/15 font-bold text-cyan ring-1 ring-cyan/30 shadow-xs"
@@ -93,22 +93,20 @@ export default function TopHeader() {
             </nav>
 
             <div className="flex items-center gap-2 border-l border-line pl-3">
-              <ThemeToggle compact />
-              <Link
-                href="/bids/new"
-                className={`flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition ${
-                  isUploadActive
-                    ? "bg-cyan/25 ring-1 ring-cyan/50 text-cyan"
-                    : "bg-cyan text-on-accent hover:bg-cyan/90 tactile-press shadow-xs"
-                }`}
+              <button
+                type="button"
+                onClick={() => startTour(0)}
+                title="Interactive Guided Tour"
+                aria-label="Interactive Guided Tour"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface text-text hover:border-cyan/40 hover:bg-cyan/10 hover:text-cyan tactile-press transition-all shadow-xs"
               >
-                <FilePlus2 className="h-3.5 w-3.5" />
-                <span>Upload Bid</span>
-              </Link>
+                <Sparkles className="h-4 w-4 text-cyan" />
+                <span className="sr-only">Interactive Guided Tour</span>
+              </button>
+              <ThemeToggle compact />
             </div>
           </div>
 
-          {/* Mobile Hamburger Button (sm:hidden) */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             title="Toggle navigation menu"
@@ -142,7 +140,6 @@ export default function TopHeader() {
         </div>
       </header>
 
-      {/* Portal Mobile Overlay Drawer - Only active on Mobile (< sm:) */}
       {mounted &&
         createPortal(
           <AnimatePresence>
@@ -154,14 +151,14 @@ export default function TopHeader() {
                 transition={{ type: "spring", stiffness: 350, damping: 30 }}
                 className="fixed top-[65px] left-0 right-0 bottom-0 z-[9999] flex flex-col bg-bg px-4 py-6 overflow-y-auto sm:hidden"
               >
-                {/* Nav Links */}
                 <nav aria-label="Mobile navigation" className="space-y-1.5 flex-1">
-                  {NAV.map(({ href, label, Icon }) => {
+                  {NAV.map(({ href, label, Icon, tourAttr }) => {
                     const active = isNavActive(href);
                     return (
                       <Link
                         key={href}
                         href={href}
+                        data-tour={tourAttr}
                         onClick={() => setMobileMenuOpen(false)}
                         className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm transition duration-150 ${
                           active
@@ -176,20 +173,17 @@ export default function TopHeader() {
                   })}
                 </nav>
 
-                {/* Bottom Actions */}
                 <div className="mt-auto space-y-3 pt-4 border-t border-line">
-                  <Link
-                    href="/bids/new"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition ${
-                      isUploadActive
-                        ? "bg-cyan/25 ring-1 ring-cyan/50 text-cyan"
-                        : "bg-cyan text-on-accent hover:bg-cyan/90 tactile-press shadow-xs"
-                    }`}
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      startTour(0);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-cyan text-on-accent hover:bg-cyan/90 font-bold px-3 py-2.5 text-sm tactile-press shadow-xs transition"
                   >
-                    <FilePlus2 className="h-4 w-4" />
-                    Upload Bid
-                  </Link>
+                    <Sparkles className="h-4 w-4" />
+                    Interactive Guided Tour (5 Steps)
+                  </button>
 
                   <ThemeToggle />
                 </div>
