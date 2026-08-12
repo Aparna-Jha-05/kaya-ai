@@ -13,7 +13,7 @@ export default function GuidedTourModal() {
   const [mounted, setMounted] = useState(false);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null);
-  const [actualPlacement, setActualPlacement] = useState<"top" | "bottom" | "left" | "right">("bottom");
+  const [actualPlacement, setActualPlacement] = useState<"top" | "bottom" | "left" | "right" | "center">("bottom");
   const [notFound, setNotFound] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const step = TOUR_STEPS[currentStep] || TOUR_STEPS[0];
