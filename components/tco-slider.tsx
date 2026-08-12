@@ -40,8 +40,8 @@ export default function TCOSlider({ baseCapexCr, onTCOChange }: TCOSliderProps) 
   }, [baseCapexCr, delayDays, discountPercent, onTCOChange]);
 
   return (
-    <div className="rounded-xl border border-line bg-surface p-4 shadow-xs">
-      <div className="mb-4 space-y-4 rounded-lg border border-line bg-inset p-4">
+    <div className="space-y-4">
+      <div className="space-y-4 rounded-lg border border-line bg-inset p-4">
         <label className="block">
           <span className="mb-1.5 flex justify-between text-xs font-semibold">
             <span className="flex items-center gap-1.5">

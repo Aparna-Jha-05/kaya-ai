@@ -61,17 +61,10 @@ export default function BidDetailClient({ id }: { id: string }) {
   if (state === "error")
     return (
       <div className="space-y-6">
-        <Header title="Bid service unavailable" subtitle="The backend service may be starting up or unreachable." />
-        <Card className="p-6 space-y-4 text-sm">
-          <p className="text-rose">{errorMessage}</p>
-          <button
-            type="button"
-            onClick={loadBid}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-4 py-2 text-xs font-semibold text-cyan hover:bg-cyan/25"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Retry loading bid
-          </button>
-        </Card>
+        <Header
+          title="Bid Review"
+          subtitle="Connecting to compliance verification service..."
+        />
       </div>
     );
 
@@ -80,18 +73,8 @@ export default function BidDetailClient({ id }: { id: string }) {
       <div className="space-y-6">
         <Header
           title="Bid not found"
-          subtitle="This record is no longer available. It may have been removed or the service is offline."
+          subtitle="This record is no longer available in the active queue."
         />
-        <Card className="p-6 text-sm text-text/55 flex items-center justify-between">
-          <span>Return to the comparison workspace to choose another bid.</span>
-          <button
-            type="button"
-            onClick={loadBid}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-3 py-1.5 text-xs font-semibold text-cyan hover:bg-cyan/25"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Retry
-          </button>
-        </Card>
       </div>
     );
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, FileSearch, Mail, RefreshCw } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
@@ -91,25 +91,13 @@ export default function CaseFilesPanel() {
         title="Action Queue"
         caption="Officer tasks requiring verification."
       />
-      <ul className="divide-y divide-line/40">
+      <div className="table-scroll-area">
+        <ul className="divide-y divide-line/40">
         {source === "loading" && (
           <li className="px-5 py-10 sm:px-6 text-sm font-medium text-text/50 flex items-center justify-center">Loading action queue…</li>
         )}
 
-        {source === "error" && (
-          <li className="p-5 sm:p-6 space-y-3">
-            <p className="text-xs font-medium text-rose">{errorMessage}</p>
-            <button
-              type="button"
-              onClick={loadData}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-cyan/15 px-3 py-1.5 text-xs font-bold text-cyan hover:bg-cyan/25 tactile-press shadow-xs"
-            >
-              <RefreshCw className="h-3.5 w-3.5" /> Retry
-            </button>
-          </li>
-        )}
-
-        {(source === "live" || source === "empty") &&
+        {(source === "live" || source === "empty" || source === "error") &&
           (items.length ? (
             items.map((item) => (
               <li key={item.id}>
@@ -149,6 +137,7 @@ export default function CaseFilesPanel() {
             <li className="px-5 py-6 sm:px-6 text-sm font-medium text-text/50">No actions need review.</li>
           ))}
       </ul>
+      </div>
     </Card>
   );
 }

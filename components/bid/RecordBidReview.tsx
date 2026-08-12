@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, FileSearch, ScrollText, ShieldCheck } from "lucide-react";
@@ -333,7 +333,7 @@ function SourceTab({ record, onRemoved }: { record: BidRecord; onRemoved: () => 
             </a>
           }
         />
-        <div className="overflow-x-auto">
+        <div className="table-scroll-area">
           <table className="w-full min-w-[560px] text-xs font-mono border-collapse table-auto">
             <thead>
               <tr className="border-b-2 border-line text-left table-header bg-surface/50">

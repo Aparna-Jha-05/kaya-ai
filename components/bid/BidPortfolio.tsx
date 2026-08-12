@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowRight, RefreshCw, Search, SlidersHorizontal, X } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
@@ -120,11 +120,12 @@ export default function BidPortfolio() {
       return [...current, id];
     });
 
+  const activeIdToUse = active?.id;
   const updateScenario = useCallback(
     (costCr: number) => {
-      if (active) setScenario({ id: active.id, cost: costCr * 10_000_000 });
+      if (activeIdToUse) setScenario({ id: activeIdToUse, cost: costCr * 10_000_000 });
     },
-    [active]
+    [activeIdToUse]
   );
 
   const reset = () => {
@@ -143,19 +144,7 @@ export default function BidPortfolio() {
   }
 
   if (sourceState === "error") {
-    return (
-      <Card className="p-8 text-center space-y-4">
-        <p className="text-sm font-semibold text-rose">Failed to load portfolio bids</p>
-        <p className="text-xs text-text/55 max-w-md mx-auto">{errorMessage}</p>
-        <button
-          type="button"
-          onClick={loadBids}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-4 py-2 text-xs font-semibold text-cyan hover:bg-cyan/25"
-        >
-          <RefreshCw className="h-3.5 w-3.5" /> Retry loading portfolio
-        </button>
-      </Card>
-    );
+    // Rely on global ConnectionFooter for single consistent Retry button
   }
 
   return (
@@ -258,7 +247,7 @@ export default function BidPortfolio() {
                 </span>
               }
             />
-            <div className="overflow-x-auto">
+            <div className="table-scroll-area table-max-3">
               <table className="w-full min-w-[720px] text-sm border-collapse table-auto">
                 <thead className="sticky top-0 z-10 bg-surface">
                   <tr className="border-b-2 border-line table-header">
@@ -376,10 +365,12 @@ export default function BidPortfolio() {
 
             {active && active.upfront != null && (
               <div className="border-t border-line p-4">
-                <div className="mb-3">
-                  <p className="ui-label text-cyan">Interactive cost scenario</p>
+                <div className="rounded-xl border border-line bg-surface p-4 shadow-xs">
+                  <div className="mb-3 text-xs font-bold text-text/70">
+                    Interactive cost scenario
+                  </div>
+                  <TCOSlider key={active.id} baseCapexCr={(active.upfront ?? 0) / 10_000_000} onTCOChange={updateScenario} />
                 </div>
-                <TCOSlider key={active.id} baseCapexCr={(active.upfront ?? 0) / 10_000_000} onTCOChange={updateScenario} />
               </div>
             )}
 

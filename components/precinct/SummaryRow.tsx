@@ -42,39 +42,26 @@ export default function SummaryRow() {
     fetchMetrics();
   }, [fetchMetrics]);
 
-  if (error) {
-    return (
-      <div className="rounded-xl border border-rose/30 bg-rose/10 p-4 text-sm text-rose flex items-center justify-between">
-        <span>Service offline or starting up: {error}</span>
-        <button
-          type="button"
-          onClick={fetchMetrics}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-rose/20 px-3 py-1.5 text-xs font-semibold text-rose hover:bg-rose/30 tactile-press transition-colors"
-        >
-          <RefreshCw className="h-3.5 w-3.5" /> Retry Connection
-        </button>
-      </div>
-    );
-  }
+  const activeMetrics = metrics || { total: 0, failures: 0, missingDocs: 0, offline: true };
 
   const cards = [
     {
-      label: "Submitted Bids",
-      value: metrics?.total,
-      color: COLORS.text,
+      label: "Total Active Bids",
+      value: activeMetrics.total,
+      color: COLORS.cyan,
       Icon: FileCheck2,
-      help: metrics?.offline ? "No active service connection." : "Active procurement bids in current review queue.",
+      help: "Procurement bids currently ingested and evaluated.",
     },
     {
-      label: "Constraint Breaches",
-      value: metrics?.failures,
+      label: "Constraint Failures",
+      value: activeMetrics.failures,
       color: COLORS.rose,
       Icon: AlertOctagon,
       help: "Bids exceeding engineering limits or carbon budget thresholds.",
     },
     {
       label: "Pending Documentation",
-      value: metrics?.missingDocs,
+      value: activeMetrics.missingDocs,
       color: COLORS.amber,
       Icon: FileWarning,
       help: "Bids missing safety, OSHA, or compliance certificates.",
@@ -93,7 +80,7 @@ export default function SummaryRow() {
                 </Tooltip>
               </div>
               <div className="mt-3 font-mono text-3xl sm:text-4xl font-extrabold tabular-nums" style={{ color: card.color }}>
-                {loading ? "…" : (metrics ? card.value : "—")}
+                {loading ? "…" : card.value}
               </div>
             </div>
             <card.Icon className="h-5 w-5 shrink-0 mt-0.5" style={{ color: card.color }} />

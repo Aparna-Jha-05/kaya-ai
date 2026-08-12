@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, RefreshCw } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
@@ -73,21 +73,8 @@ export default function ActiveBidsTable() {
         <div className="p-12 text-sm text-text/50 flex items-center justify-center font-medium">Loading submitted bids…</div>
       )}
 
-      {source === "error" && (
-        <div className="p-6 space-y-3">
-          <p className="text-sm text-rose">{errorMessage}</p>
-          <button
-            type="button"
-            onClick={loadData}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-3 py-1.5 text-xs font-semibold text-cyan hover:bg-cyan/25 tactile-press transition-colors"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Retry loading bids
-          </button>
-        </div>
-      )}
-
-      {(source === "live" || source === "empty") && (
-        <div className="overflow-x-auto">
+      {(source === "live" || source === "empty" || source === "error") && (
+        <div className="table-scroll-area">
           <table className="w-full min-w-[680px] text-sm border-collapse table-auto">
             <thead className="sticky top-0 z-10 bg-surface">
               <tr className="border-b-2 border-line table-header">

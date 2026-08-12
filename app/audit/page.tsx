@@ -143,7 +143,7 @@ export default function AuditPage() {
           title={recState === "ready" ? `${scorecards.length} Bid Scorecard${scorecards.length === 1 ? "" : "s"}` : "Compliance Scorecard"}
           caption="Per-bid summary of all four patrol results and 5-year TCO²."
         />
-        <div className="overflow-x-auto">
+        <div className="table-scroll-area table-rows-md table-max-5">
           <table className="w-full min-w-[720px] text-sm border-collapse table-auto">
             <thead className="sticky top-0 z-10 bg-surface">
               <tr className="border-b-2 border-line table-header">
@@ -226,7 +226,7 @@ export default function AuditPage() {
           title={evState === "ready" ? `${events.length} recorded events` : "Recorded events"}
           caption={evState === "ready" ? "Export includes the server-recorded activity currently shown." : "Connect the activity service to view and export events."}
         />
-        <div className="overflow-x-auto">
+        <div className="table-scroll-area table-rows-sm table-max-5">
           <table className="w-full min-w-[700px] text-sm">
             <colgroup>
               <col className="w-[18%] min-w-[150px]" />
@@ -236,7 +236,7 @@ export default function AuditPage() {
               <col className="w-[15%] min-w-[110px]" />
               <col className="w-[25%] min-w-[200px]" />
             </colgroup>
-            <thead>
+            <thead className="sticky top-0 z-10 bg-surface">
               <tr className="border-b-2 border-line table-header text-left bg-surface/50">
                 <th className="px-4 py-3 font-bold">Timestamp</th>
                 <th className="px-4 py-3 font-bold">Bid</th>

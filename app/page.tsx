@@ -8,7 +8,7 @@ import { FilePlus2 } from "lucide-react";
 
 export default function ReviewQueuePage() {
   return (
-    <div className="space-y-6 pb-6">
+    <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0 flex-1">
           <p className="page-eyebrow">Procurement Intelligence</p>
@@ -29,7 +29,6 @@ export default function ReviewQueuePage() {
         <div className="lg:col-span-2"><ActiveBidsTable /></div>
         <div><CaseFilesPanel /></div>
       </div>
-
     </div>
   );
 }
