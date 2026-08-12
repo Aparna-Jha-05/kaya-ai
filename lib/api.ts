@@ -154,9 +154,9 @@ function setLocalBidsCache(bids: BidRecord[]): void {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, timeoutMs = 30000): Promise<T> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(`${base}${path}`, {
       ...init,
@@ -180,6 +180,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("po-lice:connection-error"));
     }
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("Request timed out while waiting for server response. Please try again.");
+    }
     throw err;
   }
 }
@@ -197,11 +200,15 @@ export const procurementApi = {
     invalidateCache();
     const body = new FormData();
     body.append("file", file);
-    return request<BidRecord>("/api/v1/bids/upload", {
-      method: "POST",
-      headers: { "Idempotency-Key": idempotencyKey },
-      body,
-    }).then((res) => {
+    return request<BidRecord>(
+      "/api/v1/bids/upload",
+      {
+        method: "POST",
+        headers: { "Idempotency-Key": idempotencyKey },
+        body,
+      },
+      60000
+    ).then((res) => {
       procurementApi.list();
       return res;
     });
