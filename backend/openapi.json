@@ -145,7 +145,7 @@
       "Body_upload_and_audit_bid_api_v1_bids_upload_post": {
         "properties": {
           "file": {
-            "contentMediaType": "application/octet-stream",
+            "format": "binary",
             "title": "File",
             "type": "string"
           }
@@ -175,10 +175,34 @@
             "title": "Max Embodied Carbon Kg",
             "type": "number"
           },
+          "max_floor_load_kg_m2": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Floor Load Kg M2"
+          },
           "max_substation_kw": {
             "exclusiveMinimum": 0.0,
             "title": "Max Substation Kw",
             "type": "number"
+          },
+          "max_water_evap_gpm": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Water Evap Gpm"
           },
           "reason": {
             "default": "Updated site operational requirements",
@@ -732,6 +756,13 @@
             ],
             "title": "Bbox"
           },
+          "confidence": {
+            "default": 1.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
           "coordinate_system": {
             "anyOf": [
               {
@@ -897,7 +928,10 @@
           "equipment.power_draw_kw",
           "equipment.cooling_capacity_kw",
           "equipment.width_m",
-          "equipment.embodied_carbon_factor"
+          "equipment.length_m",
+          "equipment.embodied_carbon_factor",
+          "equipment.water_evap_gpm",
+          "equipment.floor_load_kg"
         ],
         "title": "FactField",
         "type": "string"
@@ -922,6 +956,143 @@
         ],
         "title": "LifecycleMode",
         "type": "string"
+      },
+      "ManualOverrideRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "bid_amount_inr": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bid Amount Inr"
+          },
+          "cooling_capacity_kw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cooling Capacity Kw"
+          },
+          "embodied_carbon_factor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embodied Carbon Factor"
+          },
+          "floor_load_kg": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Floor Load Kg"
+          },
+          "has_osha_cert": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Osha Cert"
+          },
+          "height_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height M"
+          },
+          "length_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Length M"
+          },
+          "note": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Note",
+            "type": "string"
+          },
+          "power_draw_kw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Power Draw Kw"
+          },
+          "promised_delivery_weeks": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Promised Delivery Weeks"
+          },
+          "water_evap_gpm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Water Evap Gpm"
+          },
+          "width_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width M"
+          }
+        },
+        "required": [
+          "note"
+        ],
+        "title": "ManualOverrideRequest",
+        "type": "object"
       },
       "OfficerDecision": {
         "description": "Officer decision is independent of procurement lifecycle.",
@@ -1281,9 +1452,33 @@
             "title": "Max Embodied Carbon Kg",
             "type": "number"
           },
+          "max_floor_load_kg_m2": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Floor Load Kg M2"
+          },
           "max_substation_kw": {
             "title": "Max Substation Kw",
             "type": "number"
+          },
+          "max_water_evap_gpm": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Water Evap Gpm"
           },
           "project_id": {
             "default": "PRJ-AMBER-01",
@@ -1961,6 +2156,58 @@
           }
         },
         "summary": "Record Reviewer Action",
+        "tags": [
+          "bids"
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/override": {
+      "patch": {
+        "operationId": "override_bid_fields_api_v1_bids__bid_id__override_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bid_id",
+            "required": true,
+            "schema": {
+              "title": "Bid Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualOverrideRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BidRecord"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Override Bid Fields",
         "tags": [
           "bids"
         ]
