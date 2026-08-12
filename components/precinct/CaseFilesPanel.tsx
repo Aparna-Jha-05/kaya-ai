@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, FileSearch, Mail, RefreshCw } from "lucide-react";
+import { CheckCircle2, FileSearch, Mail } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
-import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type BidRecord } from "@/lib/api";
 import { displayCheckName } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
@@ -40,7 +39,7 @@ function liveItems(records: BidRecord[]): Item[] {
           bidId: record.id,
           icon: FileSearch,
           color: check.status === "FAIL" ? COLORS.rose : COLORS.amber,
-          title: `Open ${displayCheckName(check.patrol_name).toLowerCase()} review for ${record.source.vendor_name}`,
+          title: `${displayCheckName(check.patrol_name)} review for ${record.source.vendor_name}`,
           meta: check.reason,
           action: check.status === "FAIL",
         })
@@ -81,46 +80,46 @@ export default function CaseFilesPanel() {
 
   useEffect(() => {
     loadData();
+    const handleUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<BidRecord[]>;
+      if (customEvent.detail) {
+        setRecords(customEvent.detail);
+        setSource(customEvent.detail.length > 0 ? "live" : "empty");
+      }
+    };
+    window.addEventListener("po-lice:bids-updated", handleUpdate);
+    return () => window.removeEventListener("po-lice:bids-updated", handleUpdate);
   }, [loadData]);
 
   const items = useMemo(() => (records ? liveItems(records) : []), [records]);
 
   return (
-    <Card>
+    <Card data-tour="tour-casefiles">
       <CardHeader
-        title="Action queue"
-        caption="Reviewer tasks requiring verification"
+        title="Action Queue"
+        caption="Officer tasks requiring verification."
       />
-      <ul className="divide-y divide-line/40 max-h-[320px] overflow-y-auto">
+      <div className="table-scroll-area">
+        <ul className="divide-y divide-line/40">
         {source === "loading" && (
-          <li className="px-5 py-6 sm:px-6 text-sm font-medium text-text/50">Loading action queue…</li>
+          <li className="px-5 py-10 sm:px-6 text-sm font-medium text-text/50 flex items-center justify-center">Loading action queue…</li>
         )}
 
-        {source === "error" && (
-          <li className="p-5 sm:p-6 space-y-3">
-            <p className="text-xs font-medium text-rose">{errorMessage}</p>
-            <button
-              type="button"
-              onClick={loadData}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-cyan/15 px-3 py-1.5 text-xs font-bold text-cyan hover:bg-cyan/25 tactile-press shadow-xs"
-            >
-              <RefreshCw className="h-3.5 w-3.5" /> Retry
-            </button>
-          </li>
-        )}
-
-        {(source === "live" || source === "empty") &&
+        {(source === "live" || source === "empty" || source === "error") &&
           (items.length ? (
             items.map((item) => (
               <li key={item.id}>
                 <Link
                   href={`/bids/${item.bidId}`}
-                  className="flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6 transition-colors duration-150 hover:bg-cyan/5 dark:hover:bg-cyan/10"
+                  className="flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6 transition-colors duration-150 hover:bg-cyan/5"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <span
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border shadow-xs"
-                      style={{ backgroundColor: `${item.color}1a`, borderColor: `${item.color}40` }}
+                      style={{
+                        backgroundColor: item.color.includes("var") ? `rgba(var(--color-cyan), 0.15)` : `${item.color}1a`,
+                        borderColor: item.color.includes("var") ? `rgba(var(--color-cyan), 0.4)` : `${item.color}40`,
+                      }}
                     >
                       <item.icon className="h-4 w-4" style={{ color: item.color }} />
                     </span>
@@ -131,7 +130,11 @@ export default function CaseFilesPanel() {
                   </div>
                   <span
                     className="shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs"
-                    style={{ color: item.color, backgroundColor: `${item.color}1a`, borderColor: `${item.color}40` }}
+                    style={{
+                      color: item.color,
+                      backgroundColor: item.color.includes("var") ? `rgba(var(--color-cyan), 0.15)` : `${item.color}1a`,
+                      borderColor: item.color.includes("var") ? `rgba(var(--color-cyan), 0.4)` : `${item.color}40`,
+                    }}
                   >
                     Review
                   </span>
@@ -142,6 +145,7 @@ export default function CaseFilesPanel() {
             <li className="px-5 py-6 sm:px-6 text-sm font-medium text-text/50">No actions need review.</li>
           ))}
       </ul>
+      </div>
     </Card>
   );
 }

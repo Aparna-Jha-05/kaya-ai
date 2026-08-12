@@ -30,16 +30,19 @@ from app.services.repository import bid_repository
 # ── Stable idempotency keys ────────────────────────────────────────────
 FIXTURES = {
     "DEMO-SEED-TRANE-COMPLIANT": {
+        "bid_id": "BID-2026-A01",
         "filename": "SyntheticBid_Trane_Compliant.pdf",
         "expected_recommendation": "RECOMMENDED",
         "expected_vendor": "Trane Solutions Pvt Ltd.",
     },
     "DEMO-SEED-CARRIER-REVIEW": {
+        "bid_id": "BID-2026-C03",
         "filename": "SyntheticBid_Carrier_Review.pdf",
         "expected_recommendation": "REVIEW_REQUIRED",
         "expected_vendor": "Carrier HVAC India Ltd.",
     },
     "DEMO-SEED-COOLTECH-REJECT": {
+        "bid_id": "BID-2026-B02",
         "filename": "SyntheticBid_CoolTech_Reject.pdf",
         "expected_recommendation": "REJECT",
         "expected_vendor": "CoolTech Global Solutions Pvt Ltd.",
@@ -84,10 +87,13 @@ Warranty: 7 Years
 TECHNICAL SPECIFICATIONS:
 --------------------------------------------------
 1. Equipment Model: TR-1100 (Standard Centrifugal Chiller)
-2. Cooling Capacity: 1,200 kW
+2. Cooling Capacity: 900 kW
 3. Substation Power Draw: 1,100 kW
 4. Equipment Width: 1.8 m
 5. Embodied Carbon Factor: 380 kgCO2e/ton
+6. Water Evaporation Rate: 18 gpm
+7. Floor Load: 2200 kg
+8. Warranty: 7 Years
 """, fontsize=11)
     pdfs["SyntheticBid_Trane_Compliant.pdf"] = doc.tobytes()
     doc.close()
@@ -108,7 +114,7 @@ OSHA Form 300 Certified: Yes
 TECHNICAL SPECIFICATIONS:
 --------------------------------------------------
 1. Equipment Model: CR-1180
-2. Cooling Capacity: 1,250 kW
+2. Cooling Capacity: 1,050 kW
 3. Substation Power Draw: 1,180 kW
 4. Embodied Carbon Factor: 410 kgCO2e/ton
 """, fontsize=11)
@@ -134,6 +140,8 @@ TECHNICAL SPECIFICATIONS:
 3. Substation Power Draw: 1,400 kW
 4. Equipment Width: 2.1 m
 5. Embodied Carbon Factor: 540 kgCO2e/ton
+6. Water Evaporation Rate: 38 gpm
+7. Floor Load: 3800 kg
 
 COMMERCIAL & SLA TERMS:
 --------------------------------------------------
@@ -165,11 +173,13 @@ OSHA Form 300 Certified: Yes
 TECHNICAL SPECIFICATIONS:
 --------------------------------------------------
 1. Equipment Model: ACME-900
-2. Cooling Capacity: 1,100 kW
+2. Cooling Capacity: 1,000 kW
 3. Substation Power Draw: 1,050 kW
 4. Equipment Width: 1.7 m
 5. Embodied Carbon Factor: 420 kgCO2e/ton
-6. Warranty: 6 Years
+6. Water Evaporation Rate: 22 gpm
+7. Floor Load: 2400 kg
+8. Warranty: 6 Years
 """, fontsize=11)
     content = doc.tobytes()
     doc.close()
@@ -198,7 +208,7 @@ def seed(*, verbose: bool = True) -> list[dict]:
                 idempotency_key=key,
             )
             existing = None
-        if existing:
+        if existing and existing.id == fixture.get("bid_id"):
             actual_rec = existing.scorecard.recommendation
             if verbose:
                 print(f"  ✓ {key}: already exists (id={existing.id}, rec={actual_rec})")
@@ -209,6 +219,13 @@ def seed(*, verbose: bool = True) -> list[dict]:
                 "created": False,
             })
             continue
+        elif existing:
+            bid_repository.remove_bid(
+                existing.id,
+                project_id=PROJECT_ID,
+                uploader_identity=DEMO_ACTOR,
+                idempotency_key=key,
+            )
 
         contents = pdf_bytes[filename]
         import tempfile, os as _os
@@ -228,6 +245,7 @@ def seed(*, verbose: bool = True) -> list[dict]:
             project_id=PROJECT_ID,
             uploader_identity=DEMO_ACTOR,
             idempotency_key=key,
+            custom_id=fixture.get("bid_id"),
         )
 
         if verbose:

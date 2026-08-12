@@ -23,10 +23,10 @@ export function integritySignal(bid: Bid): IntegritySignal {
   const status = aci > 0 ? "FLAG" : "CLEAR";
   const metadata = fingerprint.matches
     ? [
-        { label: "Submission IP", value: `${fingerprint.submissionIp} · matches ${fingerprint.matches}` },
-        { label: "Bank fingerprint", value: `${fingerprint.bankHash} · matches ${fingerprint.matches}` },
-        { label: "Required action", value: "Human integrity review" },
-      ]
+      { label: "Submission IP", value: `${fingerprint.submissionIp} · matches ${fingerprint.matches}` },
+      { label: "Bank fingerprint", value: `${fingerprint.bankHash} · matches ${fingerprint.matches}` },
+      { label: "Required action", value: "Human integrity review" },
+    ]
     : [{ label: "Submission fingerprint", value: "No deterministic correlation recorded" }];
 
   return {

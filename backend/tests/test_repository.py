@@ -222,11 +222,15 @@ class TestBidRepository(unittest.TestCase):
             max_substation_kw=1500.0,
             max_door_width_m=2.1,
             max_embodied_carbon_kg=400.0,
+            max_water_evap_gpm=30.0,
+            max_floor_load_kg_m2=2500.0,
             actor="ADMIN_ALICE",
             reason="Substation capacity expansion",
         )
         self.assertEqual(updated.version, 2)
         self.assertEqual(updated.max_substation_kw, 1500.0)
+        self.assertEqual(updated.max_water_evap_gpm, 30.0)
+        self.assertEqual(updated.max_floor_load_kg_m2, 2500.0)
 
         # Current constraint is version 2
         current = self.repo.get_current_constraints("PRJ-AMBER-01")
@@ -242,6 +246,33 @@ class TestBidRepository(unittest.TestCase):
                 actor="ADMIN_BOB",
                 reason="Stale update",
             )
+
+    def test_existing_constraint_database_adds_new_optional_limits(self):
+        with self.repo._connect() as connection:
+            connection.execute("DROP TABLE site_constraints")
+            connection.executescript("""
+                CREATE TABLE site_constraints (
+                  id TEXT PRIMARY KEY,
+                  project_id TEXT NOT NULL,
+                  version INTEGER NOT NULL,
+                  is_current INTEGER NOT NULL,
+                  max_substation_kw REAL NOT NULL,
+                  max_door_width_m REAL NOT NULL,
+                  max_embodied_carbon_kg REAL NOT NULL,
+                  actor TEXT NOT NULL,
+                  reason TEXT NOT NULL,
+                  created_at TEXT NOT NULL,
+                  UNIQUE (project_id, version)
+                );
+                INSERT INTO site_constraints VALUES (
+                  'legacy', 'PRJ-AMBER-01', 1, 1, 1200.0, 1.9, 450.0,
+                  'SYSTEM', 'Legacy baseline', '2026-01-01T00:00:00+00:00'
+                );
+            """)
+
+        upgraded = BidRepository().get_current_constraints()
+        self.assertIsNone(upgraded.max_water_evap_gpm)
+        self.assertIsNone(upgraded.max_floor_load_kg_m2)
 
     def test_failed_bid_transaction_removes_source_file(self):
         source, scorecard = self._sample_bid()

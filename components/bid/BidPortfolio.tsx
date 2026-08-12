@@ -2,14 +2,14 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowRight, RefreshCw, Search, SlidersHorizontal, X } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowRight, Search, SlidersHorizontal, X } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import Tooltip from "@/components/ui/Tooltip";
 import TCOSlider from "@/components/tco-slider";
 import { procurementApi, type BidRecord, type CheckStatus } from "@/lib/api";
-import { cleanReasonText, displayCheckName, formatCroreValue, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
+import { cleanReasonText, displayCheckName, formatCroreValue, getPatrolCategory, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
 
 const TcoChart = dynamic(() => import("@/components/bid/TcoChart"), {
@@ -50,16 +50,17 @@ function fromRecord(record: BidRecord): Comparable {
 }
 
 function check(bid: Comparable, name: string) {
-  return bid.checks.find((value) => value.name === name);
+  const targetCategory = getPatrolCategory(name);
+  return bid.checks.find((value) => getPatrolCategory(value.name) === targetCategory);
 }
 function hasFailure(bid: Comparable) {
-  return bid.checks.some((value) => value.status === "FAIL" && (value.name === "Engineering" || value.name === "Carbon"));
+  return bid.checks.some((value) => value.status === "FAIL" && (getPatrolCategory(value.name) === "engineering" || getPatrolCategory(value.name) === "carbon"));
 }
 function status(bid: Comparable, name: string): CheckStatus {
   return check(bid, name)?.status ?? "FLAG";
 }
 function label(filter: ComplianceFilter) {
-  return filter === "eligible" ? "Hard checks passed" : filter === "has-failure" ? "Hard failure present" : "All compliance states";
+  return filter === "eligible" ? "Mandatory constraints satisfied" : filter === "has-failure" ? "Mandatory constraint breach" : "All compliance states";
 }
 
 export default function BidPortfolio() {
@@ -119,11 +120,12 @@ export default function BidPortfolio() {
       return [...current, id];
     });
 
+  const activeIdToUse = active?.id;
   const updateScenario = useCallback(
     (costCr: number) => {
-      if (active) setScenario({ id: active.id, cost: costCr * 10_000_000 });
+      if (activeIdToUse) setScenario({ id: activeIdToUse, cost: costCr * 10_000_000 });
     },
-    [active]
+    [activeIdToUse]
   );
 
   const reset = () => {
@@ -135,34 +137,22 @@ export default function BidPortfolio() {
 
   if (sourceState === "loading") {
     return (
-      <Card className="p-8 text-center text-sm text-text/50">
+      <Card className="p-8 text-center text-sm text-text/50 min-h-[400px] flex items-center justify-center font-medium">
         Loading portfolio bids for comparison…
       </Card>
     );
   }
 
   if (sourceState === "error") {
-    return (
-      <Card className="p-8 text-center space-y-4">
-        <p className="text-sm font-semibold text-rose">Failed to load portfolio bids</p>
-        <p className="text-xs text-text/55 max-w-md mx-auto">{errorMessage}</p>
-        <button
-          type="button"
-          onClick={loadBids}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-4 py-2 text-xs font-semibold text-cyan hover:bg-cyan/25"
-        >
-          <RefreshCw className="h-3.5 w-3.5" /> Retry loading portfolio
-        </button>
-      </Card>
-    );
+    // Rely on global ConnectionFooter for single consistent Retry button
   }
 
   return (
-    <div className="space-y-5">
-      <Card>
+    <div className="space-y-5 min-w-0 max-w-full overflow-x-clip">
+      <Card className="min-w-0 max-w-full">
         <CardHeader
-          title="Comparison setup"
-          caption="Filter and select up to 3 bids for side-by-side analysis"
+          title="Comparison Setup"
+          caption="Filter and select up to 3 bids for side-by-side analysis."
           right={<span className="font-mono text-xs font-extrabold text-cyan">{selectedIds.length}/3 selected</span>}
         />
         <div className="p-5 sm:p-6 space-y-4 min-w-0 max-w-full">
@@ -184,10 +174,10 @@ export default function BidPortfolio() {
                 onChange={(event) => setStateFilter(event.target.value as StateFilter)}
                 className="h-10 w-full min-w-0 max-w-full rounded-xl border border-line bg-surface px-3.5 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs truncate"
               >
-                <option value="all">Any status</option>
-                <option value="RECOMMENDED">Ready for decision</option>
-                <option value="REVIEW_REQUIRED">Needs review</option>
-                <option value="REJECT">Do not select</option>
+                <option value="all">All Statuses</option>
+                <option value="RECOMMENDED">RECOMMENDED</option>
+                <option value="REVIEW_REQUIRED">REVIEW REQUIRED</option>
+                <option value="REJECT">REJECT</option>
               </select>
             </label>
             <label className="min-w-0 max-w-full block">
@@ -197,9 +187,9 @@ export default function BidPortfolio() {
                 onChange={(event) => setCompliance(event.target.value as ComplianceFilter)}
                 className="h-10 w-full min-w-0 max-w-full rounded-xl border border-line bg-surface px-3.5 text-sm font-medium text-text focus:border-cyan focus:ring-1 focus:ring-cyan/50 focus:outline-none shadow-xs truncate"
               >
-                <option value="all">Any patrol result</option>
-                <option value="eligible">Hard checks passed</option>
-                <option value="has-failure">Hard failure present</option>
+                <option value="all">All Patrol Results</option>
+                <option value="eligible">Mandatory Constraints Satisfied</option>
+                <option value="has-failure">Mandatory Constraint Breach</option>
               </select>
             </label>
             <button
@@ -208,7 +198,7 @@ export default function BidPortfolio() {
               disabled={!resetNeeded}
               className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-line px-3.5 text-xs font-bold text-text/70 hover:border-cyan/40 hover:text-text tactile-press disabled:cursor-not-allowed disabled:opacity-35 shadow-xs"
             >
-              <X className="h-3.5 w-3.5" /> Clear filters
+              <X className="h-3.5 w-3.5" /> Clear Filters
             </button>
           </div>
 
@@ -219,7 +209,7 @@ export default function BidPortfolio() {
               return (
                 <label
                   key={bid.id}
-                  className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition-all ${
+                  className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition ${
                     selectedItem
                       ? "border-cyan bg-cyan/15 text-cyan ring-1 ring-cyan/40 shadow-xs"
                       : "border-line text-text/70 hover:border-cyan/40 hover:text-text shadow-xs"
@@ -229,8 +219,12 @@ export default function BidPortfolio() {
                     type="checkbox"
                     checked={selectedItem}
                     disabled={disabled}
-                    onChange={() => toggle(bid.id)}
-                    className="accent-[#38BDF8]"
+                    onChange={() => {
+                      toggle(bid.id);
+                      setActiveId(bid.id);
+                      setScenario(null);
+                    }}
+                    className="accent-cyan"
                   />
                   <span>{bid.vendor}</span>
                 </label>
@@ -242,54 +236,44 @@ export default function BidPortfolio() {
       </Card>
 
       {selected.length ? (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_310px]">
-          <Card>
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_310px] min-w-0 max-w-full">
+          <Card className="min-w-0 max-w-full">
             <CardHeader
-              title="Bid comparison"
-              caption="Side-by-side compliance checks and TCO² scenario analysis"
+              title="Bid Comparison"
+              caption="Side-by-side compliance checks and TCO² scenario analysis."
               right={
                 <span className="inline-flex items-center gap-1.5 text-xs text-text/50 font-medium">
                   <SlidersHorizontal className="h-3.5 w-3.5 text-blue" /> {label(compliance)}
                 </span>
               }
             />
-            <div className="overflow-x-auto overflow-y-auto max-h-[320px]">
-              <table className="w-full min-w-[720px] text-sm border-collapse table-fixed">
-                <colgroup>
-                  <col className="w-[20%]" />
-                  <col className="w-[13%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[11%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[14%]" />
-                  <col className="w-[12%]" />
-                </colgroup>
+            <div className="table-scroll-area table-max-3 min-w-0 max-w-full">
+              <table className="w-full min-w-[720px] text-sm border-collapse table-auto">
                 <thead className="sticky top-0 z-10 bg-surface">
                   <tr className="border-b-2 border-line table-header">
                     <th className="px-4 py-3 text-left font-bold whitespace-nowrap first:rounded-tl-[0.9rem]">Vendor</th>
                     <th className="px-4 py-3 text-right font-bold whitespace-nowrap">Upfront (INR)</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
-                      <Tooltip text="Hard limit check. Validates physical floor load capacity against equipment weight.">
-                        <span>Engineering</span>
+                      <Tooltip text="Hard limit check. Validates power draw, cooling plant capacity balance, door clearance, warranty, and structural floor load tolerance.">
+                        <span>Building Patrol</span>
                       </Tooltip>
                     </th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
-                      <Tooltip text="Hard limit check. Validates embodied carbon emissions factor against project carbon cap.">
-                        <span>Carbon</span>
+                      <Tooltip text="Hard limit check. Validates embodied carbon emissions factor and water evaporation rate against site environmental caps.">
+                        <span>Green Patrol</span>
                       </Tooltip>
                     </th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                       <Tooltip text="Vendor risk score (0-10) calculated from historical performance metrics.">
-                        <span>Reliability</span>
+                        <span>Vice Squad</span>
                       </Tooltip>
                     </th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap">
                       <Tooltip text="Schedule impact estimation calculating late delivery risk in days.">
-                        <span>Schedule</span>
+                        <span>Traffic Control</span>
                       </Tooltip>
                     </th>
-                    <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-yr TCO² (INR)</th>
+                    <th className="px-4 py-3 text-right font-bold whitespace-nowrap">5-Yr TCO² (INR)</th>
                     <th className="px-4 py-3 text-center font-bold whitespace-nowrap last:rounded-tr-[0.9rem]">Status</th>
                   </tr>
                 </thead>
@@ -354,11 +338,23 @@ export default function BidPortfolio() {
                         </td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-text">{formatCroreValue(shownCost(bid))}</td>
                         <td className="px-4 py-3 text-center">
-                          <div className="flex justify-center">
-                            <span className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs" style={{ color, backgroundColor: `${color}20`, borderColor: `${color}50` }}>
-                              {recommendationLabel(bid.recommendation)}
-                            </span>
-                          </div>
+                          {(() => {
+                            const varName = recommendationTone(bid.recommendation) === "rose" ? "--color-rose" : recommendationTone(bid.recommendation) === "amber" ? "--color-amber" : "--color-cyan";
+                            return (
+                              <div className="flex justify-center">
+                                <span
+                                  className="rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase border shadow-xs"
+                                  style={{
+                                    color: `rgb(var(${varName}))`,
+                                    backgroundColor: `rgba(var(${varName}), 0.15)`,
+                                    borderColor: `rgba(var(${varName}), 0.45)`,
+                                  }}
+                                >
+                                  {recommendationLabel(bid.recommendation)}
+                                </span>
+                              </div>
+                            );
+                          })()}
                         </td>
                       </tr>
                     );
@@ -369,10 +365,12 @@ export default function BidPortfolio() {
 
             {active && active.upfront != null && (
               <div className="border-t border-line p-4">
-                <div className="mb-3">
-                  <p className="ui-label text-cyan">Interactive cost scenario</p>
+                <div className="rounded-xl border border-line bg-surface p-4 shadow-xs">
+                  <div className="mb-3 text-xs font-bold text-text/70">
+                    Interactive cost scenario
+                  </div>
+                  <TCOSlider key={active.id} baseCapexCr={(active.upfront ?? 0) / 10_000_000} onTCOChange={updateScenario} />
                 </div>
-                <TCOSlider key={active.id} baseCapexCr={(active.upfront ?? 0) / 10_000_000} onTCOChange={updateScenario} />
               </div>
             )}
 
@@ -382,6 +380,7 @@ export default function BidPortfolio() {
                   vendor: bid.vendor,
                   Upfront: (bid.upfront ?? 0) / 10_000_000,
                   "5-year TCO²": (shownCost(bid) ?? 0) / 10_000_000,
+                  recommendation: bid.recommendation,
                 }))}
               />
             </div>
@@ -399,7 +398,7 @@ export default function BidPortfolio() {
               : "Clear filters or select an available bid to restore the comparison."}
           </p>
           {filtered.length === 0 && !resetNeeded ? (
-            <Link href="/bids/new" className="mt-5 inline-flex items-center rounded-lg bg-cyan/15 px-4 py-2 text-sm font-semibold text-cyan transition-colors hover:bg-cyan/25">
+            <Link href="/bids/new" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-cyan px-4 py-2.5 text-sm font-bold text-on-accent hover:bg-cyan/90 tactile-press shadow-xs">
               Upload first bid
             </Link>
           ) : null}
@@ -412,7 +411,7 @@ export default function BidPortfolio() {
 function Inspector({ bid }: { bid: Comparable }) {
   const color = recommendationTone(bid.recommendation) === "rose" ? COLORS.rose : recommendationTone(bid.recommendation) === "amber" ? COLORS.amber : COLORS.cyan;
   return (
-    <Card accent={color} className="h-fit p-5 xl:sticky xl:top-5 space-y-4">
+    <Card accent={ color } className="h-fit p-5 xl:sticky xl:top-[81px] max-h-[calc(100vh-100px)] overflow-y-auto overflow-x-hidden space-y-4 min-w-0 max-w-full">
       <div>
         <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-cyan">Selected bid inspector</p>
         <h2 className="mt-1 text-lg font-extrabold text-text">{bid.vendor}</h2>
@@ -421,9 +420,25 @@ function Inspector({ bid }: { bid: Comparable }) {
 
       <div className="grid grid-cols-2 gap-3 border-y border-line py-3.5 text-xs">
         <Metric label="Status" value={recommendationLabel(bid.recommendation)} />
-        <Metric label="5-year TCO²" value={inCrore(bid.cost)} />
-        <Metric label="Reliability" value={check(bid, "Reliability")?.risk == null ? "Not provided" : `${check(bid, "Reliability")?.risk}/10`} />
-        <Metric label="Schedule" value={check(bid, "Schedule")?.status ?? "Review"} />
+        <Metric label="5-Year TCO²" value={inCrore(bid.cost)} />
+        <Metric
+          label="Reliability"
+          value={
+            check(bid, "vice")?.risk != null
+              ? `${check(bid, "vice")?.risk}/10 Risk`
+              : "Audit Active"
+          }
+        />
+        <Metric
+          label="Schedule"
+          value={
+            check(bid, "traffic")?.status === "FAIL"
+              ? "Critical Delay"
+              : check(bid, "traffic")?.status === "FLAG"
+              ? "Schedule Flag"
+              : "On Schedule"
+          }
+        />
       </div>
 
       <p className="text-xs leading-relaxed text-text/60">
@@ -432,7 +447,7 @@ function Inspector({ bid }: { bid: Comparable }) {
 
       <div>
         <Link href={`/bids/${bid.id}`} className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan hover:underline tactile-press">
-          Open bid review <ArrowRight className="h-3.5 w-3.5" />
+          Open Bid Review <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     </Card>

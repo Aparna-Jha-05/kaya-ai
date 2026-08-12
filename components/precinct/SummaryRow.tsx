@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AlertOctagon, FileCheck2, FileWarning, RefreshCw } from "lucide-react";
+import { AlertOctagon, FileCheck2, FileWarning } from "lucide-react";
 import Card from "@/components/ui/Card";
 import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type BidRecord } from "@/lib/api";
@@ -40,41 +40,37 @@ export default function SummaryRow() {
 
   useEffect(() => {
     fetchMetrics();
+    const handleUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<BidRecord[]>;
+      if (customEvent.detail) {
+        setMetrics(fromRecords(customEvent.detail));
+        setLoading(false);
+      }
+    };
+    window.addEventListener("po-lice:bids-updated", handleUpdate);
+    return () => window.removeEventListener("po-lice:bids-updated", handleUpdate);
   }, [fetchMetrics]);
 
-  if (error) {
-    return (
-      <div className="rounded-xl border border-rose/30 bg-rose/10 p-4 text-sm text-rose flex items-center justify-between">
-        <span>Service offline or starting up: {error}</span>
-        <button
-          type="button"
-          onClick={fetchMetrics}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-rose/20 px-3 py-1.5 text-xs font-semibold text-rose hover:bg-rose/30"
-        >
-          <RefreshCw className="h-3.5 w-3.5" /> Retry connection
-        </button>
-      </div>
-    );
-  }
+  const activeMetrics = metrics || { total: 0, failures: 0, missingDocs: 0, offline: true };
 
   const cards = [
     {
-      label: "Submitted bids",
-      value: metrics?.total,
-      color: COLORS.text,
+      label: "Total Active Bids",
+      value: activeMetrics.total,
+      color: COLORS.cyan,
       Icon: FileCheck2,
-      help: metrics?.offline ? "No active service connection." : "Active procurement bids in current review queue.",
+      help: "Procurement bids currently ingested and evaluated.",
     },
     {
-      label: "Hard-limit failures",
-      value: metrics?.failures,
+      label: "Constraint Failures",
+      value: activeMetrics.failures,
       color: COLORS.rose,
       Icon: AlertOctagon,
       help: "Bids exceeding engineering limits or carbon budget thresholds.",
     },
     {
-      label: "Documents missing",
-      value: metrics?.missingDocs,
+      label: "Pending Documentation",
+      value: activeMetrics.missingDocs,
       color: COLORS.amber,
       Icon: FileWarning,
       help: "Bids missing safety, OSHA, or compliance certificates.",
@@ -82,9 +78,14 @@ export default function SummaryRow() {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      {cards.map((card) => (
-        <Card key={card.label} accent={card.color} className="p-5 sm:p-6">
+    <div data-tour="tour-kpis" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {cards.map((card, idx) => (
+        <Card
+          key={card.label}
+          accent={card.color}
+          className="p-5 sm:p-6"
+          data-tour={idx === 1 ? "tour-simulations" : undefined}
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
@@ -93,7 +94,7 @@ export default function SummaryRow() {
                 </Tooltip>
               </div>
               <div className="mt-3 font-mono text-3xl sm:text-4xl font-extrabold tabular-nums" style={{ color: card.color }}>
-                {loading ? "…" : (metrics ? card.value : "—")}
+                {loading ? "…" : card.value}
               </div>
             </div>
             <card.Icon className="h-5 w-5 shrink-0 mt-0.5" style={{ color: card.color }} />

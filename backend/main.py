@@ -1,11 +1,19 @@
 """HTTP boundary for PO-LICE's procurement evidence service."""
+# Reload trigger: 2026-08-12
 
 import logging
 import os
 import re
+import sys
 import tempfile
 from pathlib import Path
 from typing import Annotated, Any, Dict, List
+
+# Ensure backend directory takes precedence in sys.path over root (which has Next.js app/)
+_backend_dir = str(Path(__file__).resolve().parent)
+if _backend_dir in sys.path:
+    sys.path.remove(_backend_dir)
+sys.path.insert(0, _backend_dir)
 
 from fastapi import FastAPI, File, Header, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,6 +24,7 @@ from app.models.schemas import (
     ActivityEvent,
     BidRecord,
     ConstraintUpdateRequest,
+    ManualOverrideRequest,
     OfficerDecisionRequest,
     RFIApprovalRequest,
     RFIDraft,
@@ -26,9 +35,12 @@ from app.models.schemas import (
 )
 from app.services.extractor import PDFExtractorService
 from app.services.integrity import bid_integrity_matrix
+from app.services.jarvis_handoff import JarvisHandoffService
 from app.services.patrols import ConstraintGraph, PatrolEngineService
 from app.services.repository import InvalidTransitionError, StaleVersionError, bid_repository
 from app.services.rfi import RFIService
+from app.services.smtp_queue import OutboundSMTPQueueService
+from app.services.storage import StorageService
 from app.db.supabase import check_db_readiness, settings
 
 logger = logging.getLogger(__name__)
@@ -45,8 +57,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["Content-Type", "Idempotency-Key"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -54,9 +66,13 @@ app.add_middleware(
 def bootstrap_demo_fixtures() -> None:
     if DEMO_MODE:
         try:
-            from scripts.seed_demo_data import seed
-            seed(verbose=False)
-            logger.info("Idempotent demo fixtures bootstrapped successfully.")
+            from app.services.repository import bid_repository
+            if len(bid_repository.list_bids()) == 0:
+                from scripts.seed_demo_data import seed
+                seed(verbose=False)
+                logger.info("Idempotent demo fixtures bootstrapped successfully.")
+            else:
+                logger.info("Demo fixtures already present in SQLite database.")
         except Exception as err:
             logger.warning("Demo fixture bootstrap warning: %s", err)
 
@@ -155,14 +171,19 @@ async def upload_and_audit_bid(
     if not contents.startswith(PDF_MAGIC):
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="The uploaded file is not a valid PDF.")
 
-    temp_path: str | None = None
+    submission_ip = request.client.host if request.client else None
+    temp_path = None
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temporary_file:
-            temporary_file.write(contents)
-            temp_path = temporary_file.name
-        submission_ip = request.client.host if request.client else None
-        extracted_bid = PDFExtractorService.extract_from_pdf_path(
-            temp_path,
+        # Stage S1 Multi-Tier Blob Storage Cascade (Local Disk -> MinIO S3 -> Cloud S3)
+        storage_meta = StorageService.save_pdf(
+            pdf_bytes=contents,
+            filename=filename,
+            project_id=PROJECT_ID,
+        )
+
+        extracted_bid = PDFExtractorService.extract_from_pdf_bytes(
+            raw_pdf=contents,
+            filename=filename,
             submission_ip=submission_ip,
             project_id=PROJECT_ID,
         )
@@ -198,6 +219,19 @@ async def upload_and_audit_bid(
             integrity_signals=integrity_signals,
         )
         bid_integrity_matrix.record(extracted_bid)
+        # Auto-generate RFI draft if OSHA cert is provably missing (no manual click needed)
+        if extracted_bid.has_osha_cert is False:
+            try:
+                draft_data = RFIService.generate_rfi_draft(scorecard)
+                bid_repository.save_rfi_draft(
+                    bid_id=record.id,
+                    vendor_name=draft_data["vendor_name"],
+                    rfi_text=draft_data["rfi_text"],
+                    protected_facts=draft_data["protected_facts"],
+                )
+                logger.info("Auto-generated RFI draft for bid %s: OSHA certificate missing.", record.id)
+            except Exception as rfi_error:
+                logger.warning("Auto-RFI generation failed for bid %s: %s", record.id, rfi_error)
         return record
     except (ValueError, RuntimeError) as error:
         logger.info("Bid extraction rejected: %s", error)
@@ -254,6 +288,63 @@ def delete_bid(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="This upload cannot be deleted with the supplied capability.",
         )
+
+
+@app.patch("/api/v1/bids/{bid_id}/override", response_model=BidRecord, tags=["bids"])
+def override_bid_fields(bid_id: str, request: ManualOverrideRequest) -> BidRecord:
+    require_privileged_mutation()
+    try:
+        record = bid_repository.get_bid(bid_id)
+        if not record:
+            raise KeyError(f"Bid {bid_id} not found")
+
+        source = record.source
+
+        # Apply overrides to source
+        if request.bid_amount_inr is not None:
+            source.bid_amount_inr = request.bid_amount_inr
+        if request.promised_delivery_weeks is not None:
+            source.promised_delivery_weeks = request.promised_delivery_weeks
+        if request.has_osha_cert is not None:
+            source.has_osha_cert = request.has_osha_cert
+
+        # Apply overrides to equipment
+        if request.power_draw_kw is not None:
+            source.equipment.power_draw_kw = request.power_draw_kw
+        if request.cooling_capacity_kw is not None:
+            source.equipment.cooling_capacity_kw = request.cooling_capacity_kw
+        if request.water_evap_gpm is not None:
+            source.equipment.water_evap_gpm = request.water_evap_gpm
+        if request.floor_load_kg is not None:
+            source.equipment.floor_load_kg = request.floor_load_kg
+        if request.length_m is not None:
+            source.equipment.length_m = request.length_m
+        if request.width_m is not None:
+            source.equipment.width_m = request.width_m
+        if request.height_m is not None:
+            source.equipment.height_m = request.height_m
+        if request.embodied_carbon_factor is not None:
+            source.equipment.embodied_carbon_factor = request.embodied_carbon_factor
+
+        if "MANUAL_OVERRIDE_APPLIED" not in source.document_metadata.review_signals:
+            source.document_metadata.review_signals.append("MANUAL_OVERRIDE_APPLIED")
+
+        # Re-run patrols with updated data
+        new_scorecard = PatrolEngineService.run_all_patrols(source)
+
+        updated_record = bid_repository.save_bid_override(
+            bid_id=bid_id,
+            updated_source=source,
+            new_scorecard=new_scorecard,
+            actor="DEMO_OFFICER",
+            note=request.note,
+        )
+        return updated_record
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found.")
+    except Exception as error:
+        logger.exception("Manual override failed")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
 # ── Officer Decision (separate from procurement lifecycle) ───────────────
@@ -332,12 +423,30 @@ def approve_rfi(rfi_id: str, request: RFIApprovalRequest) -> RFIDraft:
         violations = RFIService.validate_edited_text(request.edited_text, draft.protected_facts)
         if violations:
             raise ValueError("; ".join(violations))
-        return bid_repository.approve_rfi(
+        approved_rfi = bid_repository.approve_rfi(
             rfi_id,
             edited_text=request.edited_text,
             actor="DEMO_OFFICER",
             note=request.note,
         )
+        # Outbound SMTP Queue Dispatch Aspect
+        OutboundSMTPQueueService.enqueue_rfi_dispatch(
+            bid_id=approved_rfi.bid_id,
+            recipient_email=f"compliance@{draft.vendor_name.lower().replace(' ', '')}.com",
+            subject=f"OFFICIAL RFI NOTICE: Bid {approved_rfi.bid_id}",
+            rfi_body=request.edited_text or draft.rfi_text,
+            officer_identity="DEMO_OFFICER",
+        )
+        OutboundSMTPQueueService.process_outbox_queue()
+        # External Jarvis Handoff Aspect
+        JarvisHandoffService.dispatch_handoff(
+            bid_id=approved_rfi.bid_id,
+            vendor_name=draft.vendor_name,
+            event_type="RFI_APPROVED_DISPATCH",
+            rfi_text=request.edited_text or draft.rfi_text,
+            protected_facts=draft.protected_facts,
+        )
+        return approved_rfi
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="RFI not found.")
     except ValueError as error:
@@ -379,6 +488,8 @@ def update_site_constraints(payload: ConstraintUpdateRequest) -> Dict[str, Any]:
             substation_limit_kw=payload.max_substation_kw,
             door_limit_m=payload.max_door_width_m,
             carbon_cap_kgco2e=payload.max_embodied_carbon_kg,
+            water_evap_cap_gpm=payload.max_water_evap_gpm,
+            floor_load_limit_kg_m2=payload.max_floor_load_kg_m2,
             constraint_source=f"v{next_version} by DEMO_ADMIN",
             constraint_version=next_version,
         )
@@ -391,6 +502,8 @@ def update_site_constraints(payload: ConstraintUpdateRequest) -> Dict[str, Any]:
             max_substation_kw=payload.max_substation_kw,
             max_door_width_m=payload.max_door_width_m,
             max_embodied_carbon_kg=payload.max_embodied_carbon_kg,
+            max_water_evap_gpm=payload.max_water_evap_gpm,
+            max_floor_load_kg_m2=payload.max_floor_load_kg_m2,
             actor="DEMO_ADMIN",
             reason=payload.reason,
             project_id=PROJECT_ID,
@@ -405,6 +518,8 @@ def update_site_constraints(payload: ConstraintUpdateRequest) -> Dict[str, Any]:
                 "max_substation_kw": record.max_substation_kw,
                 "max_door_width_m": record.max_door_width_m,
                 "max_embodied_carbon_kg": record.max_embodied_carbon_kg,
+                "max_water_evap_gpm": record.max_water_evap_gpm,
+                "max_floor_load_kg_m2": record.max_floor_load_kg_m2,
             },
         }
     except KeyError:

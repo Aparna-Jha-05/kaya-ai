@@ -42,6 +42,8 @@ MODEL_ELIGIBLE_FIELDS = (
     FactField.COOLING_CAPACITY_KW,
     FactField.WIDTH_M,
     FactField.EMBODIED_CARBON,
+    FactField.WATER_EVAP_GPM,
+    FactField.FLOOR_LOAD_KG,
 )
 
 
@@ -71,6 +73,7 @@ class ExtractionSettings:
     remote_project_ids: frozenset[str]
     gemini_api_key: str | None = dataclass_field(repr=False)
     gemini_model: str | None
+    ollama_fallback_model: str | None = None
 
     @classmethod
     def from_env(cls) -> "ExtractionSettings":
@@ -99,6 +102,7 @@ class ExtractionSettings:
             remote_project_ids=projects,
             gemini_api_key=os.getenv("GEMINI_API_KEY") or None,
             gemini_model=os.getenv("GEMINI_MODEL") or None,
+            ollama_fallback_model=os.getenv("OLLAMA_FALLBACK_MODEL") or None,
         )
 
     def remote_allowed(self, project_id: str) -> bool:
@@ -116,9 +120,9 @@ def normalize_fact_value(field: FactField, raw_value: str) -> str | float | int 
         return raw
     if field is FactField.OSHA_CERT:
         normalized = raw.casefold()
-        if re.search(r"\b(?:pending|missing|no|false|invalid|not\s+(?:attached|certified|valid))\b", normalized):
+        if re.search(r"\b(?:pending|missing|no|false|invalid|non-compliant|not\s+(?:attached|certified|valid))\b", normalized):
             return False
-        if re.search(r"\b(?:certified|attached|valid|yes|true)\b", normalized):
+        if re.search(r"\b(?:certified|attached|valid|yes|true|compliant)\b", normalized):
             return True
         raise ValueError("unsupported boolean value")
 
@@ -129,18 +133,41 @@ def normalize_fact_value(field: FactField, raw_value: str) -> str | float | int 
     folded = raw.casefold()
 
     if field is FactField.BID_AMOUNT_INR:
+        if re.search(r"\bcrores?\b|\bcr\b", folded):
+            return number * 10_000_000
+        if re.search(r"\blakhs?\b|\blac\b|\blakh\b", folded):
+            return number * 100_000
         return number
     if field is FactField.DELIVERY_WEEKS:
-        weeks = number / 7 if re.search(r"\bdays?\b", folded) else number
-        if not math.isclose(weeks, round(weeks), abs_tol=1e-9):
-            raise ValueError("delivery days must convert to whole weeks")
+        if re.search(r"\bmonths?\b", folded):
+            weeks = number * 4.333
+        elif re.search(r"\bdays?\b", folded):
+            weeks = number / 7
+        else:
+            weeks = number
         return int(round(weeks))
-    if field in {FactField.POWER_DRAW_KW, FactField.COOLING_CAPACITY_KW}:
+    if field is FactField.POWER_DRAW_KW:
         return number * 1_000 if re.search(r"\bmw\b", folded) else number
-    if field is FactField.WIDTH_M:
-        return number / 1_000 if re.search(r"\bmm\b", folded) else number
+    if field is FactField.COOLING_CAPACITY_KW:
+        if re.search(r"\btr\b|\btons?\b", folded):
+            return round(number * 3.51685, 2)
+        return number * 1_000 if re.search(r"\bmw\b", folded) else number
+    if field in {FactField.WIDTH_M, FactField.LENGTH_M}:
+        if re.search(r"\bmm\b", folded):
+            return number / 1_000
+        if re.search(r"\bcm\b", folded):
+            return number / 100
+        return number
     if field is FactField.EMBODIED_CARBON:
         return number * 1_000 if re.search(r"\btco2e", folded) else number
+    if field is FactField.WATER_EVAP_GPM:
+        if re.search(r"\blph\b|\bl/hr\b", folded):
+            return number / 227.124  # litres/hr → US gpm
+        return number
+    if field is FactField.FLOOR_LOAD_KG:
+        if re.search(r"\btonnes?\b|\bton\b", folded):
+            return number * 1_000  # metric tonnes → kg
+        return number
     raise ValueError(f"unsupported field {field.value}")
 
 
@@ -165,6 +192,8 @@ def unresolved_fields(bid: VendorBidExtract) -> list[FactField]:
         FactField.COOLING_CAPACITY_KW: bid.equipment.cooling_capacity_kw,
         FactField.WIDTH_M: bid.equipment.width_m,
         FactField.EMBODIED_CARBON: bid.equipment.embodied_carbon_factor,
+        FactField.WATER_EVAP_GPM: bid.equipment.water_evap_gpm,
+        FactField.FLOOR_LOAD_KG: bid.equipment.floor_load_kg,
     }
     return [field for field in MODEL_ELIGIBLE_FIELDS if values[field] is None]
 
@@ -204,6 +233,8 @@ def _minimum_remote_context(document_text: str, requested_fields: Iterable[FactF
         FactField.COOLING_CAPACITY_KW: ("cooling", "capacity", "tonnage"),
         FactField.WIDTH_M: ("width", "clearance", "dimension"),
         FactField.EMBODIED_CARBON: ("carbon", "co2e", "epd"),
+        FactField.WATER_EVAP_GPM: ("water", "evaporation", "evap", "gpm", "lph"),
+        FactField.FLOOR_LOAD_KG: ("floor load", "weight", "operating weight", "kg", "tonnes"),
     }
     requested_keywords = {
         keyword
@@ -429,6 +460,8 @@ def _apply_selected(bid: VendorBidExtract, report: ExtractionReport) -> VendorBi
         FactField.COOLING_CAPACITY_KW: (equipment_updates, "cooling_capacity_kw"),
         FactField.WIDTH_M: (equipment_updates, "width_m"),
         FactField.EMBODIED_CARBON: (equipment_updates, "embodied_carbon_factor"),
+        FactField.WATER_EVAP_GPM: (equipment_updates, "water_evap_gpm"),
+        FactField.FLOOR_LOAD_KG: (equipment_updates, "floor_load_kg"),
     }
     for field in MODEL_ELIGIBLE_FIELDS:
         candidate = report.selected.get(field.value)
@@ -459,6 +492,10 @@ class ExtractionCascade:
 
     def enrich(self, document_text: str, bid: VendorBidExtract, project_id: str) -> VendorBidExtract:
         report = bid.extraction_report.model_copy(deep=True)
+        existing = [candidate for candidate in report.candidates if candidate.accepted]
+        report.selected, disagreements = _select_candidates(report.selected, existing)
+        report.issues.extend(disagreements)
+        bid = _apply_selected(bid, report)
         missing = unresolved_fields(bid)
         if not missing:
             return bid
@@ -478,6 +515,9 @@ class ExtractionCascade:
                 report.selected, disagreements = _select_candidates(report.selected, history)
                 report.issues.extend(disagreements)
                 bid = _apply_selected(bid, report)
+                if any(c.provider == ExtractionProvider.OLLAMA for c in report.candidates if c.accepted):
+                    if "SLM_CASCADE_ENRICHED" not in bid.document_metadata.review_signals:
+                        bid.document_metadata.review_signals.append("SLM_CASCADE_ENRICHED")
                 missing = unresolved_fields(bid)
             except ProviderRequestError as error:
                 report.issues.append(
@@ -487,6 +527,38 @@ class ExtractionCascade:
                         provider=ExtractionProvider.OLLAMA,
                     )
                 )
+                # Dual-model fallback: try OLLAMA_FALLBACK_MODEL if primary failed
+                if missing and self.settings.ollama_fallback_model:
+                    fallback_settings = ExtractionSettings(
+                        **{**self.settings.__dict__, "ollama_model": self.settings.ollama_fallback_model}
+                    )
+                    fallback_extractor = OllamaExtractor(fallback_settings)
+                    try:
+                        raw = fallback_extractor.extract(document_text, missing)
+                        valid, issues = validate_provider_candidates(document_text, raw, set(missing))
+                        report.candidates.extend(valid)
+                        report.issues.extend(issues)
+                        history = [
+                            candidate
+                            for candidate in report.candidates
+                            if candidate.accepted and candidate.field in set(missing)
+                        ]
+                        report.selected, disagreements = _select_candidates(report.selected, history)
+                        report.issues.extend(disagreements)
+                        bid = _apply_selected(bid, report)
+                        if "DUAL_MODEL_FALLBACK_TRIGGERED" not in bid.document_metadata.review_signals:
+                            bid.document_metadata.review_signals.append("DUAL_MODEL_FALLBACK_TRIGGERED")
+                        if "SLM_CASCADE_ENRICHED" not in bid.document_metadata.review_signals:
+                            bid.document_metadata.review_signals.append("SLM_CASCADE_ENRICHED")
+                        missing = unresolved_fields(bid)
+                    except ProviderRequestError as fallback_error:
+                        report.issues.append(
+                            ExtractionIssue(
+                                code="OLLAMA_FALLBACK_UNAVAILABLE",
+                                message=str(fallback_error),
+                                provider=ExtractionProvider.OLLAMA,
+                            )
+                        )
 
         if missing and self.settings.remote_allowed(project_id):
             report.providers_attempted.append(ExtractionProvider.GEMINI)
@@ -515,6 +587,9 @@ class ExtractionCascade:
                 report.selected, disagreements = _select_candidates(report.selected, history)
                 report.issues.extend(disagreements)
                 bid = _apply_selected(bid, report)
+                if any(c.provider == ExtractionProvider.GEMINI for c in report.candidates if c.accepted):
+                    if "REMOTE_VLM_ENRICHED" not in bid.document_metadata.review_signals:
+                        bid.document_metadata.review_signals.append("REMOTE_VLM_ENRICHED")
             except ProviderRequestError as error:
                 report.issues.append(
                     ExtractionIssue(

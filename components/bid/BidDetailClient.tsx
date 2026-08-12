@@ -61,17 +61,10 @@ export default function BidDetailClient({ id }: { id: string }) {
   if (state === "error")
     return (
       <div className="space-y-6">
-        <Header title="Bid service unavailable" subtitle="The backend service may be starting up or unreachable." />
-        <Card className="p-6 space-y-4 text-sm">
-          <p className="text-rose">{errorMessage}</p>
-          <button
-            type="button"
-            onClick={loadBid}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-4 py-2 text-xs font-semibold text-cyan hover:bg-cyan/25"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Retry loading bid
-          </button>
-        </Card>
+        <Header
+          title="Bid Review"
+          subtitle="Connecting to compliance verification service..."
+        />
       </div>
     );
 
@@ -80,27 +73,14 @@ export default function BidDetailClient({ id }: { id: string }) {
       <div className="space-y-6">
         <Header
           title="Bid not found"
-          subtitle="This record is no longer available. It may have been removed or the service is offline."
+          subtitle="This record is no longer available in the active queue."
         />
-        <Card className="p-6 text-sm text-text/55 flex items-center justify-between">
-          <span>Return to the comparison workspace to choose another bid.</span>
-          <button
-            type="button"
-            onClick={loadBid}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-3 py-1.5 text-xs font-semibold text-cyan hover:bg-cyan/25"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Retry
-          </button>
-        </Card>
       </div>
     );
 
   if (record) {
     return (
       <div className="space-y-4">
-        <Link href="/bids" className="inline-flex items-center gap-1.5 text-xs font-semibold text-text/60 hover:text-text transition-colors">
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to comparison
-        </Link>
         <BidWorkspace initialRecord={record} />
       </div>
     );
@@ -123,15 +103,27 @@ function Header({
   return (
     <div>
       <Link href="/bids" className="mb-3 inline-flex items-center gap-1.5 text-xs text-text/50 hover:text-text">
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to comparison
+        <ArrowLeft className="h-3.5 w-3.5" /> Back to Portfolio
       </Link>
-      <p className="page-eyebrow mt-1">Bid review</p>
+      <p className="page-eyebrow mt-1">Procurement Review</p>
       <h1 className="mt-1 flex flex-wrap items-center gap-3 text-2xl font-bold tracking-tight text-text">
         {title}
         {badge && (
           <span
-            className="rounded-md px-2 py-0.5 text-[11px] font-bold uppercase"
-            style={{ color, backgroundColor: `${color}1a` }}
+            className="rounded-md px-2 py-0.5 text-[11px] font-bold uppercase border shadow-xs"
+            style={
+              color
+                ? {
+                    color,
+                    backgroundColor: color.includes("var")
+                      ? `rgba(var(--color-cyan), 0.15)`
+                      : `${color}1a`,
+                    borderColor: color.includes("var")
+                      ? `rgba(var(--color-cyan), 0.4)`
+                      : `${color}40`,
+                  }
+                : undefined
+            }
           >
             {badge}
           </span>

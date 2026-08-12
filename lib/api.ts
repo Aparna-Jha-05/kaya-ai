@@ -48,6 +48,7 @@ export type BidRecord = {
         page_rotation: number | null;
         coordinate_system: string | null;
         accepted: boolean;
+        confidence: number;
       }>;
       dimension_annotations: Array<{
         field: string;
@@ -105,6 +106,21 @@ export type SimulationResponse = { adjusted_capex_inr: number; delay_penalty_inr
 
 export type SupplierProfile = { vendor_id: string; name: string; lat: number; lng: number; distance_km: number; risk_score: number; disputes: number };
 export type AuditLogEntry = { id: string; actor: string; action: string; target_id: string; details: Record<string, unknown>; timestamp: string };
+export type SiteConstraintRecord = {
+  id: string;
+  project_id: string;
+  version: number;
+  is_current: boolean;
+  max_substation_kw: number;
+  max_door_width_m: number;
+  max_embodied_carbon_kg: number;
+  max_water_evap_gpm: number | null;
+  max_floor_load_kg_m2: number | null;
+  actor: string;
+  reason: string;
+  created_at: string;
+};
+
 export type RFIDraftResponse = {
   rfi_id: string;
   bid_id: string;
@@ -116,60 +132,212 @@ export type RFIDraftResponse = {
   created_at: string;
 };
 
-const base = process.env.NEXT_PUBLIC_PO_LICE_API_URL ?? "http://localhost:8000";
+const base = process.env.NEXT_PUBLIC_PO_LICE_API_URL ?? "";
+const BIDS_CACHE_KEY = "po_lice_bids_cache_v1";
 const deletionKeyName = (id: string) => `po-lice-upload-capability:${id}`;
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${base}${path}`, init);
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    throw new Error(body?.message ?? body?.detail ?? "Request failed.");
+
+function getLocalBidsCache(): BidRecord[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(BIDS_CACHE_KEY);
+    return raw ? (JSON.parse(raw) as BidRecord[]) : null;
+  } catch {
+    return null;
   }
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+}
+
+function setLocalBidsCache(bids: BidRecord[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(BIDS_CACHE_KEY, JSON.stringify(bids));
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
+async function request<T>(path: string, init?: RequestInit, timeoutMs = 30000): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${base}${path}`, {
+      ...init,
+      signal: init?.signal ?? controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("po-lice:connection-success"));
+    }
+    if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      throw new Error(body?.message ?? body?.detail ?? "Request failed.");
+    }
+    if (response.status === 204) return undefined as T;
+    return response.json() as Promise<T>;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (typeof window !== "undefined" && (err instanceof Error && (err.name === "AbortError" || err.name === "TypeError"))) {
+      window.dispatchEvent(new CustomEvent("po-lice:connection-error"));
+    }
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("Request timed out while waiting for server response. Please try again.");
+    }
+    throw err;
+  }
+}
+
+let inflightBidsList: Promise<BidRecord[]> | null = null;
+let memoryBidsCache: BidRecord[] | null = null;
+
+function invalidateCache() {
+  inflightBidsList = null;
+  memoryBidsCache = null;
 }
 
 export const procurementApi = {
-  async upload(file: File, idempotencyKey = globalThis.crypto.randomUUID()) {
+  upload(file: File, idempotencyKey = globalThis.crypto.randomUUID()) {
+    invalidateCache();
     const body = new FormData();
     body.append("file", file);
-    const record = await request<BidRecord>("/api/v1/bids/upload", {
-      method: "POST",
-      headers: { "Idempotency-Key": idempotencyKey },
-      body,
+    return request<BidRecord>(
+      "/api/v1/bids/upload",
+      {
+        method: "POST",
+        headers: { "Idempotency-Key": idempotencyKey },
+        body,
+      },
+      60000
+    ).then((res) => {
+      globalThis.sessionStorage?.setItem(deletionKeyName(res.id), idempotencyKey);
+      procurementApi.list();
+      return res;
     });
-    globalThis.sessionStorage?.setItem(deletionKeyName(record.id), idempotencyKey);
-    return record;
   },
-  list: () => request<BidRecord[]>("/api/v1/bids"),
+  list: (): Promise<BidRecord[]> => {
+    const cached = memoryBidsCache ?? getLocalBidsCache();
+    if (cached && cached.length > 0) {
+      memoryBidsCache = cached;
+      if (!inflightBidsList) {
+        const cachedSnapshot = cached;
+        inflightBidsList = request<BidRecord[]>("/api/v1/bids")
+          .then((fresh) => {
+            memoryBidsCache = fresh;
+            setLocalBidsCache(fresh);
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("po-lice:bids-updated", { detail: fresh }));
+            }
+            return fresh;
+          })
+          .catch(() => cachedSnapshot)
+          .finally(() => {
+            setTimeout(() => {
+              inflightBidsList = null;
+            }, 1000);
+          });
+      }
+      return Promise.resolve(cached);
+    }
+
+    if (inflightBidsList) return inflightBidsList;
+    const fallback = cached;
+    inflightBidsList = request<BidRecord[]>("/api/v1/bids")
+      .then((data) => {
+        memoryBidsCache = data;
+        setLocalBidsCache(data);
+        return data;
+      })
+      .catch((err) => {
+        if (fallback && fallback.length > 0) return fallback;
+        throw err;
+      })
+      .finally(() => {
+        setTimeout(() => {
+          inflightBidsList = null;
+        }, 1000);
+      });
+    return inflightBidsList;
+  },
   get: (id: string) => request<BidRecord>(`/api/v1/bids/${id}`),
   activity: (id?: string) => request<ActivityEvent[]>(`/api/v1/activity${id ? `?bid_id=${encodeURIComponent(id)}` : ""}`),
-  action: (id: string, action: ReviewAction, note: string) => request<ActivityEvent>(`/api/v1/bids/${id}/actions`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action, note }),
-  }),
+  action: (id: string, action: ReviewAction, note: string) => {
+    invalidateCache();
+    return request<ActivityEvent>(`/api/v1/bids/${id}/actions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, note }),
+    }).then((res) => {
+      procurementApi.list();
+      return res;
+    });
+  },
   canRemove: (id: string) => typeof window !== "undefined" && Boolean(sessionStorage.getItem(deletionKeyName(id))),
-  async remove(id: string) {
+  remove: (id: string) => {
     const idempotencyKey = sessionStorage.getItem(deletionKeyName(id));
-    if (!idempotencyKey) throw new Error("Only uploads created in this browser session can be removed.");
-    await request<void>(`/api/v1/bids/${id}`, {
+    if (!idempotencyKey) return Promise.reject(new Error("Only uploads created in this browser session can be removed."));
+    invalidateCache();
+    return request<void>(`/api/v1/bids/${id}`, {
       method: "DELETE",
       headers: { "Idempotency-Key": idempotencyKey },
+    }).then((res) => {
+      sessionStorage.removeItem(deletionKeyName(id));
+      procurementApi.list();
+      return res;
     });
-    sessionStorage.removeItem(deletionKeyName(id));
   },
-  simulate: (input: { base_capex_inr: number; discount_percent: number; delay_days: number }) => request<SimulationResponse>("/api/v1/bids/simulate", {
+  simulate: (input: { base_capex_inr: number; discount_percent: number; delay_days: number; opex_carbon_5yr_inr?: number; lifecycle_mode?: "PRE_AWARD" | "POST_AWARD" }) => request<SimulationResponse>("/api/v1/bids/simulate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...input, opex_carbon_5yr_inr: 27_600_000, lifecycle_mode: "PRE_AWARD" }),
+    body: JSON.stringify({
+      base_capex_inr: input.base_capex_inr,
+      discount_percent: input.discount_percent,
+      delay_days: input.delay_days,
+      opex_carbon_5yr_inr: input.opex_carbon_5yr_inr ?? 27_600_000,
+      lifecycle_mode: input.lifecycle_mode ?? "PRE_AWARD",
+    }),
   }),
   sourceUrl: (id: string) => `${base}/api/v1/bids/${id}/source`,
 
+  overrideBidFields: (bid_id: string, overrides: Record<string, any>) => {
+    invalidateCache();
+    return request<BidRecord>(`/api/v1/bids/${bid_id}/override`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(overrides),
+    }).then((res) => {
+      procurementApi.list();
+      return res;
+    });
+  },
+
   rfiDraft: (bid_id: string) => request<RFIDraftResponse>("/api/v1/agent/rfi-draft", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ bid_id }) }),
   approveRfi: (rfi_id: string, edited_text: string) => request<RFIDraftResponse>(`/api/v1/rfis/${rfi_id}/approve`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ edited_text, note: "Approved after human review" }) }),
-  updateOfficerDecision: (bid_id: string, decision: BidRecord["officer_decision"], expected_version: number, reason: string) => request<BidRecord>(`/api/v1/bids/${bid_id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision, expected_version, reason }) }),
-  updateConstraints: (expected_version: number, max_substation_kw: number, max_door_width_m: number, max_embodied_carbon_kg: number) => request<{ status: string }>("/api/v1/site-constraints", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ expected_version, max_substation_kw, max_door_width_m, max_embodied_carbon_kg }) }),
+  updateOfficerDecision: (bid_id: string, decision: BidRecord["officer_decision"], expected_version: number, reason: string) => {
+    invalidateCache();
+    return request<BidRecord>(`/api/v1/bids/${bid_id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision, expected_version, reason }) }).then((res) => {
+      procurementApi.list();
+      return res;
+    });
+  },
+  updateConstraints: (
+    expected_version: number,
+    max_substation_kw: number,
+    max_door_width_m: number,
+    max_embodied_carbon_kg: number,
+    max_water_evap_gpm?: number | null,
+    max_floor_load_kg_m2?: number | null,
+  ) => {
+    invalidateCache();
+    return request<{ status: string; new_version: number; constraints: Partial<SiteConstraintRecord> }>("/api/v1/site-constraints", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ expected_version, max_substation_kw, max_door_width_m, max_embodied_carbon_kg, max_water_evap_gpm, max_floor_load_kg_m2 }),
+    }).then((res) => {
+      procurementApi.list();
+      return res;
+    });
+  },
+  siteConstraints: () => request<SiteConstraintRecord>("/api/v1/site-constraints"),
+  listRfis: (bid_id?: string) => request<RFIDraftResponse[]>(`/api/v1/rfis${bid_id ? `?bid_id=${encodeURIComponent(bid_id)}` : ""}`),
   suppliers: () => request<SupplierProfile[]>("/api/v1/suppliers"),
   auditLogs: () => request<AuditLogEntry[]>("/api/v1/audit/logs"),
-  readiness: () => request<{ status: string; demo_mode: boolean; public_read_only?: boolean; persistence: "sqlite" | "unavailable"; postgresql: { status: string; connected: boolean } }>("/api/v1/readiness"),
+  readiness: () => request<{ status: string; demo_mode: boolean; persistence: "sqlite" | "unavailable"; postgresql: { status: string; connected: boolean } }>("/api/v1/readiness"),
 };

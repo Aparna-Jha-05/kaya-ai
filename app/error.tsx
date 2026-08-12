@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 
 export default function Error({
+  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -14,7 +15,7 @@ export default function Error({
       <AlertTriangle className="h-10 w-10 text-rose" />
       <h1 className="text-xl font-bold text-text">Something went wrong</h1>
       <p className="max-w-sm text-sm text-text/50">
-        An unexpected error occurred while rendering this page.
+        {error.message || "An unexpected error occurred while rendering this page."}
       </p>
       <div className="flex items-center gap-3">
         <button
