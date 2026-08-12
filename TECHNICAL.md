@@ -96,8 +96,8 @@ The implemented API covers:
 - Redis L1/L2 caching;
 - activity retrieval/export used by the dashboard.
 
-Use the deployed [Swagger UI](https://po-lice-backend-staging.onrender.com/docs)
-or [OpenAPI JSON](https://po-lice-backend-staging.onrender.com/openapi.json)
+Use the deployed [Swagger UI](https://po-lice-backend-staging-qiix.onrender.com/docs)
+or [OpenAPI JSON](https://po-lice-backend-staging-qiix.onrender.com/openapi.json)
 as the exact route-level contract.
 
 ## Extraction cascade
@@ -184,8 +184,8 @@ Public acceptance:
 
 ```bash
 python3 scripts/acceptance_gate.py \
-  --backend https://po-lice-backend-staging.onrender.com \
-  --frontend https://po-lice.vercel.app
+  --backend https://po-lice-backend-staging-qiix.onrender.com \
+  --frontend https://kaya-ai-police.vercel.app
 ```
 
 Report backend tests, frontend build, database integration, and browser/public

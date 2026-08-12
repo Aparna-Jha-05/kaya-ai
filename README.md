@@ -28,10 +28,10 @@ and trace the decision back to its PDF evidence.*
 
 | Resource | Link |
 | --- | --- |
-| Web application | [po-lice.vercel.app](https://po-lice.vercel.app) |
-| Backend readiness | [API status](https://po-lice-backend-staging.onrender.com/api/v1/readiness) |
-| Interactive API documentation | [Swagger UI](https://po-lice-backend-staging.onrender.com/docs) |
-| Machine-readable API contract | [OpenAPI JSON](https://po-lice-backend-staging.onrender.com/openapi.json) |
+| Web application | [kaya-ai-police.vercel.app](https://kaya-ai-police.vercel.app) |
+| Backend readiness | [API status](https://po-lice-backend-staging-qiix.onrender.com/api/v1/readiness) |
+| Interactive API documentation | [Swagger UI](https://po-lice-backend-staging-qiix.onrender.com/docs) |
+| Machine-readable API contract | [OpenAPI JSON](https://po-lice-backend-staging-qiix.onrender.com/openapi.json) |
 | Source repository | [Aparna-Jha-05/kaya-ai](https://github.com/Aparna-Jha-05/kaya-ai) |
 
 These public links were checked on **12 August 2026**. The free-tier backend may
@@ -42,8 +42,8 @@ are synthetic competition fixtures.
 
 ## 60-second tour
 
-1. [Open the live application](https://po-lice.vercel.app).
-2. Select **CoolTech**, the lowest-cost bid at ₹3.80 Cr.
+1. [Open the live application](https://kaya-ai-police.vercel.app).
+2. The portfolio view displays three baseline fixture vendors.
 3. Open **Checks** to see its power, access, warranty, and carbon failures.
 4. Select **Inspect evidence & geometry** to trace a rule result to the cited
    PDF excerpt, page, and region.
@@ -152,8 +152,8 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=backend python3 -m pytest backend/tests
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=backend python3 scripts/test_pipeline.py
 npm run build
 python3 scripts/acceptance_gate.py \
-  --backend https://po-lice-backend-staging.onrender.com \
-  --frontend https://po-lice.vercel.app
+  --backend https://po-lice-backend-staging-qiix.onrender.com \
+  --frontend https://kaya-ai-police.vercel.app
 ```
 
 The current backend suite contains **46 tests**. The last recorded public
