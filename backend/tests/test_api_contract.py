@@ -5,7 +5,7 @@ import shutil
 import tempfile
 import unittest
 
-import fitz
+import pymupdf as fitz
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 

@@ -1,7 +1,7 @@
 """Unit tests for Stage S2 OCR Fallback Engine."""
 
 import unittest
-import fitz
+import pymupdf as fitz
 from app.services.ocr import OCREngineService
 from app.services.extractor import PDFExtractorService
 

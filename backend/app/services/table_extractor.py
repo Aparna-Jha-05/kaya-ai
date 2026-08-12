@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-import fitz
+import pymupdf as fitz
 
 from app.models.schemas import CANONICAL_FACT_UNITS, FactCandidate, FactField, ExtractionProvider
 from app.services.model_extraction import normalize_fact_value
@@ -36,12 +36,23 @@ class TableExtractionService:
         except ImportError:
             return False
 
+    @staticmethod
+    def is_camelot_available() -> bool:
+        """Check if camelot library is importable."""
+        try:
+            import camelot  # type: ignore # noqa: F401
+
+            return True
+        except ImportError:
+            return False
+
     @classmethod
     def extract_tables_from_pdf_bytes(cls, raw_pdf: bytes) -> Tuple[List[Dict[str, Any]], List[FactCandidate]]:
         """Extract tabular structures and key-value facts from PDF pages."""
         extracted_tables: List[Dict[str, Any]] = []
         fact_candidates: List[FactCandidate] = []
         ghostscript_ready = cls.is_ghostscript_installed()
+        camelot_ready = cls.is_camelot_available()
         pdfplumber_ready = cls.is_pdfplumber_available()
 
         # Temporary file wrapper if Camelot needs a disk path
@@ -71,8 +82,8 @@ class TableExtractionService:
                         except Exception as err:
                             logger.warning("pdfplumber table extraction page %d failed: %s", page_num, err)
 
-                    # Level 2: Camelot-py Lattice/Stream Engine (if Ghostscript installed)
-                    if ghostscript_ready and not table_rows:
+                    # Level 2: Camelot-py Lattice/Stream Engine (if Ghostscript and Camelot installed)
+                    if ghostscript_ready and camelot_ready and not table_rows:
                         try:
                             import camelot  # type: ignore
                             import tempfile
@@ -98,7 +109,7 @@ class TableExtractionService:
                     if not table_rows:
                         blocks = page.get_text("blocks")
                         for b in blocks:
-                            if isinstance(b[4], str) and ("\t" in b[4] or "  " in b[4]):
+                            if len(b) >= 5 and isinstance(b[4], str) and ("\t" in b[4] or "  " in b[4]):
                                 lines = b[4].splitlines()
                                 for line in lines:
                                     parts = [p.strip() for p in re.split(r"\t+|\s{2,}", line) if p.strip()]

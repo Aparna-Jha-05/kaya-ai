@@ -8,7 +8,7 @@ import re
 import shutil
 from typing import List, Tuple
 
-import fitz
+import pymupdf as fitz
 
 from app.models.schemas import DimensionAnnotation, FactField
 from app.services.model_extraction import normalize_fact_value

@@ -69,9 +69,12 @@ class PatrolEngineService:
     @staticmethod
     def _warranty_years(clauses: list[str]) -> int | None:
         for clause in clauses:
-            match = re.search(r"warranty\s*:?\s*(\d+)\s*years?", clause, re.IGNORECASE)
-            if match:
-                return int(match.group(1))
+            match_years = re.search(r"warranty\s*:?\s*(\d+)\s*years?", clause, re.IGNORECASE)
+            if match_years:
+                return int(match_years.group(1))
+            match_months = re.search(r"warranty\s*:?\s*(\d+)\s*months?", clause, re.IGNORECASE)
+            if match_months:
+                return int(match_months.group(1)) // 12
         return None
 
     @staticmethod

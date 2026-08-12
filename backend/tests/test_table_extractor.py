@@ -1,7 +1,7 @@
 """Unit tests for Stage S3 Multi-Column Table Extraction Service."""
 
 import unittest
-import fitz
+import pymupdf as fitz
 from app.services.table_extractor import TableExtractionService
 from app.models.schemas import FactField
 

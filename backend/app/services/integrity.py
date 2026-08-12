@@ -9,7 +9,7 @@ import logging
 import re
 from threading import Lock
 from typing import Optional, Dict, Any, List
-import fitz  # PyMuPDF
+import pymupdf as fitz
 from app.models.schemas import VendorBidExtract
 
 logger = logging.getLogger(__name__)

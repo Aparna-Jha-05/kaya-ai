@@ -1,7 +1,7 @@
 """Unit tests for CAD Drawing Intelligence Service."""
 
 import unittest
-import fitz
+import pymupdf as fitz
 from app.services.cad_intelligence import CADDrawingIntelligenceService
 from app.models.schemas import FactField
 

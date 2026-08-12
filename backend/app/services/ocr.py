@@ -7,7 +7,7 @@ import os
 import shutil
 from typing import Tuple
 
-import fitz
+import pymupdf as fitz
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +85,7 @@ class OCREngineService:
                     if not page_text.strip():
                         # Extract drawing text annotations / text blocks as fallback
                         blocks = page.get_text("blocks")
-                        page_text = "\n".join([b[4] for b in blocks if isinstance(b[4], str)])
+                        page_text = "\n".join([b[4] for b in blocks if len(b) >= 5 and isinstance(b[4], str)])
                         ocr_engine_used = "PYMUPDF_BLOCK_FALLBACK"
 
                     ocr_lines.append(f"--- PAGE {page_num} OCR ({ocr_engine_used}) ---\n" + page_text)

@@ -65,9 +65,13 @@ app.add_middleware(
 def bootstrap_demo_fixtures() -> None:
     if DEMO_MODE:
         try:
-            from scripts.seed_demo_data import seed
-            seed(verbose=False)
-            logger.info("Idempotent demo fixtures bootstrapped successfully.")
+            from app.services.repository import bid_repository
+            if len(bid_repository.list_bids()) == 0:
+                from scripts.seed_demo_data import seed
+                seed(verbose=False)
+                logger.info("Idempotent demo fixtures bootstrapped successfully.")
+            else:
+                logger.info("Demo fixtures already present in SQLite database.")
         except Exception as err:
             logger.warning("Demo fixture bootstrap warning: %s", err)
 
