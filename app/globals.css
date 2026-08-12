@@ -240,4 +240,3 @@ ul.table-scroll-area.table-max-5 { max-height: calc(var(--table-row-h) * 5) !imp
 .table-scroll-area::-webkit-scrollbar       { width: 5px; height: 5px; }
 .table-scroll-area::-webkit-scrollbar-track { background: transparent; margin-top: 45px; }
 .table-scroll-area::-webkit-scrollbar-thumb { background-color: rgb(var(--color-line)); border-radius: 9999px; }
-
