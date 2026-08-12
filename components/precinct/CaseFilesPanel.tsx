@@ -2,9 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, FileSearch, Mail, RefreshCw } from "lucide-react";
+import { CheckCircle2, FileSearch, Mail } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
-import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type BidRecord } from "@/lib/api";
 import { displayCheckName } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
@@ -81,12 +80,21 @@ export default function CaseFilesPanel() {
 
   useEffect(() => {
     loadData();
+    const handleUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<BidRecord[]>;
+      if (customEvent.detail) {
+        setRecords(customEvent.detail);
+        setSource(customEvent.detail.length > 0 ? "live" : "empty");
+      }
+    };
+    window.addEventListener("po-lice:bids-updated", handleUpdate);
+    return () => window.removeEventListener("po-lice:bids-updated", handleUpdate);
   }, [loadData]);
 
   const items = useMemo(() => (records ? liveItems(records) : []), [records]);
 
   return (
-    <Card>
+    <Card data-tour="tour-casefiles">
       <CardHeader
         title="Action Queue"
         caption="Officer tasks requiring verification."

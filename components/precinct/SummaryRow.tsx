@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AlertOctagon, FileCheck2, FileWarning, RefreshCw } from "lucide-react";
+import { AlertOctagon, FileCheck2, FileWarning } from "lucide-react";
 import Card from "@/components/ui/Card";
 import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type BidRecord } from "@/lib/api";
@@ -40,6 +40,15 @@ export default function SummaryRow() {
 
   useEffect(() => {
     fetchMetrics();
+    const handleUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<BidRecord[]>;
+      if (customEvent.detail) {
+        setMetrics(fromRecords(customEvent.detail));
+        setLoading(false);
+      }
+    };
+    window.addEventListener("po-lice:bids-updated", handleUpdate);
+    return () => window.removeEventListener("po-lice:bids-updated", handleUpdate);
   }, [fetchMetrics]);
 
   const activeMetrics = metrics || { total: 0, failures: 0, missingDocs: 0, offline: true };
@@ -69,9 +78,14 @@ export default function SummaryRow() {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      {cards.map((card) => (
-        <Card key={card.label} accent={card.color} className="p-5 sm:p-6">
+    <div data-tour="tour-kpis" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {cards.map((card, idx) => (
+        <Card
+          key={card.label}
+          accent={card.color}
+          className="p-5 sm:p-6"
+          data-tour={idx === 1 ? "tour-simulations" : undefined}
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">

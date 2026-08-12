@@ -5,8 +5,10 @@ import CaseFilesPanel from "@/components/precinct/CaseFilesPanel";
 import SummaryRow from "@/components/precinct/SummaryRow";
 import Link from "next/link";
 import { FilePlus2 } from "lucide-react";
+import { useTour } from "@/components/walkthrough/TourContext";
 
 export default function ReviewQueuePage() {
+  const { advanceIfMatch } = useTour();
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -17,7 +19,12 @@ export default function ReviewQueuePage() {
             Automated procurement compliance, risk evaluation, and TCO² calculation
           </p>
         </div>
-        <Link href="/bids/new" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-cyan px-4 py-2.5 text-sm font-bold text-on-accent hover:bg-cyan/90 tactile-press shadow-xs">
+        <Link 
+          href="/bids/new" 
+          data-tour="tour-upload-bid-page"
+          onClick={() => advanceIfMatch("tour-upload-bid-page")}
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-cyan px-4 py-2.5 text-sm font-bold text-on-accent hover:bg-cyan/90 tactile-press shadow-xs"
+        >
           <FilePlus2 className="h-4 w-4" />
           Upload Bid
         </Link>

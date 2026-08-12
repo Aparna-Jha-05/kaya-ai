@@ -2,13 +2,14 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, RefreshCw } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Card, { CardHeader } from "@/components/ui/Card";
 import PatrolBadge from "@/components/bid/PatrolBadge";
 import Tooltip from "@/components/ui/Tooltip";
 import { procurementApi, type BidRecord } from "@/lib/api";
 import { displayCheckName, formatCroreValue } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
+import { useTour } from "@/components/walkthrough/TourContext";
 
 type Row = {
   id: string;
@@ -38,6 +39,7 @@ function fromRecord(record: BidRecord): Row {
 
 export default function ActiveBidsTable() {
   const router = useRouter();
+  const { advanceIfMatch } = useTour();
   const [rows, setRows] = useState<Row[]>([]);
   const [source, setSource] = useState<"loading" | "live" | "empty" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -59,12 +61,21 @@ export default function ActiveBidsTable() {
 
   useEffect(() => {
     loadData();
+    const handleUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<BidRecord[]>;
+      if (customEvent.detail) {
+        setRows(customEvent.detail.map(fromRecord));
+        setSource(customEvent.detail.length > 0 ? "live" : "empty");
+      }
+    };
+    window.addEventListener("po-lice:bids-updated", handleUpdate);
+    return () => window.removeEventListener("po-lice:bids-updated", handleUpdate);
   }, [loadData]);
 
   const check = (row: Row, name: string) => row.checks.find((item) => item.name === name);
 
   return (
-    <Card>
+    <Card data-tour="tour-queue">
       <CardHeader
         title="Submitted Bids"
         caption="Active procurement bids in current review queue."
@@ -114,10 +125,14 @@ export default function ActiveBidsTable() {
                   return (
                     <tr
                       key={row.id}
-                      onClick={() => router.push(`/bids/${row.id}`)}
+                      onClick={() => {
+                        advanceIfMatch("tour-queue");
+                        router.push(`/bids/${row.id}`);
+                      }}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
                           event.preventDefault();
+                          advanceIfMatch("tour-queue");
                           router.push(`/bids/${row.id}`);
                         }
                       }}
