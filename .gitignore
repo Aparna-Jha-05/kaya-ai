@@ -1,25 +1,48 @@
+# ─── Next.js ──────────────────────────────────────────────────────────────────
 /node_modules
 /.next/
 /out/
 /build
-.DS_Store
-*.pem
 npm-debug.log*
-.env*.local
-.vercel
-*.tsbuildinfo
 next-env.d.ts
+*.tsbuildinfo
+
+# ─── Environment & secrets ────────────────────────────────────────────────────
+.env*.local
+*.pem
+
+# ─── OS artifacts ─────────────────────────────────────────────────────────────
+.DS_Store
+
+# ─── Vercel ───────────────────────────────────────────────────────────────────
+.vercel
+
+# ─── Python ───────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
-backend/data/
+venv/
+.venv/
 
-# Documentation & PDF exclusions
+# ─── Backend runtime data (SQLite DB, WAL journal, uploaded PDFs) ─────────────
+backend/data/
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+
+# ─── Root-level upload cache (dev artifact drop zone) ────────────────────────
+/uploads/
+
+# ─── Generated files ──────────────────────────────────────────────────────────
+backend/openapi.json
+
+# ─── Documentation & PDF exclusions ───────────────────────────────────────────
 /docs/
 *.pdf
 onboarding.html
 
-# Local agent and browser tooling
+# ─── Local agent and browser tooling ──────────────────────────────────────────
 /.agent/
+/.agents/
 /.claude/
 /.codegraph/
 /.codex/

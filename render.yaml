@@ -8,18 +8,30 @@ services:
     autoDeployTrigger: checksPass
     buildCommand: pip install -r backend/requirements.txt
     startCommand: PYTHONPATH=backend uvicorn main:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /
+    healthCheckPath: /api/v1/readiness
     buildFilter:
       paths:
         - backend/**
         - scripts/**
         - render.yaml
     envVars:
+      # Set in Render dashboard to your Vercel domain(s), comma-separated.
+      # Example: https://kaya-ai-police.vercel.app,https://kaya-ai-police-git-main-team.vercel.app
       - key: PO_LICE_ALLOWED_ORIGINS
         sync: false
+
       - key: PO_LICE_PROJECT_ID
         value: PRJ-POLICE-01
+
+      # SQLite + local filesystem persistence (Render free tier has ephemeral disk).
+      - key: DEMO_MODE
+        value: "true"
+
+      - key: PO_LICE_DATA_DIR
+        value: backend/data
+
       - key: OLLAMA_ENABLED
         value: "false"
+
       - key: REMOTE_EXTRACTION_ENABLED
         value: "false"
