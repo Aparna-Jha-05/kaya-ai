@@ -9,6 +9,10 @@
  */
 :root {
   color-scheme: light;
+  /* Layout tokens used for viewport-aware table scroll areas */
+  --header-h: 65px;
+  --table-row-h: 63px; /* Exact height for dual-line vendor data rows (20px + 18px + 24px pad + 1px border) */
+  --table-header-h: 46px; /* Exact height for sticky table header (20px + 24px pad + 2px border) */
   --color-bg: 244 247 252;
   --color-card: 255 255 255;
   --color-surface: 236 242 250;
@@ -259,4 +263,73 @@ textarea {
     linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
   background-size: 28px 28px;
+}
+
+/*
+ * table-scroll-area
+ * ─────────────────
+ * Ensures tables can be scrolled internally rather than overflowing the page.
+ * Uses --tsa-offset to subtract chrome height (header + footer + paddings)
+ * so the table area flexibly fills the remaining viewport.
+ */
+.table-scroll-area {
+  --tsa-offset: 400px; /* Chrome offset (title, summary cards, footer, page padding) */
+  overflow-y: auto;
+  overflow-x: auto;
+  min-height: calc(var(--table-header-h) + var(--table-row-h) * 3);
+  max-height: calc(var(--table-header-h) + var(--table-row-h) * 3);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--color-line), 1) transparent;
+}
+
+@media (min-width: 640px) {
+  .table-scroll-area {
+    min-height: calc(var(--table-header-h) + var(--table-row-h) * 3);
+    max-height: calc(100vh - var(--header-h) - var(--tsa-offset));
+  }
+}
+
+/* Data row limit classes: explicitly limits height for specific tables (e.g. Audit) */
+.table-rows-sm {
+  --table-row-h: 41px; /* Exact height for single-line audit log rows (16px + 24px pad + 1px border) */
+  --table-header-h: 46px;
+}
+
+.table-rows-md {
+  --table-row-h: 45px; /* Exact height for scorecard summary rows (20px + 24px pad + 1px border) */
+  --table-header-h: 46px;
+}
+
+.table-max-5 {
+  max-height: calc(var(--table-header-h) + var(--table-row-h) * 5) !important;
+}
+
+.table-max-3 {
+  max-height: calc(var(--table-header-h) + var(--table-row-h) * 3) !important;
+}
+
+/* For list containers without a table header (e.g. Action Queue <ul>) */
+.table-scroll-area:has(> ul).table-max-3,
+ul.table-scroll-area.table-max-3 {
+  max-height: calc(var(--table-row-h) * 3) !important;
+}
+
+.table-scroll-area:has(> ul).table-max-5,
+ul.table-scroll-area.table-max-5 {
+  max-height: calc(var(--table-row-h) * 5) !important;
+}
+
+/* Thin, unobtrusive scrollbar styling */
+.table-scroll-area::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.table-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+  /* Offset the scrollbar track so it doesn't overlap the sticky header row (~45px) */
+  margin-top: 45px; 
+}
+.table-scroll-area::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--color-line));
+  border-radius: 9999px;
 }
