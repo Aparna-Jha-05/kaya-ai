@@ -13,6 +13,7 @@ import RFIModal from "@/components/rfi-modal";
 import { procurementApi, type ActivityEvent, type BidRecord } from "@/lib/api";
 import { activityActionLabel, cleanReasonText, displayCheckName, formatLabelTitleCase, inCrore, recommendationLabel, recommendationTone } from "@/lib/recordUtils";
 import { COLORS } from "@/lib/constants";
+import { useTour } from "@/components/walkthrough/TourContext";
 
 type Tab = "summary" | "checks" | "source" | "activity";
 const tabs = [
@@ -43,6 +44,7 @@ function evidenceText(evidence: Record<string, unknown> | null) {
 
 export default function RecordBidReview({ record }: { record: BidRecord }) {
   const router = useRouter();
+  const { advanceIfMatch } = useTour();
   const [tab, setTab] = useState<Tab>("summary");
   const [inspected, setInspected] = useState<BidRecord["scorecard"]["patrol_results"][number] | null>(null);
   const [rfiOpen, setRfiOpen] = useState(false);
@@ -78,6 +80,9 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
             <Metric label="Bid Amount" value={`${inCrore(source.bid_amount_inr)}${source.document_metadata.review_signals.includes("MANUAL_OVERRIDE_APPLIED") && source.bid_amount_inr != null ? "*" : ""}`} />
             <Metric label="5-Year TCO²" value={inCrore(record.scorecard.calculated_tco2_inr)} />
             <Metric label="Promised Delivery" value={source.promised_delivery_weeks == null ? "Unstated in Document" : `${source.promised_delivery_weeks} weeks${source.document_metadata.review_signals.includes("MANUAL_OVERRIDE_APPLIED") ? "*" : ""}`} />
+            <div className="shrink-0 pl-2">
+              <ReviewerDecision record={record} />
+            </div>
           </div>
         </div>
       </section>
@@ -90,7 +95,11 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
               type="button"
               role="tab"
               aria-selected={tab === id}
-              onClick={() => setTab(id)}
+              data-tour={id === "checks" ? "tour-patrol-checks" : undefined}
+              onClick={() => {
+                setTab(id);
+                if (id === "checks") advanceIfMatch("tour-patrol-checks");
+              }}
               className={`flex items-center gap-2 border-b-2 px-3 py-2.5 text-xs font-medium transition-colors ${tab === id ? "border-cyan text-cyan" : "border-transparent text-text/55 hover:text-text"
                 }`}
             >
@@ -130,7 +139,6 @@ export default function RecordBidReview({ record }: { record: BidRecord }) {
                     RFI Draft
                   </button>
                 )}
-                <ReviewerDecision record={record} />
               </div>
             </div>
 
@@ -463,6 +471,7 @@ function ActivityTab({ id }: { id: string }) {
 
 function ReviewerDecision({ record }: { record: BidRecord }) {
   const router = useRouter();
+  const { advanceIfMatch } = useTour();
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [message, setMessage] = useState("");
   const blocked = record.scorecard.recommendation === "REJECT";
@@ -489,7 +498,11 @@ function ReviewerDecision({ record }: { record: BidRecord }) {
     <div>
       <button
         type="button"
-        onClick={() => void save()}
+        data-tour="tour-decision-submit"
+        onClick={() => {
+          void save();
+          advanceIfMatch("tour-decision-submit");
+        }}
         disabled={state === "saving" || state === "saved"}
         className={`rounded-xl px-4 py-2.5 text-sm font-bold shadow-xs transition-all tactile-press disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${blocked ? "bg-rose text-on-accent hover:bg-rose/90" : "bg-cyan text-on-accent hover:bg-cyan/90"
           }`}
@@ -926,18 +939,29 @@ function ReliabilityInspector({
 }
 
 function OverrideModal({ isOpen, onClose, record }: { isOpen: boolean; onClose: () => void; record: BidRecord }) {
-  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   
   useEffect(() => {
-    if (isOpen) {
-      setOverrides({});
+    if (isOpen && record) {
+      setOverrides({
+        promised_delivery_weeks: record.source.promised_delivery_weeks?.toString() ?? "",
+        bid_amount_inr: record.source.bid_amount_inr?.toString() ?? "",
+        power_draw_kw: record.source.equipment.power_draw_kw?.toString() ?? "",
+        cooling_capacity_kw: record.source.equipment.cooling_capacity_kw?.toString() ?? "",
+        water_evap_gpm: record.source.equipment.water_evap_gpm?.toString() ?? "",
+        floor_load_kg: record.source.equipment.floor_load_kg?.toString() ?? "",
+        length_m: record.source.equipment.length_m?.toString() ?? "",
+        width_m: record.source.equipment.width_m?.toString() ?? "",
+        height_m: record.source.equipment.height_m?.toString() ?? "",
+        embodied_carbon_factor: record.source.equipment.embodied_carbon_factor?.toString() ?? "",
+        has_osha_cert: record.source.has_osha_cert === true ? "true" : record.source.has_osha_cert === false ? "false" : "",
+      });
       setError("");
     }
-  }, [isOpen]);
+  }, [isOpen, record]);
 
   if (!isOpen) return null;
 
@@ -971,7 +995,6 @@ function OverrideModal({ isOpen, onClose, record }: { isOpen: boolean; onClose: 
       }
 
       await procurementApi.overrideBidFields(record.id, payload);
-      router.refresh();
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to override fields");
