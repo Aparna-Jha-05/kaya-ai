@@ -548,6 +548,10 @@ function EvidenceDrawer({
   const source = record.source;
   const equipment = source.equipment;
   const pName = check.patrol_name.toLowerCase();
+  const evidenceNumber = (key: string) => {
+    const value = check.evidence?.[key];
+    return typeof value === "number" ? value : null;
+  };
   const candidates = record.source.extraction_report?.candidates ?? [];
   const relevantCandidate = candidates.find((c) => {
     const f = c.field.toLowerCase();
@@ -618,12 +622,12 @@ function EvidenceDrawer({
               equipmentLength={equipment?.length_m}
               equipmentWidth={equipment?.width_m}
               equipmentHeight={equipment?.height_m}
-              doorWidth={1.1}
+              doorWidth={evidenceNumber("door_limit_m")}
               passed={check.status === "PASS"}
               powerDrawKw={equipment?.power_draw_kw}
-              maxPowerKw={1200}
+              maxPowerKw={evidenceNumber("substation_limit_kw")}
               floorLoadKg={equipment?.floor_load_kg}
-              maxFloorLoadKg={1500}
+              maxFloorLoadKg={evidenceNumber("floor_load_limit_kg_m2")}
             />
           )}
 

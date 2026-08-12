@@ -10,9 +10,9 @@ interface Spatial3DViewerProps {
   doorWidth?: number | null;
   passed?: boolean;
   powerDrawKw?: number | null;
-  maxPowerKw?: number;
+  maxPowerKw?: number | null;
   floorLoadKg?: number | null;
-  maxFloorLoadKg?: number;
+  maxFloorLoadKg?: number | null;
 }
 
 type SubPartId = "all" | "power" | "compressor" | "coils" | "base";
@@ -21,12 +21,12 @@ export default function Spatial3DViewer({
   equipmentLength,
   equipmentWidth,
   equipmentHeight,
-  doorWidth = 1.1,
+  doorWidth,
   passed = true,
   powerDrawKw,
-  maxPowerKw = 1200,
+  maxPowerKw,
   floorLoadKg,
-  maxFloorLoadKg = 1500,
+  maxFloorLoadKg,
 }: Spatial3DViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [rotation, setRotation] = useState({ x: 22, y: -35 });
@@ -46,14 +46,14 @@ export default function Spatial3DViewer({
   const eqL = equipmentLength ?? 2.4;
   const eqW = equipmentWidth ?? 1.2;
   const eqH = equipmentHeight ?? 1.8;
-  const maxDoor = doorWidth ?? 1.1;
+  const maxDoor = doorWidth ?? eqW;
 
-  const fitsDoor = equipmentWidth != null ? equipmentWidth <= maxDoor : true;
-  const powerBreach = powerDrawKw != null && powerDrawKw > maxPowerKw;
-  const floorBreach = floorLoadKg != null && floorLoadKg > maxFloorLoadKg;
+  const fitsDoor = equipmentWidth != null && doorWidth != null ? equipmentWidth <= doorWidth : null;
+  const powerBreach = powerDrawKw != null && maxPowerKw != null && powerDrawKw > maxPowerKw;
+  const floorBreach = floorLoadKg != null && maxFloorLoadKg != null && floorLoadKg > maxFloorLoadKg;
 
   const activeBreaches = [
-    equipmentWidth != null && !fitsDoor && {
+    fitsDoor === false && {
       id: "door",
       title: "Door Access Overlimit",
       details: `Equipment width (${eqW}m) exceeds entry door width (${maxDoor}m)`,
@@ -77,16 +77,16 @@ export default function Spatial3DViewer({
     {
       id: "power" as const,
       name: "Power Module",
-      status: powerDrawKw == null ? "FLAG" : powerBreach ? "FAIL" : "PASS",
-      details: powerDrawKw != null ? `${powerDrawKw} kW (Max ${maxPowerKw} kW)` : "Unstated in Document",
+      status: powerDrawKw == null ? "FLAG" : maxPowerKw == null ? "N/A" : powerBreach ? "FAIL" : "PASS",
+      details: powerDrawKw == null ? "Unstated in Document" : maxPowerKw == null ? `${powerDrawKw} kW (No configured cap)` : `${powerDrawKw} kW (Max ${maxPowerKw} kW)`,
       flagged: powerBreach,
     },
     {
       id: "compressor" as const,
       name: "Chassis Width",
-      status: equipmentWidth == null ? "FLAG" : fitsDoor ? "PASS" : "FAIL",
-      details: equipmentWidth != null ? `${equipmentWidth} m (Door ${maxDoor} m)` : "Unstated in Document",
-      flagged: equipmentWidth != null && !fitsDoor,
+      status: equipmentWidth == null ? "FLAG" : doorWidth == null ? "N/A" : fitsDoor ? "PASS" : "FAIL",
+      details: equipmentWidth == null ? "Unstated in Document" : doorWidth == null ? `${equipmentWidth} m (No configured clearance)` : `${equipmentWidth} m (Door ${doorWidth} m)`,
+      flagged: fitsDoor === false,
     },
     {
       id: "coils" as const,
@@ -98,8 +98,8 @@ export default function Spatial3DViewer({
     {
       id: "base" as const,
       name: "Base Footprint",
-      status: floorLoadKg == null ? "FLAG" : floorBreach ? "FAIL" : "PASS",
-      details: floorLoadKg != null ? `${floorLoadKg} kg/m² (Max ${maxFloorLoadKg} kg/m²)` : "Unstated in Document",
+      status: floorLoadKg == null ? "FLAG" : maxFloorLoadKg == null ? "N/A" : floorBreach ? "FAIL" : "PASS",
+      details: floorLoadKg == null ? "Unstated in Document" : maxFloorLoadKg == null ? `${floorLoadKg} kg/m² (No configured cap)` : `${floorLoadKg} kg/m² (Max ${maxFloorLoadKg} kg/m²)`,
       flagged: floorBreach,
     },
   ];
@@ -275,14 +275,14 @@ export default function Spatial3DViewer({
         project(-dw, dh, -2.5),
       ];
 
-      ctx.fillStyle = fitsDoor ? "rgba(0, 168, 232, 0.08)" : "rgba(244, 63, 94, 0.08)";
+      ctx.fillStyle = fitsDoor !== false ? "rgba(0, 168, 232, 0.08)" : "rgba(244, 63, 94, 0.08)";
       ctx.beginPath();
       ctx.moveTo(doorCorners[0].px, doorCorners[0].py);
       for (let i = 1; i < doorCorners.length; i++) ctx.lineTo(doorCorners[i].px, doorCorners[i].py);
       ctx.closePath();
       ctx.fill();
 
-      ctx.strokeStyle = fitsDoor ? "rgb(0, 168, 232)" : "rgb(244, 63, 94)";
+      ctx.strokeStyle = fitsDoor !== false ? "rgb(0, 168, 232)" : "rgb(244, 63, 94)";
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
@@ -295,16 +295,16 @@ export default function Spatial3DViewer({
       // Door label
       const doorCenter = project(0, dh + 0.2, -2.5);
       ctx.font = "bold 10px sans-serif";
-      ctx.fillStyle = fitsDoor ? "rgb(0, 168, 232)" : "rgb(244, 63, 94)";
+      ctx.fillStyle = fitsDoor !== false ? "rgb(0, 168, 232)" : "rgb(244, 63, 94)";
       ctx.textAlign = "center";
-      ctx.fillText(`Door Width Limit: ${maxDoor}m`, doorCenter.px, doorCenter.py);
+      ctx.fillText(doorWidth == null ? "Door Width Limit: Not configured" : `Door Width Limit: ${doorWidth}m`, doorCenter.px, doorCenter.py);
 
       // 3. Draw Equipment Outer Bounding Wireframe
       const hw = eqW / 2;
       const hl = eqL / 2;
       const hh = eqH;
 
-      const mainBoxColor = fitsDoor ? "0, 168, 232" : "244, 63, 94";
+      const mainBoxColor = fitsDoor !== false ? "0, 168, 232" : "244, 63, 94";
       drawBox(-hw, 0, -hl, hw, hh, hl, mainBoxColor, selectedPart === "all" ? 0.15 : 0.05, false, `${eqL}m × ${eqW}m × ${eqH}m`);
 
       // 4. Render Internal Sub-Component Assembly Parts
@@ -360,7 +360,7 @@ export default function Spatial3DViewer({
     render();
 
     return () => cancelAnimationFrame(animationFrameId);
-  }, [eqH, eqL, eqW, fitsDoor, floorBreach, isAutoOrbiting, maxDoor, pan, powerBreach, rotation, selectedPart, zoom]);
+  }, [doorWidth, eqH, eqL, eqW, fitsDoor, floorBreach, isAutoOrbiting, maxDoor, pan, powerBreach, rotation, selectedPart, zoom]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     movedRef.current = false;
