@@ -7,67 +7,80 @@
  * the dark scheme uses a non-black canvas to avoid halation. Status hues are
  * deeper in light mode so small labels retain useful contrast.
  */
+
+/* ─── Layout tokens ──────────────────────────────────────────────────────── */
 :root {
-  color-scheme: light;
-  /* Layout tokens used for viewport-aware table scroll areas */
   --header-h: 65px;
-  --table-row-h: 63px; /* Exact height for dual-line vendor data rows (20px + 18px + 24px pad + 1px border) */
-  --table-header-h: 46px; /* Exact height for sticky table header (20px + 24px pad + 2px border) */
-  --color-bg: 244 247 252;
-  --color-card: 255 255 255;
-  --color-surface: 236 242 250;
-  --color-inset: 244 247 252;
-  --color-line: 212 224 238;
-  --color-text: 15 23 42;
-  --color-muted: 71 85 105;
-  --color-overlay: 15 23 42;
-  --color-on-accent: 255 255 255;
-  --color-cyan: 0 168 232;
-  --color-violet: 124 58 237;
-  --color-amber: 245 158 11;
-  --color-blue: 37 99 235;
-  --color-emerald: 16 185 129;
-  --color-rose: 244 63 94;
+  --table-row-h: 63px;    /* dual-line vendor rows: 20+18px text + 24px pad + 1px border */
+  --table-header-h: 46px; /* sticky header: 20px text + 24px pad + 2px border */
 }
 
+/* ─── Light palette ──────────────────────────────────────────────────────── */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-bg:        244 247 252;
+  --color-card:      255 255 255;
+  --color-surface:   236 242 250;
+  --color-inset:     244 247 252;
+  --color-line:      212 224 238;
+  --color-text:      15 23 42;
+  --color-muted:     71 85 105;
+  --color-overlay:   15 23 42;
+  --color-on-accent: 255 255 255;
+  --color-cyan:      0 168 232;
+  --color-violet:    124 58 237;
+  --color-amber:     245 158 11;
+  --color-blue:      37 99 235;
+  --color-emerald:   16 185 129;
+  --color-rose:      244 63 94;
+}
+
+/* ─── Dark palette ───────────────────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --color-bg: 10 16 28;
-    --color-card: 18 26 44;
-    --color-surface: 26 38 62;
-    --color-inset: 14 20 34;
-    --color-line: 38 54 84;
-    --color-text: 248 250 252;
-    --color-muted: 148 163 184;
-    --color-overlay: 248 250 252;
+    --color-bg:        10 16 28;
+    --color-card:      18 26 44;
+    --color-surface:   26 38 62;
+    --color-inset:     14 20 34;
+    --color-line:      38 54 84;
+    --color-text:      248 250 252;
+    --color-muted:     148 163 184;
+    --color-overlay:   248 250 252;
     --color-on-accent: 10 16 28;
-    --color-cyan: 56 189 248;
-    --color-violet: 167 139 250;
-    --color-amber: 251 191 36;
-    --color-blue: 96 165 250;
-    --color-emerald: 52 211 153;
-    --color-rose: 251 113 133;
+    --color-cyan:      56 189 248;
+    --color-violet:    167 139 250;
+    --color-amber:     251 191 36;
+    --color-blue:      96 165 250;
+    --color-emerald:   52 211 153;
+    --color-rose:      251 113 133;
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-bg: 10 16 28;
-  --color-card: 18 26 44;
-  --color-surface: 26 38 62;
-  --color-inset: 14 20 34;
-  --color-line: 38 54 84;
-  --color-text: 248 250 252;
-  --color-muted: 148 163 184;
-  --color-overlay: 248 250 252;
+  --color-bg:        10 16 28;
+  --color-card:      18 26 44;
+  --color-surface:   26 38 62;
+  --color-inset:     14 20 34;
+  --color-line:      38 54 84;
+  --color-text:      248 250 252;
+  --color-muted:     148 163 184;
+  --color-overlay:   248 250 252;
   --color-on-accent: 10 16 28;
-  --color-cyan: 56 189 248;
-  --color-violet: 167 139 250;
-  --color-amber: 251 191 36;
-  --color-blue: 96 165 250;
-  --color-emerald: 52 211 153;
-  --color-rose: 251 113 133;
+  --color-cyan:      56 189 248;
+  --color-violet:    167 139 250;
+  --color-amber:     251 191 36;
+  --color-blue:      96 165 250;
+  --color-emerald:   52 211 153;
+  --color-rose:      251 113 133;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+html {
+  font-size: 100%;
+  scrollbar-gutter: stable;
 }
 
 html,
@@ -75,21 +88,6 @@ body {
   background-color: rgb(var(--color-bg));
   color: rgb(var(--color-text));
   height: 100%;
-}
-
-html {
-  font-size: 100%;
-  scrollbar-gutter: stable;
-}
-
-/* Lock body scroll when a drawer or modal overlay is mounted. */
-body.scroll-locked {
-  overflow: hidden;
-}
-
-:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 3px;
 }
 
 body {
@@ -103,60 +101,60 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Lock body scroll when a drawer or modal overlay is mounted. */
+body.scroll-locked { overflow: hidden; }
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+/* Form controls: inherit body font and native color-scheme (avoids stale canvas after theme change). */
 button,
 input,
 select,
 textarea {
   font: inherit;
+  color-scheme: inherit;
 }
 
-h1 {
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.15;
-}
+/* ─── Headings ───────────────────────────────────────────────────────────── */
+h1          { font-weight: 800; letter-spacing: -0.035em; line-height: 1.15; }
+h2, h3      { font-weight: 800; letter-spacing: -0.025em; line-height: 1.25; }
+h4, h5, h6 { font-weight: 800; letter-spacing: -0.02em;  line-height: 1.3;  }
 
-h2, h3 {
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1.25;
-}
-
-h4, h5, h6 {
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-}
-
-/* Premium tactile utility text & crisp labels. */
-.ui-label {
-  font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  line-height: 1.35;
-}
-
-.page-eyebrow {
-  font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: rgb(var(--color-cyan));
-}
-
+/* ─── Mono label base (shared by .ui-label, .page-eyebrow, .table-header) ── */
+.ui-label,
+.page-eyebrow,
 .table-header {
   font-family: var(--font-mono), monospace;
   font-size: 0.6875rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(var(--color-text), 0.55);
+  line-height: 1.35;
 }
 
-/* Tactile 3D & Crisp Card Depth Utilities */
+/* Variant overrides */
+.ui-label     { letter-spacing: 0.1em; }
+.page-eyebrow { letter-spacing: 0.1em;  color: rgb(var(--color-cyan)); }
+.table-header { letter-spacing: 0.08em; color: rgba(var(--color-text), 0.55); }
+
+/* ─── Monospace numeric rendering ─────────────────────────────────────────── */
+code,
+kbd,
+.font-mono { font-variant-numeric: tabular-nums slashed-zero; }
+
+/* ─── Scrollbars ─────────────────────────────────────────────────────────── */
+*::-webkit-scrollbar       { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgb(var(--color-line)); border-radius: 3px; }
+*::-webkit-scrollbar-thumb:hover { background: rgb(var(--color-cyan)); }
+
+/* Hide scrollbar on tab strip overflow containers. */
+.tab-strip { scrollbar-width: none; -ms-overflow-style: none; }
+.tab-strip::-webkit-scrollbar { display: none; }
+
+/* ─── Tactile card & press ───────────────────────────────────────────────── */
 .tactile-card {
   background-color: rgb(var(--color-card));
   border: 1px solid rgb(var(--color-line));
@@ -164,100 +162,38 @@ h4, h5, h6 {
   border-radius: 1rem;
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
+.tactile-card:hover { border-color: rgba(var(--color-cyan), 0.4); }
 
-.tactile-card:hover {
-  border-color: rgba(var(--color-cyan), 0.4);
-}
+.tactile-press { transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease, border-color 0.15s ease; }
+.tactile-press:active { transform: translateY(1.5px); }
 
-.tactile-press {
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease, border-color 0.15s ease;
-}
+/* ─── Status glows (--glow-color token, shared shape) ───────────────────── */
+.glow-cyan   { --glow-color: var(--color-cyan);   }
+.glow-rose   { --glow-color: var(--color-rose);   }
+.glow-amber  { --glow-color: var(--color-amber);  }
+.glow-violet { --glow-color: var(--color-violet); }
 
-.tactile-press:active {
-  transform: translateY(1.5px);
-}
+.glow-cyan,
+.glow-rose,
+.glow-amber,
+.glow-violet { box-shadow: 0 0 20px rgba(var(--glow-color), 0.35); }
 
-/* Code and machine values need a little more leading than prose at small sizes. */
-code,
-kbd,
-.font-mono {
-  font-variant-numeric: tabular-nums slashed-zero;
-}
+/* ─── Duo-fill badges (--duo-color token, shared shape) ─────────────────── */
+.duo-fill-cyan   { --duo-color: var(--color-cyan);   }
+.duo-fill-rose   { --duo-color: var(--color-rose);   }
+.duo-fill-amber  { --duo-color: var(--color-amber);  }
+.duo-fill-violet { --duo-color: var(--color-violet); }
 
-/* Thin slate scrollbars keep dense review tables visually quiet. */
-*::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-*::-webkit-scrollbar-thumb {
-  background: rgb(var(--color-line));
-  border-radius: 3px;
-}
-*::-webkit-scrollbar-thumb:hover {
-  background: rgb(var(--color-cyan));
-}
-
-/* Hide scrollbar on tab strip overflow containers. */
-.tab-strip::-webkit-scrollbar {
-  display: none;
-}
-.tab-strip {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-/* Premium status glows & 2-layer brand fill utilities */
-.glow-cyan {
-  box-shadow: 0 0 20px rgba(var(--color-cyan), 0.35);
-}
-
-.glow-rose {
-  box-shadow: 0 0 20px rgba(var(--color-rose), 0.35);
-}
-
-.glow-amber {
-  box-shadow: 0 0 20px rgba(var(--color-amber), 0.35);
-}
-
-.glow-violet {
-  box-shadow: 0 0 20px rgba(var(--color-violet), 0.35);
-}
-
-.duo-fill-cyan {
-  background-color: rgba(var(--color-cyan), 0.14);
-  border: 1.5px solid rgba(var(--color-cyan), 0.45);
-  color: rgb(var(--color-cyan));
-}
-
-.duo-fill-rose {
-  background-color: rgba(var(--color-rose), 0.14);
-  border: 1.5px solid rgba(var(--color-rose), 0.45);
-  color: rgb(var(--color-rose));
-}
-
-.duo-fill-amber {
-  background-color: rgba(var(--color-amber), 0.14);
-  border: 1.5px solid rgba(var(--color-amber), 0.45);
-  color: rgb(var(--color-amber));
-}
-
+.duo-fill-cyan,
+.duo-fill-rose,
+.duo-fill-amber,
 .duo-fill-violet {
-  background-color: rgba(var(--color-violet), 0.14);
-  border: 1.5px solid rgba(var(--color-violet), 0.45);
-  color: rgb(var(--color-violet));
+  background-color: rgba(var(--duo-color), 0.14);
+  border: 1.5px solid rgba(var(--duo-color), 0.45);
+  color: rgb(var(--duo-color));
 }
 
-/* Native controls otherwise retain a browser-default canvas after theme changes. */
-input,
-select,
-textarea {
-  color-scheme: inherit;
-}
-
-/* Optional subtle grid for data-heavy visualizations. */
+/* ─── Terminal grid overlay ──────────────────────────────────────────────── */
 .terminal-grid {
   background-image:
     linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
@@ -265,71 +201,43 @@ textarea {
   background-size: 28px 28px;
 }
 
+/* ─── Table scroll area ──────────────────────────────────────────────────── */
 /*
- * table-scroll-area
- * ─────────────────
- * Ensures tables can be scrolled internally rather than overflowing the page.
- * Uses --tsa-offset to subtract chrome height (header + footer + paddings)
- * so the table area flexibly fills the remaining viewport.
+ * Ensures tables scroll internally rather than overflowing the page.
+ * --tsa-offset subtracts chrome height (title, summary cards, footer, page padding).
  */
 .table-scroll-area {
-  --tsa-offset: 400px; /* Chrome offset (title, summary cards, footer, page padding) */
-  overflow-y: auto;
-  overflow-x: auto;
+  --tsa-offset: 400px;
+  overflow: auto;
   min-height: calc(var(--table-header-h) + var(--table-row-h) * 3);
   max-height: calc(var(--table-header-h) + var(--table-row-h) * 3);
   scrollbar-width: thin;
-  scrollbar-color: rgba(var(--color-line), 1) transparent;
+  scrollbar-color: rgb(var(--color-line)) transparent;
 }
 
 @media (min-width: 640px) {
   .table-scroll-area {
-    min-height: calc(var(--table-header-h) + var(--table-row-h) * 3);
     max-height: calc(100vh - var(--header-h) - var(--tsa-offset));
   }
 }
 
-/* Data row limit classes: explicitly limits height for specific tables (e.g. Audit) */
-.table-rows-sm {
-  --table-row-h: 41px; /* Exact height for single-line audit log rows (16px + 24px pad + 1px border) */
-  --table-header-h: 46px;
-}
+/* Table row-count variant tokens */
+.table-rows-sm { --table-row-h: 41px; --table-header-h: 46px; } /* single-line audit log rows */
+.table-rows-md { --table-row-h: 45px; --table-header-h: 46px; } /* scorecard summary rows */
 
-.table-rows-md {
-  --table-row-h: 45px; /* Exact height for scorecard summary rows (20px + 24px pad + 1px border) */
-  --table-header-h: 46px;
-}
+/* Explicit max-height overrides */
+.table-max-5 { max-height: calc(var(--table-header-h) + var(--table-row-h) * 5) !important; }
+.table-max-3 { max-height: calc(var(--table-header-h) + var(--table-row-h) * 3) !important; }
 
-.table-max-5 {
-  max-height: calc(var(--table-header-h) + var(--table-row-h) * 5) !important;
-}
-
-.table-max-3 {
-  max-height: calc(var(--table-header-h) + var(--table-row-h) * 3) !important;
-}
-
-/* For list containers without a table header (e.g. Action Queue <ul>) */
+/* List containers without a table header (e.g. Action Queue <ul>) */
 .table-scroll-area:has(> ul).table-max-3,
-ul.table-scroll-area.table-max-3 {
-  max-height: calc(var(--table-row-h) * 3) !important;
-}
+ul.table-scroll-area.table-max-3 { max-height: calc(var(--table-row-h) * 3) !important; }
 
 .table-scroll-area:has(> ul).table-max-5,
-ul.table-scroll-area.table-max-5 {
-  max-height: calc(var(--table-row-h) * 5) !important;
-}
+ul.table-scroll-area.table-max-5 { max-height: calc(var(--table-row-h) * 5) !important; }
 
-/* Thin, unobtrusive scrollbar styling */
-.table-scroll-area::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-.table-scroll-area::-webkit-scrollbar-track {
-  background: transparent;
-  /* Offset the scrollbar track so it doesn't overlap the sticky header row (~45px) */
-  margin-top: 45px; 
-}
-.table-scroll-area::-webkit-scrollbar-thumb {
-  background-color: rgb(var(--color-line));
-  border-radius: 9999px;
-}
+/* Scrollbar overrides for table scroll areas */
+.table-scroll-area::-webkit-scrollbar       { width: 5px; height: 5px; }
+.table-scroll-area::-webkit-scrollbar-track { background: transparent; margin-top: 45px; }
+.table-scroll-area::-webkit-scrollbar-thumb { background-color: rgb(var(--color-line)); border-radius: 9999px; }
+
