@@ -175,4 +175,4 @@ Changes should use a short-lived feature branch and a pull request into
 | --- |
 | **Jb Anmol**, IITM |
 | **Pratham Amritkar**, IITM |
-| **Aparna Jha**, IITM | Team Lead
+| **Aparna Jha**, IITM [Team Lead]| 
